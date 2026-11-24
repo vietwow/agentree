@@ -1,0 +1,21 @@
+#!/bin/sh
+# The host's agentree: it passes its arguments to the command in the daemon's container, in the directory it is
+# run from, with who runs it and the host's load, which a container cannot read.
+set -eu
+
+if [ -r /proc/loadavg ]; then
+  load=$(cut -d' ' -f1 /proc/loadavg)
+  processors=$(nproc)
+else
+  load=$(sysctl -n vm.loadavg | tr -d '{}' | awk '{print $1}')
+  processors=$(sysctl -n hw.ncpu)
+fi
+
+# A terminal is passed on when there is one; a hook and a pipe have none.
+if [ -t 0 ]; then terminal=-t; else terminal=; fi
+
+exec docker exec -i $terminal \
+  --workdir "$PWD" \
+  --env AGENTREE_HOST_LOAD="$(awk "BEGIN { print $load / $processors }")" \
+  --env AGENTREE_WORKER --env AGENTREE_SESSION --env AGENTREE_OWNER_TOKEN --env CLAUDE_CODE_SESSION_ID \
+  "${AGENTREE_CONTAINER:-agentree}" agentree "$@"

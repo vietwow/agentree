@@ -7,6 +7,9 @@ import { Refusal } from "./errors.ts";
 /** The name the board's own commits are made under; no person's. */
 const IDENTITY = ["-c", "user.name=agentree", "-c", "user.email=agentree@localhost"];
 
+/** A repository of the host is another user's to the daemon in its container: git reads it all the same. */
+const ANY_OWNER = ["-c", "safe.directory=*"];
+
 /**
  * The caller's git variables are dropped, and the user's and the system's
  * configuration are not read: the board's git does the same on every
@@ -37,7 +40,7 @@ function gitProgram(): string {
 type Result = { status: number; stdout: string; stderr: string };
 
 function run(cwd: string, args: string[], input?: string): Result {
-  const done = spawnSync(gitProgram(), ["--no-optional-locks", ...IDENTITY, ...args], {
+  const done = spawnSync(gitProgram(), ["--no-optional-locks", ...IDENTITY, ...ANY_OWNER, ...args], {
     cwd,
     encoding: "utf8",
     env: environment(),

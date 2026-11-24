@@ -509,6 +509,10 @@ const COMMANDS: Record<string, () => unknown> = {
   },
 };
 
+// The host's script sends the host's load with each call: the daemon in its container reads only its own.
+if (process.env.AGENTREE_HOST_LOAD && subcommand !== "serve")
+  await ask("/api/slots/reading", { host: Number(process.env.AGENTREE_HOST_LOAD) }).catch(() => undefined);
+
 try {
   const run = subcommand === undefined || values.help ? undefined : COMMANDS[subcommand];
   if (run) await run();

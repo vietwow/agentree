@@ -1,15 +1,5 @@
 import type { AgentSession, Doc, Fact, Slots, ToolSetup } from "../../ui/src/board/model.ts";
-import {
-  KIND_LABEL,
-  type CheckRun,
-  type Checks,
-  type Kind,
-  type Session,
-  type Status,
-  type Task,
-  type TaskDetail,
-  type Tool,
-} from "../../ui/src/board/task.ts";
+import type { CheckRun, Checks, Kind, Session, Status, Task, TaskDetail, Tool } from "../../ui/src/board/task.ts";
 
 type LogEntry = TaskDetail["log"][number];
 
@@ -834,7 +824,7 @@ export function fixtureDetail(task: Task, tasks: readonly Task[], now: Date): Sa
     appends: task.kind === "build" || task.kind === "fix" ? ["CHANGELOG.md"] : [],
     context:
       CONTEXTS[task.id] ??
-      `${KIND_LABEL[task.kind]} task of ${task.parent ? `"${PARENT_TITLES[task.parent]}"` : "no breakdown"}, from RFC ${task.rfc ?? "none"}. ${task.title}.`,
+      `${task.kind[0]!.toUpperCase()}${task.kind.slice(1)} task of ${task.parent ? `"${PARENT_TITLES[task.parent]}"` : "no breakdown"}, from RFC ${task.rfc ?? "none"}. ${task.title}.`,
     doneWhen: doneWhen(task.kind),
     outOfScope: ["The UI's view of it, which is a task of T-0003", "Any change to main outside a landing"],
     questions: task.questions.map((q, i) => ({

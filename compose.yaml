@@ -1,0 +1,24 @@
+# agentree on a machine: one daemon for every project under one directory of the host.
+#
+#   AGENTREE_PROJECTS=/absolute/path/of/your/projects docker compose up --detach
+#
+# The directory is mounted at the same absolute path, so that a path means one place to the daemon, to the
+# containers it starts for a project's commands, and to the tools on the host.
+services:
+  agentree:
+    build: .
+    container_name: agentree
+    restart: unless-stopped
+    # The daemon's port is published on the loopback address only: whatever reaches it can start a container.
+    ports:
+      - "127.0.0.1:${AGENTREE_PORT:-4517}:4517"
+    volumes:
+      - ${AGENTREE_PROJECTS:?name the directory of your projects, as an absolute path}:${AGENTREE_PROJECTS}
+      - agentree-home:/var/lib/agentree
+      # The daemon starts a project's commands as containers of the project's image.
+      - /var/run/docker.sock:/var/run/docker.sock
+    working_dir: ${AGENTREE_PROJECTS}
+
+volumes:
+  # The machine's list of projects, its token and its queue.
+  agentree-home:

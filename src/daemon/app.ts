@@ -228,6 +228,13 @@ export function createApp(daemon: Daemon) {
     daemon.queue.first(Number(request.req.param("n")));
     return request.json({ ok: true });
   });
+  // The host's load, which the host's script reads and sends with each call it passes on.
+  app.post("/api/slots/reading", async (request) => {
+    const { host } = (await request.req.json()) as { host: number };
+    if (!(host >= 0)) throw new Refusal("a reading is the host's load over its processors, a number from 0");
+    daemon.queue.read(host);
+    return request.json({ ok: true });
+  });
   app.post("/api/slots/bounds", async (request) => {
     daemon.queue.setBounds((await request.req.json()) as Partial<Bounds>);
     return request.json(daemon.queue.view().bounds);

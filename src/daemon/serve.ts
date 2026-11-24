@@ -66,7 +66,8 @@ export function startDaemon(options: { port?: number; ui?: string } = {}) {
   // A held clock holds the load too: no reading is taken, so the pages show the same at every run.
   if (!fixed) queue.read();
   const timers = [watch(events, queue, () => fixed ?? new Date()), ...(fixed ? [] : [setInterval(() => queue.read(), SAMPLE_MS)])];
-  const server = serve({ fetch: app.fetch, hostname: "127.0.0.1", port });
+  // In its container the daemon listens on every address of the container, whose port is published on the host's loopback only.
+  const server = serve({ fetch: app.fetch, hostname: process.env.AGENTREE_HOST ?? "127.0.0.1", port });
   return {
     address: `http://127.0.0.1:${port}/?token=${token}`,
     close: () => {

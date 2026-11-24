@@ -1,0 +1,9 @@
+node_modules
+ui/node_modules
+ui/dist
+ui/.demo
+ui/test-results
+ui/playwright-report
+ui/tests
+.git
+seed

@@ -22,9 +22,8 @@ machine's state under the git common directory, a task's whole way from
 `new` to `land`, the memory, what each session used, the documents, the
 machine's list of projects, the sessions of the tools, the queue of
 heavy runs, and the daemon with its API and its events. Not built yet:
-the project's container and what a run is measured to take, the
-host's script, and what the RFC lists after its first version beyond
-these.
+a tree's install into a volume at its claim, and what the RFC lists
+after its first version beyond these.
 
 ```sh
 pnpm install
@@ -36,6 +35,15 @@ pnpm link --global   # puts `agentree` on the path, as the hooks and MCP entries
 ```
 
 Node.js 26.13.1 runs the TypeScript files as they are; nothing is built.
+
+With Docker, the daemon runs in a container and starts a project's
+commands as containers of the project's image:
+
+```sh
+AGENTREE_PROJECTS=/absolute/path/of/your/projects docker compose up --detach --build
+ln -s "$PWD/bin/agentree" /usr/local/bin/agentree   # the host's script: the command in the daemon's container
+docker exec agentree cat /var/lib/agentree/token     # the token of the address to open: http://127.0.0.1:4517/?token=...
+```
 
 Where it comes from: the way of working was built and used first inside
 another repository, as files and a command (`scripts/task.mjs`). What was

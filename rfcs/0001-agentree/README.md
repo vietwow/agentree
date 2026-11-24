@@ -141,6 +141,35 @@ needs nothing else on the machine but git and the agents' own tools.
 - **Where it was answered**: [question 1](#the-owners-answers), left to
   this RFC by the owner.
 
+As built: `Dockerfile` makes the daemon's image (Node on Alpine, with
+git and the Docker client; the UI built into it), and `compose.yaml`
+runs it as the container `agentree`, with `AGENTREE_PROJECTS` mounted
+at the same absolute path, Docker's socket, a volume for the machine's
+list, token and queue, and its port published on `127.0.0.1`. In the
+container the daemon listens on every address (`AGENTREE_HOST`). The
+host's script is `bin/agentree`: `docker exec` of the command in that
+container, in the directory it is run from, with the worker's and the
+session's variables and the host's load (`vm.loadavg` over `hw.ncpu`
+on macOS, `/proc/loadavg` over `nproc` on Linux), which the command
+sends to the daemon as a reading before it does anything else. The
+board's git reads a repository whatever user owns it, since a
+repository of the host is another user's in the container.
+
+Tried on 2026-11-24 with Docker Desktop 29.9.3 on macOS: the image
+built; git in it was 2.54.1; `agentree demo` made the sample projects
+through the mount, worktrees and all; the UI and the API answered on
+the published port; through the host's script, `load` gave the host's
+load beside the virtual machine's (72% and 9% in one reading), a hook
+recorded its session, and `run` started a container of the project's
+image from inside the daemon's container, held to three processors,
+and gave back what it said and kept what it took. One thing failed: a
+file the container had written and the host then changed in place
+(`agentree.config.json`) kept its old length in the daemon's container
+for more than forty seconds, so the daemon read it cut short, until
+another container read the same file. A change made on the host to a
+file under the mount may therefore reach the daemon late on Docker
+Desktop; what the daemon writes itself does not depend on it.
+
 ## Where the board lives
 
 A task's tree is a checkout of a branch, so a file of the board inside it
@@ -1390,7 +1419,7 @@ of the UI.
 | The daemon's HTTP        | Hono 4.13.20 with `@hono/node-server` 2.1.11; its `streamSSE` for the events.                             |
 | The UI                   | React 19.3.1, Vite 8.3.8, Tailwind CSS 4.3.5, `lucide-react` 1.78.0 for icons. It reads the daemon with `fetch` and an `EventSource`, and takes no library for data, routing, parts or dragging. |
 | The comparison           | Playwright 1.65.1.                                                                                        |
-| Packages                 | pnpm 12.21.0.                                                                                             |
+| Packages                 | pnpm 12.23.0.                                                                                             |
 | Running it               | Docker Compose 5.8.0, a `compose.yaml`; git 2.48 or later in the image, for relative links of worktrees. |
 
 - Node runs TypeScript that only erases to JavaScript and no `.tsx`: the
