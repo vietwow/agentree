@@ -46,7 +46,8 @@ export function sessions(places: Places): SessionRecord[] {
     .sort((a, b) => a.since.localeCompare(b.since));
 }
 
-function put(places: Places, record: SessionRecord) {
+/** Writes a session's record whole. */
+export function putSession(places: Places, record: SessionRecord) {
   mkdirSync(directory(places), { recursive: true });
   const draft = `${fileOf(places, record.id)}.${process.pid}.tmp`;
   writeFileSync(draft, `${JSON.stringify(record, null, 2)}\n`);
@@ -81,7 +82,7 @@ export function reportSession(places: Places, report: Report, at: string): Sessi
     ...(report.by ? { by: report.by } : {}),
     ...(report.note === undefined ? {} : { note: report.note }),
   };
-  put(places, record);
+  putSession(places, record);
   return record;
 }
 
@@ -89,7 +90,7 @@ export function reportSession(places: Places, report: Report, at: string): Sessi
 export function endSession(places: Places, id: string, at: string): SessionRecord {
   const before = known(places, id);
   const record = { ...before, ended: at, subagents: before.subagents.map((sub) => (sub.ended ? sub : { ...sub, ended: at })) };
-  put(places, record);
+  putSession(places, record);
   return record;
 }
 
@@ -97,7 +98,7 @@ export function endSession(places: Places, id: string, at: string): SessionRecor
 export function startSubagent(places: Places, session: string, subagent: Pick<Subagent, "id" | "kind" | "task">, at: string): SessionRecord {
   const before = known(places, session);
   const record = { ...before, beat: at, subagents: [...before.subagents.filter((sub) => sub.id !== subagent.id), { ...subagent, since: at }] };
-  put(places, record);
+  putSession(places, record);
   return record;
 }
 
@@ -106,6 +107,6 @@ export function updateSubagent(places: Places, session: string, id: string, chan
   const before = known(places, session);
   if (!before.subagents.some((sub) => sub.id === id)) throw new Refusal(`session "${session}" has no subagent "${id}"`);
   const record = { ...before, beat: at, subagents: before.subagents.map((sub) => (sub.id === id ? { ...sub, ...change } : sub)) };
-  put(places, record);
+  putSession(places, record);
   return record;
 }

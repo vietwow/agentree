@@ -11,9 +11,11 @@ export type ProjectConfig = {
   heavy: string[];
   /** No check runs longer than this many minutes. */
   boundMinutes: number;
+  /** The areas of the repository the Home page draws, each a directory; none named, they are its top directories. */
+  areas: { path: string; name: string }[];
 };
 
-export const DEFAULT_CONFIG: ProjectConfig = { heavy: ["\\b(test|e2e|vitest|jest|playwright|build)\\b"], boundMinutes: 90 };
+export const DEFAULT_CONFIG: ProjectConfig = { heavy: ["\\b(test|e2e|vitest|jest|playwright|build)\\b"], boundMinutes: 90, areas: [] };
 
 export function configOf(places: Places): ProjectConfig {
   const file = join(places.root, CONFIG_FILE);

@@ -5,7 +5,7 @@
  */
 import { existsSync } from "node:fs";
 import { tryGit } from "../git.ts";
-import { DAEMON, modelOf, statusChange, toolOf, type LogEntry, type Status, type Task, type Tool } from "../task/model.ts";
+import { DAEMON, isWorker, modelOf, statusChange, toolOf, type LogEntry, type Status, type Task, type Tool } from "../task/model.ts";
 import { factsFor } from "../board/memory.ts";
 import type { Places } from "../board/places.ts";
 import { checksOf, claimOf, reviewOf, submissionOf, type Checks, type Claim, type Hold } from "../board/state.ts";
@@ -22,7 +22,7 @@ export type TaskView = {
   priority: number;
   parent?: string;
   rfc?: string;
-  /** Who holds it, or reviews it, and when it last said it was there. */
+  /** Who holds it and when it last said it was there; once it is submitted, who built it. */
   holder?: { tool: Tool; model: string; since: string; beat: string };
   branch?: string;
   checks: { total: number; passed: number; failed: number; state: "none" | "queued" | "running" | "finished"; queuePlace?: number };
@@ -64,7 +64,12 @@ export type TaskDetailView = {
 export type ActivityView = { at: string; who: Who; text: string; kind: "status" | "question" | "check"; task: string };
 
 const whoOf = (by: string): Who => (by === DAEMON ? DAEMON : toolOf(by));
-const holderOf = (hold: Hold) => ({ tool: toolOf(hold.by), model: modelOf(hold.by), since: hold.since, beat: hold.beat });
+const holderOf = (hold: Pick<Hold, "by" | "since" | "beat">) => ({
+  tool: toolOf(hold.by),
+  model: modelOf(hold.by),
+  since: hold.since,
+  beat: hold.beat,
+});
 
 function checksView(task: Task, checks: Checks | undefined): TaskView["checks"] {
   const total = task.fields.checks.length;
@@ -73,11 +78,19 @@ function checksView(task: Task, checks: Checks | undefined): TaskView["checks"] 
   return { total, passed, failed: checks.runs.length - passed, state: checks.state };
 }
 
+/** Who built a task that is past its claim: the worker of its last claim, from then to its last entry. */
+function builderOf(task: Task): Pick<Hold, "by" | "since" | "beat"> | undefined {
+  if (!["checking", "review", "accepted", "done"].includes(task.fields.status)) return undefined;
+  const claimed = task.log.findLast((entry) => statusChange(entry)?.to === "in-progress" && statusChange(entry)?.from === "ready");
+  if (!claimed || !isWorker(claimed.by)) return undefined;
+  return { by: claimed.by, since: claimed.at, beat: task.log.findLast((entry) => entry.by === claimed.by)!.at };
+}
+
 /** A task as a row of the list and a card of the board. */
 export function taskView(places: Places, task: Task): TaskView {
   const { fields } = task;
   const claim: Claim | undefined = claimOf(places, fields.id);
-  const hold = claim ?? reviewOf(places, fields.id);
+  const hold = claim ?? builderOf(task);
   const changes = task.log.filter((entry) => statusChange(entry));
   const landed = changes.findLast((entry) => statusChange(entry)!.to === "done");
   const branch = claim?.branch ?? submissionOf(places, fields.id)?.branch;
@@ -144,7 +157,7 @@ function reviewView(places: Places, task: Task): TaskDetailView["review"] {
   if (task.fields.status === "review" && mark) return { by: toolOf(mark.by), verdict: "pending", findings: [] };
   const verdict = task.log.findLast((entry) => entry.by !== DAEMON && statusChange(entry)?.from === "review");
   if (!verdict) return undefined;
-  const findings = items(verdict.text.split("\n").slice(1).join("\n").trim());
+  const findings = verdict.text.split("\n").flatMap((line) => (/^- (.+)$/.exec(line)?.[1] ? [/^- (.+)$/.exec(line)![1]!.trim()] : []));
   return { by: toolOf(verdict.by), verdict: statusChange(verdict)!.to === "accepted" ? "accepted" : "rejected", findings, at: verdict.at };
 }
 
@@ -178,7 +191,13 @@ export function taskDetailView(board: Board, task: Task, now: Date): TaskDetailV
     checkRuns: checks
       ? fields.checks.map((name) => {
           const run = ran.get(name);
-          if (!run) return { name, result: checks.state === "queued" ? ("queued" as const) : ("running" as const), waitedMs: 0 };
+          if (!run)
+            return {
+              name,
+              result:
+                checks.state === "running" && fields.checks.find((each) => !ran.has(each)) === name ? ("running" as const) : ("queued" as const),
+              waitedMs: 0,
+            };
           return { name, result: run.result === "passed" ? ("passed" as const) : ("failed" as const), tookMs: run.tookMs, waitedMs: run.waitedMs };
         })
       : [],

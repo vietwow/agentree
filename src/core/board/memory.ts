@@ -60,7 +60,8 @@ function parse(file: string, text: string): Fact {
   };
 }
 
-const render = (fact: Fact) =>
+/** A fact as its file's text. */
+export const renderFact = (fact: Fact) =>
   [
     "---",
     `kind: ${fact.kind}`,
@@ -93,7 +94,7 @@ export function readMemory(places: Places): { facts: Fact[]; unreadable: string[
 
 function write(places: Places, fact: Fact, message: string): Fact {
   const path = `work/memory/${fact.file}.md`;
-  writeFileSync(join(places.board, path), render(fact));
+  writeFileSync(join(places.board, path), renderFact(fact));
   git(places.board, "add", "--", path);
   git(places.board, "commit", "--quiet", "-m", `Memory: ${message}`, "--", path);
   return fact;

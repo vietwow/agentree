@@ -16,6 +16,7 @@ import { editProject, placesOfProject, projectOf, projects } from "../core/machi
 import type { Bounds } from "../core/machine/queue.ts";
 import type { Tool } from "../core/task/model.ts";
 import { documentsView } from "../core/views/documents.ts";
+import { filesView } from "../core/views/files.ts";
 import { agentsView, milestonesView, projectView } from "../core/views/project.ts";
 import { activityView, taskDetailView, taskView } from "../core/views/tasks.ts";
 import type { Queue } from "./queue.ts";
@@ -72,14 +73,12 @@ export function createApp(daemon: Daemon) {
   });
 
   // What the pages read.
-  app.get("/api/projects", (request) =>
-    request.json(projects().map((project) => projectView(project, readBoard(placesOfProject(project.id)), daemon.now()))),
-  );
+  app.get("/api/projects", (request) => request.json(projects().map((project) => projectView(project, readBoard(placesOfProject(project.id))))));
   app.get("/api/projects/:project/board", (request) => {
     const board = readBoard(contextOf(request).places);
     return request.json({
       now: daemon.now().toISOString(),
-      project: projectView(projectOf(request.req.param("project")), board, daemon.now()),
+      project: projectView(projectOf(request.req.param("project")), board),
       tasks: board.tasks.map((stored) => taskView(board.places, stored.task)),
       activity: activityView(board),
       milestones: milestonesView(board),
@@ -90,6 +89,7 @@ export function createApp(daemon: Daemon) {
     const board = readBoard(contextOf(request).places);
     return request.json(taskDetailView(board, taskOf(board, request.req.param("task")).task, daemon.now()));
   });
+  app.get("/api/projects/:project/files", (request) => request.json(filesView(readBoard(contextOf(request).places))));
   app.get("/api/projects/:project/memory", (request) => request.json(readMemory(contextOf(request).places).facts));
   app.get("/api/projects/:project/documents", (request) => request.json(documentsView(contextOf(request).places)));
   app.get("/api/projects/:project/agents", (request) => {

@@ -26,20 +26,19 @@ export type ProjectView = {
 
 /**
  * A project's state, read from its board: complete when every task is
- * done, on hold when the owner set it aside, at risk while a claim is
- * stale or a task is blocked, planning until a task is first claimed.
+ * done, on hold when the owner set it aside, at risk while a task is
+ * blocked, planning until a task is first claimed.
  */
-export function projectView(project: Registered, board: Board, now: Date): ProjectView {
+export function projectView(project: Registered, board: Board): ProjectView {
   const all = board.tasks.map((stored) => stored.task).filter((task) => task.fields.status !== "dropped");
   const done = all.filter((task) => task.fields.status === "done").length;
   const entries = all.flatMap((task) => task.log);
-  const stale = [...claims(board.places).values()].some((hold) => isStale(hold, now));
   const started = entries.some((entry) => statusChange(entry)?.to === "in-progress");
   const status = project.hold
     ? "hold"
     : all.length > 0 && done === all.length
       ? "complete"
-      : stale || all.some((task) => task.fields.status === "blocked")
+      : all.some((task) => task.fields.status === "blocked")
         ? "risk"
         : started
           ? "active"

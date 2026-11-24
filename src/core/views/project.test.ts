@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, test } from "node:test";
-import { ask, claim, create, log, release, type Context } from "../board/actions.ts";
+import { ask, claim, create, log, move, release, type Context } from "../board/actions.ts";
 import { accept, check, commit, land, review, submit } from "../board/lifecycle.ts";
 import { endSession, reportSession, startSubagent, updateSubagent } from "../board/sessions.ts";
 import { readBoard } from "../board/store.ts";
@@ -27,7 +27,7 @@ const stamp = () =>
     .now()
     .toISOString()
     .replace(/\.\d{3}Z$/, "Z");
-const viewOf = (id: string) => projectView(projectOf(id), readBoard(context.places), context.now());
+const viewOf = (id: string) => projectView(projectOf(id), readBoard(context.places));
 const task = (title: string, more = {}) =>
   create(context, OWNER, { title, kind: "build", priority: 2, context: "Why.", doneWhen: "- Done.", outOfScope: "Rest.", checks: ["true"], ...more });
 
@@ -62,9 +62,9 @@ test("a project's state is read from its board: planning, in progress, at risk, 
   assert.deepEqual([viewOf("project").status, viewOf("project").total, viewOf("project").tools], ["planning", 1, []]);
   claim(context, CODEX, "T-0001");
   assert.deepEqual([viewOf("project").status, viewOf("project").tools], ["active", ["codex"]]);
-  at.advance(45 * 60 * 1000);
-  assert.equal(viewOf("project").status, "risk", "its claim is stale");
-  release(context, OWNER, "T-0001", "No beat.");
+  release(context, CODEX, "T-0001", "Waits for a decision.", { blocked: true });
+  assert.equal(viewOf("project").status, "risk", "a task is blocked");
+  move(context, OWNER, "T-0001", "ready");
   landed("T-0001", "src/a.txt");
   const done = viewOf("project");
   assert.deepEqual([done.status, done.done, done.total, done.tools], ["complete", 1, 1, ["cursor", "codex"]]);

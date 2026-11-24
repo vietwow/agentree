@@ -527,6 +527,15 @@ workers in `AGENTREE_SEAT`, `AGENTREE_PORT`, `AGENTREE_DEBUG_PORT` and
 are not yet containers, so what a run took is not measured: a command's
 cost is the heaviest known, or a quarter of the machine.
 
+`agentree demo <directory>` makes four projects there and registers
+them: the sample board the UI was built on, as a real repository (its
+tasks with their history, a tree with its change for each task in
+progress, checking, in review or accepted, its claims, checks, review
+marks, sessions, memory and documents), and three others with plain
+boards. Every time is counted back from the moment the demo is made. A
+task's row names who holds it and, once it is submitted, who built it.
+A project is at risk while a task of it is blocked.
+
 ### How it looks
 
 The owner gave a picture of an interface to follow (a screenshot of a

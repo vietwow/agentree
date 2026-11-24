@@ -7,13 +7,14 @@ browser.
 Status: being built while its first RFC,
 [`rfcs/0001-agentree`](./rfcs/0001-agentree/README.md), is a draft.
 
-| Path           | What                                                                                                    |
-| -------------- | ------------------------------------------------------------------------------------------------------- |
-| `src/core/`    | Every rule of the board, as a library on Node alone: the task file, the board's two places, its changes |
-| `src/command/` | `agentree <subcommand>`: the core on the command line                                                   |
-| `src/daemon/`  | `agentree serve`: the HTTP API the UI reads and writes, the events, and the queue of heavy runs         |
-| `ui/`          | The web UI, on sample data ([`ui/README.md`](./ui/README.md))                                           |
-| `seed/`        | The origin's command and protocol, the material the core is split from                                  |
+| Path           | What                                                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------------------------ |
+| `src/core/`    | Every rule of the board, as a library on Node alone: the task file, the board's two places, its changes      |
+| `src/command/` | `agentree <subcommand>`: the core on the command line                                                        |
+| `src/daemon/`  | `agentree serve`: the HTTP API the UI reads and writes, the events, and the queue of heavy runs              |
+| `src/demo/`    | `agentree demo <directory>`: four sample projects as real repositories, from the content the UI was built on |
+| `ui/`          | The web UI, on sample data ([`ui/README.md`](./ui/README.md))                                                |
+| `seed/`        | The origin's command and protocol, the material the core is split from                                       |
 
 Built: the task file, the board on its branch `agentree/board`, the
 machine's state under the git common directory, a task's whole way from
@@ -21,8 +22,8 @@ machine's state under the git common directory, a task's whole way from
 machine's list of projects, the sessions of the tools, the queue of
 heavy runs, and the daemon with its API and its events. Not built yet:
 the project's container and what a run is measured to take, MCP, the
-kickstart of each tool, the demo project, and the UI reading the daemon
-in place of its sample data.
+kickstart of each tool, and the UI reading the daemon in place of its
+sample data.
 
 ```sh
 pnpm install

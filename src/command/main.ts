@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** `agentree <subcommand>`: the core on the command line. It holds no rule: each line below is one call of the core. */
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { answer, ask, beat, claim, create, isStale, log, move, promote, release, tick, type Actor, type Context } from "../core/board/actions.ts";
 import { init } from "../core/board/init.ts";
@@ -14,6 +14,7 @@ import { readBoard, taskOf } from "../core/board/store.ts";
 import { Refusal } from "../core/errors.ts";
 import { projects, register } from "../core/machine/projects.ts";
 import { startDaemon } from "../daemon/serve.ts";
+import { demo } from "../demo/demo.ts";
 import { renderTask } from "../core/task/file.ts";
 import { KINDS, STATUSES, type Kind, type Need, type Tool } from "../core/task/model.ts";
 
@@ -48,6 +49,7 @@ const USAGE = `Usage: agentree <subcommand> [options]
   register [--name <words>] [--desc <words>]   add this repository to the machine's projects
   projects                              the projects of this machine
   serve [--port <n>]                    the daemon: the UI and its API, on 127.0.0.1 only
+  demo <directory>                      make the sample projects there, and register them
 
 Name yourself in AGENTREE_WORKER as <tool>/<model>; a session is told by
 AGENTREE_SESSION, or by the id its tool gives. The owner's commands need
@@ -123,7 +125,7 @@ function id(): string {
   return rest[0];
 }
 
-const COMMANDS: Record<string, () => void> = {
+const COMMANDS: Record<string, () => unknown> = {
   init() {
     const { places, did } = init(process.cwd(), { firstCommit: values["first-commit"] ?? false });
     say(did.length ? did.map((line) => `- ${line}`).join("\n") : "the board is there already; nothing changed");
@@ -301,6 +303,11 @@ const COMMANDS: Record<string, () => void> = {
     const daemon = startDaemon({ ...(values.port ? { port: Number(values.port) } : {}), ui: join(import.meta.dirname, "../../ui/dist") });
     say(`agentree serves ${projects().length} ${projects().length === 1 ? "project" : "projects"}. Open:\n  ${daemon.address}`);
   },
+  async demo() {
+    if (!rest[0]) throw new Refusal("name the directory the sample projects are made in");
+    const made = await demo(resolve(rest[0]), new Date());
+    say(`The sample projects are in ${resolve(rest[0])}: ${made.join(", ")}. Run "agentree serve" to see them.`);
+  },
   lint() {
     const board = readBoard(context().places);
     const problems = [...board.unreadable, ...lintProblems(board.tasks)];
@@ -312,7 +319,7 @@ const COMMANDS: Record<string, () => void> = {
 
 try {
   const run = subcommand === undefined || values.help ? undefined : COMMANDS[subcommand];
-  if (run) run();
+  if (run) await run();
   else {
     process.stdout.write(USAGE);
     if (subcommand !== undefined && !values.help) throw new Refusal(`"${subcommand}" is no subcommand`);
