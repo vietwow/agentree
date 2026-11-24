@@ -184,7 +184,16 @@ export function taskDetailView(board: Board, task: Task, now: Date): TaskDetailV
       : [],
     memory: factsFor(places, task).map((fact) => fact.title),
     ...(review ? { review } : {}),
-    sessions: sessionsOf(places, fields.id).map(({ session: _, worker, ...use }) => ({ ...use, tool: toolOf(worker) })),
+    sessions: sessionsOf(places, fields.id).map((use) => ({
+      role: use.role,
+      tool: toolOf(use.worker),
+      models: use.models,
+      startedAt: use.startedAt,
+      ...(use.endedAt ? { endedAt: use.endedAt } : {}),
+      ...(use.tokens ? { tokens: use.tokens } : {}),
+      ...(use.costUsd === undefined ? {} : { costUsd: use.costUsd }),
+      ...(use.unknown ? { unknown: use.unknown } : {}),
+    })),
     timeIn: timeIn(task, now),
     log: task.log.map((entry) => ({ at: entry.at, who: whoOf(entry.by), text: entry.text })),
   };
