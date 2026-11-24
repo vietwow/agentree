@@ -102,8 +102,8 @@ export function Sidebar(props: Props) {
   return (
     <nav className="side" aria-label="Main">
       <div className="side-top">
-        <div className="row gap-0.5">
-          <div className="ws grow">
+        <div className="flex items-center gap-0.5">
+          <div className="ws flex-1 min-w-0">
             <span className="ws-logo bg-ink text-ink-inv">{ic(TreeDeciduous, 13)}</span>
             <span className="ws-name trunc">agentree</span>
           </div>
@@ -195,7 +195,7 @@ function Projects({ projects, project, page, inProject, onProject, onReorder, on
     <div className="sgroup" id="side-projects">
       <div className="sgroup-h">
         <span>Projects</span>
-        <span className="sp" />
+        <span className="flex-1" />
         <IconButton label="New project" size="xs" onClick={onNewProject} data-tip="New project  P">
           {ic(Plus, 14)}
         </IconButton>

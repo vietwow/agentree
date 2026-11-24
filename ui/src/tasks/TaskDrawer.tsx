@@ -144,7 +144,7 @@ export function TaskDrawer(props: Props) {
           </button>
           <span className="faint">/</span>
           <span className="mono faint px-1.5 py-0 text-(length:--text-xs)">{t.id}</span>
-          <span className="sp" />
+          <span className="flex-1" />
           <IconButton
             label="Favorite"
             size="sm"
@@ -255,7 +255,7 @@ export function TaskDrawer(props: Props) {
                   <span className={`pillbtn ${detail.dependsOn.length ? "" : "empty"} h-auto min-h-6.5 flex-wrap`}>
                     {detail.dependsOn.length ? (
                       detail.dependsOn.map((d) => (
-                        <button key={d.id} type="button" className="row gap-1.5" onClick={() => onOpen(d.id)}>
+                        <button key={d.id} type="button" className="flex items-center gap-1.5" onClick={() => onOpen(d.id)}>
                           <span className="depchip mono rounded-xs bg-surface-3 px-1.25 py-0.25 text-2xs">{d.id}</span>
                           <span className="trunc max-w-40">{d.title}</span>
                         </button>
@@ -389,7 +389,7 @@ export function TaskDrawer(props: Props) {
                     <>
                       <KeyValues>
                         <dt>Writes</dt>
-                        <dd className="col items-start">
+                        <dd className="flex flex-col items-start">
                           {detail.writes.map((p) => (
                             <span key={p} className="mono">
                               {p}
@@ -397,7 +397,7 @@ export function TaskDrawer(props: Props) {
                           ))}
                         </dd>
                         <dt>Appends</dt>
-                        <dd className="col items-start">
+                        <dd className="flex flex-col items-start">
                           {detail.appends.length ? (
                             detail.appends.map((p) => (
                               <span key={p} className="mono">
@@ -416,7 +416,7 @@ export function TaskDrawer(props: Props) {
                     (detail.memory.length ? (
                       detail.memory.map((fact) => (
                         <div key={fact} className="act-line">
-                          <span className="grow">{fact}</span>
+                          <span className="flex-1 min-w-0">{fact}</span>
                         </div>
                       ))
                     ) : (

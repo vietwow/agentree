@@ -52,7 +52,7 @@ export function ActivityPage({ entries, tasks, now, onOpenTask }: Props) {
   return (
     <Page layout="narrow">
       <PageHeader title="Activity">Everything that's changed across the board.</PageHeader>
-      <div className="row gap-2 mb-1.5 flex-wrap">
+      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
         <Segmented label="Show" value={filter} onChange={setFilter} options={FILTERS.map(([value, label]) => ({ value, label }))} />
         <Select
           value={who}
@@ -76,7 +76,7 @@ export function ActivityPage({ entries, tasks, now, onOpenTask }: Props) {
                   style={style({ "--d": `${Math.min((order.get(e) ?? 0) * 30, 450)}ms` })}
                 >
                   <Avatar who={e.who} />
-                  <div className="grow">
+                  <div className="flex-1 min-w-0">
                     <b>{nameOf(e.who)}</b> <span className="muted">{e.text.charAt(0).toLowerCase() + e.text.slice(1)}</span>{" "}
                     <span className="obj" data-opens-task onClick={() => onOpenTask(e.task)}>
                       {titles.get(e.task)}

@@ -124,8 +124,8 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
           return (
             <div key={p.id} className="mini min-h-13 gap-3" role="link" tabIndex={0} onClick={() => onOpen(p.id)}>
               <PIcon project={p} />
-              <div className="grow min-w-0">
-                <div className="row gap-1.5">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
                   <b className="font-medium">{p.name}</b>
                   {p.private && ic(Lock, 12)}
                 </div>
@@ -134,7 +134,7 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
               <span className="hide-m">
                 <PStatus status={p.status} />
               </span>
-              <span className="row hide-m w-35">
+              <span className="flex items-center gap-2 hide-m w-35">
                 <ProgressBar value={pr} />
                 <span className="num faint text-(length:--text-xs)">{pr}%</span>
               </span>
@@ -168,7 +168,7 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
               return (
                 <tr className="cursor-pointer" key={p.id} onClick={() => onOpen(p.id)}>
                   <td className="pl-3.5">
-                    <span className="row">
+                    <span className="flex items-center gap-2">
                       <PIcon project={p} size={14} />
                       <span className="font-medium">{p.name}</span>
                     </span>
@@ -180,7 +180,7 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
                     <ToolStack tools={p.tools.slice(0, 4)} />
                   </td>
                   <td>
-                    <span className="row">
+                    <span className="flex items-center gap-2">
                       <ProgressBar value={pr} />
                       <span className="num faint text-(length:--text-xs)">{pr}%</span>
                     </span>
@@ -215,7 +215,7 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
       >
         {active} active · {projects.length - active} completed
       </PageHeader>
-      <div className="row mb-4 flex-wrap gap-2">
+      <div className="flex items-center mb-4 flex-wrap gap-2">
         <div className="inwrap">
           {ic(Search, 13)}
           <input
@@ -253,7 +253,7 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
             </option>
           ))}
         </select>
-        <span className="sp" />
+        <span className="flex-1" />
         <Segmented label="Layout" value={view} onChange={setView} collapse options={VIEWS.map(([value, label, icon]) => ({ value, label, icon }))} />
       </div>
       {body}
@@ -300,10 +300,10 @@ export function ProjectCard({
       onClick={() => onOpen(p.id)}
       onKeyDown={(e) => e.key === "Enter" && onOpen(p.id)}
     >
-      <div className="row">
+      <div className="flex items-center gap-2">
         <PIcon project={p} />
-        <div className="grow min-w-0">
-          <div className="row gap-1.5">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
             <b className="trunc text-(length:--text-md) font-semibold">{p.name}</b>
             {starred && <span className="text-warn">{ic(Star, 12)}</span>}
             {p.private && (
@@ -316,24 +316,24 @@ export function ProjectCard({
         <PStatus status={p.status} />
       </div>
       <div className="desc">{p.desc}</div>
-      <div className="row gap-2.5">
+      <div className="flex items-center gap-2.5">
         <ProgressBar value={pr} tone={tone(p)} />
         <span className="num text-(length:--text-xs) font-medium">{pr}%</span>
       </div>
       <div className="foot">
-        <span className="row gap-1">
+        <span className="flex items-center gap-1">
           {ic(CircleCheck, 12)}
           {p.done}/{p.total}
         </span>
-        <span className="row gap-1" title="Created">
+        <span className="flex items-center gap-1" title="Created">
           {ic(Calendar, 12)}
           {shortDate(p.createdAt, now)}
         </span>
-        <span className="row hide-m gap-1" title="Last activity">
+        <span className="flex items-center hide-m gap-1" title="Last activity">
           {ic(Clock, 12)}
           <Ago at={p.lastAt} now={now} />
         </span>
-        <span className="sp" />
+        <span className="flex-1" />
         <ToolStack tools={p.tools.slice(0, 3)} />
       </div>
       {more(p, "bg-surface ring-1 ring-line")}

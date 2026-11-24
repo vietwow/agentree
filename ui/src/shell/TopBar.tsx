@@ -44,7 +44,7 @@ export function TopBar({ crumbs, unread, onMenu, onSearch, onNotices, onNewTask,
           );
         })}
       </nav>
-      <span className="sp" />
+      <span className="flex-1" />
       <button type="button" className="topsearch" onClick={onSearch} aria-label="Search and commands">
         {ic(Search, 14)}
         <span className="lbltxt">Search or jump to…</span>

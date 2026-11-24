@@ -62,7 +62,7 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
           />
         </div>
         <Segmented label="Kind" value={kind} onChange={setKind} options={KINDS.map(([value, label]) => ({ value, label }))} />
-        <span className="sp" />
+        <span className="flex-1" />
         <span className="faint mono text-(length:--text-xs)">rfcs/ · docs/adr/</span>
       </div>
 
@@ -79,15 +79,15 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
                 onKeyDown={(e) => e.key === "Enter" && openDoc(d.id)}
                 aria-current={d.id === openId ? "true" : undefined}
               >
-                <span className="row text-ink-3 mt-0.5">{ic(d.kind === "RFC" ? BookOpen : FileText, 15)}</span>
-                <div className="grow min-w-0 flex flex-col gap-1">
-                  <span className="row gap-2 min-w-0">
+                <span className="flex items-center gap-2 text-ink-3 mt-0.5">{ic(d.kind === "RFC" ? BookOpen : FileText, 15)}</span>
+                <div className="flex-1 min-w-0 flex flex-col gap-1">
+                  <span className="flex items-center gap-2 min-w-0">
                     <span className="mono faint text-(length:--text-xs) whitespace-nowrap shrink-0">
                       {d.kind} {d.number}
                     </span>
                     <span className={`trunc font-medium ${d.status === "superseded" ? "text-ink-3 line-through" : ""}`}>{d.title}</span>
                   </span>
-                  <span className="row faint gap-2 text-(length:--text-xs)">
+                  <span className="flex items-center faint gap-2 text-(length:--text-xs)">
                     <Badge tone={STATUS[d.status].tone} dot>
                       {STATUS[d.status].label}
                     </Badge>
@@ -103,13 +103,13 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
 
         <article className="panel grid grid-cols-[minmax(0,1fr)_248px] items-start gap-6 px-6 pt-5 pb-6">
           <div className="min-w-0">
-            <div className="row faint gap-2 text-(length:--text-xs) mb-1.5">
+            <div className="flex items-center faint gap-2 text-(length:--text-xs) mb-1.5">
               <span className="mono">{doc.path}</span>
             </div>
             <h2 className="doc-title">
               {doc.kind} {doc.number}: {doc.title}
             </h2>
-            <div className="row gap-2.5 text-(length:--text-xs) mb-4 flex-wrap">
+            <div className="flex items-center gap-2.5 text-(length:--text-xs) mb-4 flex-wrap">
               <Badge tone={STATUS[doc.status].tone} dot>
                 {STATUS[doc.status].label}
               </Badge>

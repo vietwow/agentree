@@ -48,7 +48,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
   );
   const taskCell = (id?: string) =>
     id ? (
-      <span className="row gap-2 min-w-0" data-opens-task onClick={() => onOpenTask(id)}>
+      <span className="flex items-center gap-2 min-w-0" data-opens-task onClick={() => onOpenTask(id)}>
         <span className="key mono">{id}</span>
         <span className="trunc obj cursor-pointer">{title(id)}</span>
       </span>
@@ -81,7 +81,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
         <div className="c-meta">{badge(s.state)}</div>
         <div className="c-meta mono faint">{s.model}</div>
         <div className="c-meta">
-          <span className={`row gap-1.25 whitespace-nowrap ${s.state === "stale" ? "text-bad" : "text-ink-3"}`}>
+          <span className={`flex items-center gap-1.25 whitespace-nowrap ${s.state === "stale" ? "text-bad" : "text-ink-3"}`}>
             {ic(Clock, 13)}
             <Ago at={s.ended ?? s.beat} now={now} />
           </span>
@@ -99,7 +99,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
               }}
             >
               <div className="ttl cursor-default text-sm">
-                <span className="row faint">{ic(CornerDownRight, 13)}</span>
+                <span className="flex items-center gap-2 faint">{ic(CornerDownRight, 13)}</span>
                 <span className="mono text-(length:--text-xs)">{a.kind}</span>
               </div>
               <div className="c-meta faint">Subagent</div>
@@ -107,7 +107,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
               <div className="c-meta">{badge(a.state)}</div>
               <div className="c-meta mono faint">{s.model}</div>
               <div className="c-meta">
-                <span className="row faint gap-1.25 whitespace-nowrap">
+                <span className="flex items-center faint gap-1.25 whitespace-nowrap">
                   {ic(Clock, 13)}
                   <Ago at={a.ended ?? a.since} now={now} />
                 </span>
@@ -193,10 +193,10 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                 <tr>
                   <th>Tool</th>
                   <th>
-                    <span className="row gap-1.25">{ic(Webhook, 13)}Hooks</span>
+                    <span className="flex items-center gap-1.25">{ic(Webhook, 13)}Hooks</span>
                   </th>
                   <th>
-                    <span className="row gap-1.25">{ic(Plug, 13)}MCP</span>
+                    <span className="flex items-center gap-1.25">{ic(Plug, 13)}MCP</span>
                   </th>
                   <th>Worker and reviewer</th>
                   <th>Reports its use</th>
@@ -207,14 +207,14 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                 {tools.map((t) => (
                   <tr key={t.tool}>
                     <td>
-                      <span className="row gap-2">
+                      <span className="flex items-center gap-2">
                         <ToolMark tool={t.tool as Tool} size={20} />
                         {TOOL_LABEL[t.tool]}
                       </span>
                     </td>
                     <td>
                       {t.hooks.length ? (
-                        <span className="row gap-1 flex-wrap">
+                        <span className="flex items-center gap-1 flex-wrap">
                           {t.hooks.map((h) => (
                             <span key={h} className="lbl mono text-2xs">
                               {h}

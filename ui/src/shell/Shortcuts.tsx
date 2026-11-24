@@ -41,10 +41,10 @@ export function Shortcuts({ onClose }: { onClose: () => void }) {
           <div key={group}>
             <div className="eyebrow mb-1.5">{group}</div>
             {list.map(([name, keys]) => (
-              <div key={name} className="row h-7.5 border-b border-divider text-(length:--text-base)">
-                <span className="grow">{name}</span>
+              <div key={name} className="flex items-center gap-2 h-7.5 border-b border-divider text-(length:--text-base)">
+                <span className="flex-1 min-w-0">{name}</span>
                 {keys.map((k, i) => (
-                  <span key={k + i} className="row gap-2">
+                  <span key={k + i} className="flex items-center gap-2">
                     {i > 0 && keys[0] === "G" && <span className="faint text-2xs">then</span>}
                     <kbd>{k}</kbd>
                   </span>

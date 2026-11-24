@@ -256,7 +256,7 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
                     onClick={() => onOpenTask(r.t.id)}
                   >
                     <StatusIcon status={r.t.status} size={12} />
-                    <span className={`trunc grow ${r.t.status === "done" ? "text-ink-3" : ""}`}>{r.t.title}</span>
+                    <span className={`trunc flex-1 min-w-0 ${r.t.status === "done" ? "text-ink-3" : ""}`}>{r.t.title}</span>
                     {r.t.subtasks.length > 0 && (
                       <span className="faint num text-2xs">
                         {r.t.subtasks.filter((s) => s.done).length}/{r.t.subtasks.length}

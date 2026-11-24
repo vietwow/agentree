@@ -187,7 +187,7 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
           </Button>
         )}
         {extra}
-        <span className="sp" />
+        <span className="flex-1" />
         {right}
       </div>
 
@@ -215,7 +215,7 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
           <Button variant="ghost" size="sm" onClick={pop.toggle("filter")}>
             {ic(Plus, 12)}Add
           </Button>
-          <span className="sp" />
+          <span className="flex-1" />
           <Button variant="ghost" size="sm" onClick={() => set({ filters: [] })}>
             Clear all
           </Button>
@@ -257,7 +257,7 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
                         <option value="not">is not</option>
                       </select>
                       <button type="button" className="valbtn" onClick={() => setEdit(edit === i ? undefined : i)} aria-expanded={edit === i}>
-                        <span className="trunc grow">{n.length ? n.join(", ") : <span className="faint">Select…</span>}</span>
+                        <span className="trunc flex-1 min-w-0">{n.length ? n.join(", ") : <span className="faint">Select…</span>}</span>
                         {ic(ChevronDown, 12)}
                       </button>
                       <IconButton label="Remove filter" size="xs" onClick={() => remove(i)}>

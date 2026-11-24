@@ -76,12 +76,12 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
 
   const label = (r: (typeof rows)[number]) =>
     by === "tool" ? (
-      <span className="row gap-2">
+      <span className="flex items-center gap-2">
         <ToolMark tool={r.tool} size={20} />
         {TOOL_LABEL[r.tool!]}
       </span>
     ) : by === "task" ? (
-      <span className="row gap-2 cursor-pointer" data-opens-task onClick={() => onOpenTask(r.task!.id)}>
+      <span className="flex items-center gap-2 cursor-pointer" data-opens-task onClick={() => onOpenTask(r.task!.id)}>
         <span className="key mono faint">{r.task!.id}</span>
         <span className="trunc">{r.task!.title}</span>
       </span>
@@ -127,7 +127,7 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
       </div>
       <div className="toolbar" role="toolbar">
         <Segmented label="Sum by" value={by} onChange={setBy} collapse options={BYS.map(([value, label, icon]) => ({ value, label, icon }))} />
-        <span className="sp" />
+        <span className="flex-1" />
         <span className="faint text-(length:--text-xs)">Costs are the tools' own estimates, as they report them.</span>
       </div>
       <div className="tbl-wrap flex-initial">

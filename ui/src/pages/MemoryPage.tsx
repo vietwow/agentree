@@ -66,7 +66,7 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
       <div key={f.file} className="contents">
         <div className={`trow ${isOpen ? "sel" : ""}`} style={{ ...style({ "--cols": COLS }), paddingLeft: ROW_INSET }}>
           <div className="ttl" onClick={() => setOpen(isOpen ? undefined : f.file)} aria-expanded={isOpen}>
-            <span className="row text-ink-3">{ic(KIND_ICON[f.kind], 14)}</span>
+            <span className="flex items-center gap-2 text-ink-3">{ic(KIND_ICON[f.kind], 14)}</span>
             <span className="tt">{f.title}</span>
           </div>
           <div className="c-meta min-w-0 overflow-hidden gap-1">
@@ -90,7 +90,7 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
             )}
           </div>
           <div className="c-meta min-w-0 overflow-hidden">
-            <span className="row gap-1.5 min-w-0">
+            <span className="flex items-center gap-1.5 min-w-0">
               <ToolMark tool={f.by} size={20} />
               <span className="trunc">{f.by === "person" ? "The owner" : TOOL_LABEL[f.by]}</span>
             </span>
@@ -101,7 +101,7 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
             </Badge>
           </div>
           <div className="c-meta">
-            <span className="row gap-1.25 whitespace-nowrap text-ink-3">
+            <span className="flex items-center gap-1.25 whitespace-nowrap text-ink-3">
               {ic(Clock, 13)}
               <Ago at={f.at} now={now} />
             </span>
@@ -113,7 +113,7 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
               <div className="mem-file-h">
                 {ic(FileText, 13)}
                 <span className="mono trunc">work/memory/{f.file}.md</span>
-                <span className="sp" />
+                <span className="flex-1" />
                 {f.state === "proposed" ? (
                   <span className="pr-2 whitespace-nowrap">Accepted with {f.task}'s review</span>
                 ) : (
@@ -136,7 +136,7 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
                 <span>
                   Kind <b>{f.kind[0]!.toUpperCase() + f.kind.slice(1)}</b>
                 </span>
-                <span className="row gap-1.5">
+                <span className="flex items-center gap-1.5">
                   About
                   {f.paths.length ? (
                     f.paths.map((p) => (
@@ -226,7 +226,7 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
                   count={g.rows.length}
                   open={!closed[g.key]}
                   onToggle={() => setClosed((now) => ({ ...now, [g.key]: !now[g.key] }))}
-                  lead={<span className="row text-ink-2">{ic(g.icon, 14)}</span>}
+                  lead={<span className="flex items-center gap-2 text-ink-2">{ic(g.icon, 14)}</span>}
                 />
                 {!closed[g.key] && g.rows.map(row)}
               </div>

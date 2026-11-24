@@ -26,7 +26,7 @@ export function toast(message: string, options: Options = {}) {
   el.className = "toast";
   el.setAttribute("role", "status");
   const text = document.createElement("span");
-  text.className = "grow";
+  text.className = "flex-1 min-w-0";
   text.textContent = message;
   el.innerHTML = ICONS[options.kind ?? "ok"];
   el.append(text);

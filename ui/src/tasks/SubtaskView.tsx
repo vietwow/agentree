@@ -44,7 +44,7 @@ export function SubtaskView({
         {ic(ArrowLeft, 14)}
         <span className="trunc max-w-105">{t.title}</span>
       </button>
-      <div className={`row ${popped === s.id ? "fx-done" : ""} gap-2.5 items-start`}>
+      <div className={`flex items-center gap-2 ${popped === s.id ? "fx-done" : ""} gap-2.5 items-start`}>
         <span className="mt-2.25 flex">
           <SubCheck id={s.id} done={s.done} title={s.title} round />
         </span>
@@ -89,11 +89,11 @@ export function SubtaskView({
           aria-labelledby="s-note-l"
         />
       </div>
-      <div className="dsec row gap-1.5 flex-wrap">
+      <div className="dsec flex items-center gap-1.5 flex-wrap">
         <Button size="sm" onClick={() => notBuilt("Converting a subtask to a task")}>
           {ic(ArrowUpRight, 13)}Convert to task
         </Button>
-        <span className="sp" />
+        <span className="flex-1" />
         <Button variant="ghost" size="sm" disabled={i === 0} onClick={() => onOpen(t.subtasks[i - 1]!.id)} aria-label="Previous subtask">
           {ic(ChevronLeft, 14)}Previous
         </Button>

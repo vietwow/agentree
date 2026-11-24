@@ -209,7 +209,7 @@ export function Palette({ mode: start, idle, commands, tasks, projects, suggeste
               <kbd>⌫</kbd>back to commands
             </span>
           )}
-          <span className="sp flex-1" />
+          <span className="flex-1" />
           <span>agentree</span>
         </div>
       </div>

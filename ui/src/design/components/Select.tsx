@@ -58,7 +58,7 @@ export function Select<T extends string>({ value, options, onChange, label, size
                 btn.current?.focus({ preventScroll: true });
               }}
             >
-              <span className="trunc grow">{n}</span>
+              <span className="trunc flex-1 min-w-0">{n}</span>
             </MenuItem>
           ))}
         </Pop>

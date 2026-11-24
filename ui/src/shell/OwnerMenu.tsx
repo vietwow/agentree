@@ -30,7 +30,7 @@ const THEMES: [ThemeChoice, typeof Sun, string][] = [
 export function OwnerMenu({ theme, onTheme, onSettings, onShortcuts }: OwnerMenuProps) {
   return (
     <>
-      <div className="row pt-2 px-2 pb-2.5 gap-2.5">
+      <div className="flex items-center pt-2 px-2 pb-2.5 gap-2.5">
         <OwnerAvatar size="lg" />
         <div className="min-w-0">
           <div className="font-semibold">Owner</div>

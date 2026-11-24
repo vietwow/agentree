@@ -46,7 +46,7 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
   const longest = s.queue.reduce((m, w) => Math.max(m, minutes(w.since, now)), 0);
 
   const taskRef = (id: string) => (
-    <span className="row gap-2 min-w-0">
+    <span className="flex items-center gap-2 min-w-0">
       <span className="key mono text-(length:--text-xs) text-ink-3">{id}</span>
       <span className="obj trunc font-medium cursor-pointer" data-opens-task onClick={() => onOpenTask(id)}>
         {title(id)}
@@ -55,7 +55,7 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
   );
 
   const by = (tool: Tool) => (
-    <span className="row gap-1.5">
+    <span className="flex items-center gap-1.5">
       <ToolMark tool={tool} size={20} />
       {tool === "person" ? "The owner" : TOOL_LABEL[tool]}
     </span>
@@ -124,13 +124,13 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                 <Badge tone="accent" className="mono min-w-6.5 justify-center" title="Seat">
                   {r.seat}
                 </Badge>
-                <div className="grow min-w-0 flex flex-col gap-1.5">
+                <div className="flex-1 min-w-0 flex flex-col gap-1.5">
                   {taskRef(r.task)}
                   <code className="mono trunc text-(length:--text-xs) text-ink-2">{r.command}</code>
-                  <span className="row faint gap-3 text-(length:--text-xs) flex-wrap">
+                  <span className="flex items-center faint gap-3 text-(length:--text-xs) flex-wrap">
                     {by(r.by)}
                     <span>{r.what === "check" ? "A check" : "A command"}</span>
-                    <span className="row gap-1">
+                    <span className="flex items-center gap-1">
                       {ic(Timer, 12)}
                       {minutes(r.since, now)} of {r.bound} min
                     </span>
@@ -151,20 +151,20 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                 <Badge className="mono min-w-6.5 justify-center" title="Place in the queue">
                   {i + 1}
                 </Badge>
-                <div className="grow min-w-0 flex flex-col gap-1.5">
+                <div className="flex-1 min-w-0 flex flex-col gap-1.5">
                   {taskRef(w.task)}
                   <code className="mono trunc text-(length:--text-xs) text-ink-2">{w.command}</code>
-                  <span className="row faint gap-3 text-(length:--text-xs) flex-wrap">
+                  <span className="flex items-center faint gap-3 text-(length:--text-xs) flex-wrap">
                     {by(w.by)}
                     <span>
                       costs {w.cost.cpu} {w.cost.cpu === 1 ? "processor" : "processors"}, {w.cost.memory} GB
                     </span>
-                    <span className="row gap-1">
+                    <span className="flex items-center gap-1">
                       {ic(Hourglass, 12)}
                       waiting {minutes(w.since, now)} min
                     </span>
                   </span>
-                  <span className="row gap-2 text-(length:--text-xs)">
+                  <span className="flex items-center gap-2 text-(length:--text-xs)">
                     <Badge tone={WHY[w.why].tone} dot>
                       {WHY[w.why].label}
                     </Badge>
@@ -186,7 +186,7 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
               <Bound name="Highest number of runs" value={String(s.bounds.highest)} />
               <Bound name="Margin kept free" value={pct(s.bounds.margin)} />
               <Bound name="Mark of the host's load" value={pct(s.mark)} />
-              <label className="row justify-between cursor-pointer">
+              <label className="flex items-center gap-2 justify-between cursor-pointer">
                 <span className="muted">Hold the number fixed</span>
                 <input type="checkbox" className="toggle" checked={s.bounds.fixed} onChange={() => onNotBuilt("Holding the number fixed")} />
               </label>
@@ -199,10 +199,10 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                 const k = DECISION[d.kind];
                 return (
                   <div key={`${d.kind}-${d.at.getTime()}`} className="fitem">
-                    <span className="row w-5 justify-center" style={{ color: k.color }}>
+                    <span className="flex items-center gap-2 w-5 justify-center" style={{ color: k.color }}>
                       {ic(k.icon, 14)}
                     </span>
-                    <div className="grow min-w-0">
+                    <div className="flex-1 min-w-0">
                       {d.task && (
                         <span className="obj" data-opens-task onClick={() => onOpenTask(d.task!)}>
                           {d.task}
@@ -224,7 +224,7 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
 
 function Legend({ color, dashed, children }: { color: string; dashed?: boolean; children: string | string[] }) {
   return (
-    <span className="row gap-1.5">
+    <span className="flex items-center gap-1.5">
       <svg width="16" height="6" aria-hidden>
         <line x1="0" y1="3" x2="16" y2="3" stroke={color} strokeWidth="2" strokeDasharray={dashed ? "3 2" : undefined} />
       </svg>
@@ -237,7 +237,7 @@ function Use({ label, used, given, unit = "" }: { label: string; used: number; g
   const share = used / given;
   return (
     <div className="flex flex-col gap-1 text-2xs text-ink-3">
-      <span className="row justify-between">
+      <span className="flex items-center gap-2 justify-between">
         <span>{label}</span>
         <span className="num">
           {used} of {given}
@@ -253,7 +253,7 @@ function Use({ label, used, given, unit = "" }: { label: string; used: number; g
 
 function Bound({ name, value }: { name: string; value: string }) {
   return (
-    <div className="row justify-between">
+    <div className="flex items-center gap-2 justify-between">
       <span className="muted">{name}</span>
       <span className="num font-medium">{value}</span>
     </div>
@@ -288,7 +288,7 @@ function LoadChart({ s }: { s: Slots }) {
         </g>
         <line x1="0" x2={W} y1={y(s.mark)} y2={y(s.mark)} stroke="var(--bad)" strokeDasharray="4 3" vectorEffect="non-scaling-stroke" />
       </svg>
-      <div className="row faint justify-between text-2xs mt-1.5">
+      <div className="flex items-center gap-2 faint justify-between text-2xs mt-1.5">
         <span>60 min ago</span>
         <span>30 min ago</span>
         <span>now</span>
