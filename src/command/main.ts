@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /** `agentree <subcommand>`: the core on the command line. It holds no rule: each line below is one call of the core. */
 import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { answer, ask, beat, claim, create, isStale, log, move, promote, release, tick, type Actor, type Context } from "../core/board/actions.ts";
 import { init } from "../core/board/init.ts";
@@ -11,6 +12,8 @@ import { lintProblems, obstacles, unwritten } from "../core/board/rules.ts";
 import { claims, ownerToken } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
 import { Refusal } from "../core/errors.ts";
+import { projects, register } from "../core/machine/projects.ts";
+import { startDaemon } from "../daemon/serve.ts";
 import { renderTask } from "../core/task/file.ts";
 import { KINDS, STATUSES, type Kind, type Need, type Tool } from "../core/task/model.ts";
 
@@ -42,6 +45,9 @@ const USAGE = `Usage: agentree <subcommand> [options]
   move T-NNNN backlog|ready|dropped     (the owner's)
   promote                               make ready every backlog task that waits for nothing (the owner's)
   lint                                  what is wrong on the board
+  register [--name <words>] [--desc <words>]   add this repository to the machine's projects
+  projects                              the projects of this machine
+  serve [--port <n>]                    the daemon: the UI and its API, on 127.0.0.1 only
 
 Name yourself in AGENTREE_WORKER as <tool>/<model>; a session is told by
 AGENTREE_SESSION, or by the id its tool gives. The owner's commands need
@@ -59,6 +65,9 @@ const { values, positionals } = parseArgs({
     undo: { type: "boolean" },
     drop: { type: "boolean" },
     message: { type: "string", short: "m" },
+    name: { type: "string" },
+    desc: { type: "string" },
+    port: { type: "string" },
     title: { type: "string" },
     kind: { type: "string" },
     priority: { type: "string" },
@@ -277,6 +286,20 @@ const COMMANDS: Record<string, () => void> = {
     const at = context();
     const moved = promote(at, actor(at));
     say(moved.length ? `ready now: ${moved.join(", ")}` : "no backlog task waits for nothing");
+  },
+  register() {
+    const project = register(process.cwd(), new Date(), {
+      ...(values.name ? { name: values.name } : {}),
+      ...(values.desc ? { desc: values.desc } : {}),
+    });
+    say(`${project.name} is the project "${project.id}" of this machine: ${project.root}`);
+  },
+  projects() {
+    for (const project of projects()) say(`${project.id.padEnd(20)} ${project.root}`);
+  },
+  serve() {
+    const daemon = startDaemon({ ...(values.port ? { port: Number(values.port) } : {}), ui: join(import.meta.dirname, "../../ui/dist") });
+    say(`agentree serves ${projects().length} ${projects().length === 1 ? "project" : "projects"}. Open:\n  ${daemon.address}`);
   },
   lint() {
     const board = readBoard(context().places);

@@ -127,12 +127,24 @@ function runAll(context: Context, commands: string[], cwd: string): CheckRun[] {
  * during them.
  */
 export function check(context: Context, id: string): Task {
+  const { task, tree } = checksToRun(context, id);
+  return settleChecks(context, id, runAll(context, task.fields.checks, tree));
+}
+
+/** The task whose checks are to run, and the tree they run in; its checks are marked as running. */
+export function checksToRun(context: Context, id: string): { task: Task; tree: string } {
+  const { task } = taskOf(readBoard(context.places), id);
+  const submission = submissionOf(context.places, id);
+  if (task.fields.status !== "checking" || !submission) throw new Refusal(`${id} is ${task.fields.status}; its checks run while it is checking`);
+  putChecks(context.places, id, { commit: submission.commit, state: "running", runs: [] });
+  return { task, tree: submission.tree };
+}
+
+/** Settles a task that is `checking` on the results of its checks, however they were run. */
+export function settleChecks(context: Context, id: string, runs: CheckRun[]): Task {
   const { places } = context;
-  const before = taskOf(readBoard(places), id).task;
   const submission = submissionOf(places, id);
-  if (before.fields.status !== "checking" || !submission) throw new Refusal(`${id} is ${before.fields.status}; its checks run while it is checking`);
-  putChecks(places, id, { commit: submission.commit, state: "running", runs: [] });
-  const runs = runAll(context, before.fields.checks, submission.tree);
+  if (!submission) throw new Refusal(`${id} has no submission to settle`);
   putChecks(places, id, { commit: submission.commit, state: "finished", runs });
   const changed = git(submission.tree, "rev-parse", "HEAD") !== submission.commit || git(submission.tree, "status", "--porcelain") !== "";
   const passed = runs.every((run) => run.result === "passed") && !changed;

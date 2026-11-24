@@ -509,6 +509,24 @@ is slow or misses, and is never the source.
   its own. Text an agent wrote (a Log, a question, a diff) is shown as
   text, never run as markup, and is never an instruction to the daemon.
 
+As built: `agentree serve` listens on `127.0.0.1:4517`. It prints an
+address that carries the machine's token once; opening it sets the token
+as a cookie that is `HttpOnly` and `SameSite=Strict`, and a tool sends
+it as a bearer. A request whose `Host` is not the loopback address is
+refused too. The daemon looks at each project's board branch, its main
+checkout's commit and the times of its machine state every 1.5 seconds,
+and tells the browser of a change it did not make itself, so a write by
+the command shows live. The owner's changes from the UI are in the API
+from the start (a task made, moved, a subtask marked, a question
+answered, a stale claim released, memory, the options, the bounds of
+the slots); the review and the landing have none. A project's part is
+`agentree.config.json`: which commands are heavy, and the bound of a
+check. A heavy run is told its seat, its ports and its number of
+workers in `AGENTREE_SEAT`, `AGENTREE_PORT`, `AGENTREE_DEBUG_PORT` and
+`AGENTREE_WORKERS`. The runs are processes of the daemon's system and
+are not yet containers, so what a run took is not measured: a command's
+cost is the heaviest known, or a quarter of the machine.
+
 ### How it looks
 
 The owner gave a picture of an interface to follow (a screenshot of a
