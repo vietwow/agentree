@@ -21,6 +21,8 @@ export type ProjectConfig = {
   checks: string[];
   /** How many open tasks at most the owner aims to have; the Home page draws it as the goal. 0 is no goal. */
   goal: number;
+  /** The most accepted tasks the daemon checks and lands together; 0 or 1, each lands singly. */
+  landBatch: number;
   /** The most trees the project keeps beside its main checkout; a claim that needs one more is refused. 0 is no bound. */
   maxTrees: number;
   /** The command that tells the owner of a notice outside the browser (a question, a failed check, a review that waits); the notice is in its environment. None named, none runs. */
@@ -65,6 +67,7 @@ export const DEFAULT_CONFIG: ProjectConfig = {
   checks: [],
   notify: "",
   maxTrees: 0,
+  landBatch: 0,
   goal: 0,
   areas: [],
 };

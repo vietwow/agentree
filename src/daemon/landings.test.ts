@@ -115,3 +115,36 @@ test("a look while a project's landings run starts none beside them", async () =
   await first;
   assert.equal(asks.length, 1);
 });
+
+test("with a batch named in the project's part, the daemon checks the accepted tasks together, each command once, and lands them together", async () => {
+  writeFileSync(join(context.places.root, CONFIG_FILE), JSON.stringify({ landBatch: 3 }));
+  const ids = [accepted("src/a.txt", ["test -f src/a.txt"]), accepted("src/b.txt", ["true"]), accepted("src/c.txt", ["true"])];
+  byHand("hand.txt");
+  const { queue, asks } = recording();
+  await runWaitingLandings("project", context, queue);
+  assert.deepEqual(ids.map(statusOf), ["done", "done", "done"]);
+  assert.deepEqual(
+    asks.map((ask) => [ask.command, ask.first, /landing-batch-\d+$/.test(ask.cwd)]),
+    [
+      ["test -f src/a.txt", true, true],
+      ["true", true, true],
+    ],
+  );
+  assert.deepEqual(
+    main("ls-files")
+      .split("\n")
+      .filter((file) => file.startsWith("src/") || file === "hand.txt"),
+    ["hand.txt", "src/a.txt", "src/b.txt", "src/c.txt"],
+  );
+  assert.match(taskOf(readBoard(context.places), ids[1]!).task.log.at(-1)!.text, /in a batch with T-0001, T-0003, picked from/);
+});
+
+test("a batch that fails is split: the daemon lands what passes alone and sends the other back with its own failure", async () => {
+  writeFileSync(join(context.places.root, CONFIG_FILE), JSON.stringify({ landBatch: 2 }));
+  const one = accepted("src/a.txt", ["test -f src/a.txt"]);
+  const two = accepted("src/b.txt", ["test ! -f src/a.txt"]);
+  const { queue } = recording();
+  await runWaitingLandings("project", context, queue);
+  assert.deepEqual([statusOf(one), statusOf(two)], ["done", "ready"]);
+  assert.match(taskOf(readBoard(context.places), two).task.log.at(-1)!.text, /Not landed: rebased on [0-9a-f]{12}, its checks fail/);
+});

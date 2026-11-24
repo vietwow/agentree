@@ -1519,6 +1519,26 @@ Proposed beyond what was asked, in the order of what they buy:
 4. **Landing in batches.** Several accepted changes checked together and
    landed together, split when the batch fails. After the single landing
    has run.
+   Off unless the project's part names `landBatch`, the most tasks of
+   one batch; with 0 or 1 every task lands singly, as above. The daemon
+   alone lands in batches, when two accepted tasks or more wait. In one
+   landing tree, at `main`, it picks each task's commits in the order
+   the tasks were accepted, each on the one before. A task is left out
+   of the batch, for its single landing to settle as it would any
+   other, when its branch is not at the commit that was reviewed, when
+   it holds files outside its paths, when its commits do not apply on
+   those before it, or when picking them changed its own diff. The
+   project's setup and the checks of every member, each command once,
+   then run once in that tree. When all pass, the batch lands under the
+   landing lock by one fast-forward, only on the `main` and the branch
+   heads it was made from, and each member's Log says the commit it
+   landed as and the tasks it landed with. When a check fails the batch
+   lands nothing and is split into its single landings, each of which
+   runs its own checks and names its own failure: the batch does not
+   tell which member broke it. When `main` or a branch moved meanwhile,
+   nothing is written and the next look tries again. A batch saves the
+   checks of its members but one run; it costs the runs of a batch that
+   fails, which are then run again singly.
 5. **Review on the diff.** A reviewer's comment on a line of the diff
    becomes a finding in the reject entry.
 6. **Keeping trees few.** A bound on trees, and removal of the trees of

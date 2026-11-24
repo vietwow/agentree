@@ -445,8 +445,14 @@ function carryOut(context: Context, id: string, plan: Plan): Landing | undefined
   const { tip, target } = plan;
   git(places.root, "merge", "--quiet", "--ff-only", target);
   const landed = git(places.root, "rev-parse", "HEAD");
-  const at = stamp(context.now());
   const note = `Landed on main as ${landed.slice(0, 12)}${target === tip ? "" : `, rebased from ${tip.slice(0, 12)}; the rebase changed nothing of its diff`}.`;
+  return { task: settleLanded(context, id, stored, submission, note), landed };
+}
+
+/** Writes a task whose change is on `main` as done, and removes what its work left: its submission, its claim, its tree, its branch. */
+function settleLanded(context: Context, id: string, stored: Stored, submission: Submission, note: string): Task {
+  const { places } = context;
+  const at = stamp(context.now());
   const task = writeTask(places, stored, moved(stored.task, "done", DAEMON, at, note), "landed").task;
   removeSubmission(places, id);
   removeClaim(places, id);
@@ -455,7 +461,124 @@ function carryOut(context: Context, id: string, plan: Plan): Landing | undefined
   tryGit(places.root, "branch", "--quiet", "-D", submission.branch);
   removeSetup(places, id);
   afterLanding(context, id, at);
-  return { task, landed };
+  return task;
+}
+
+/** A member of a batch: the task, its branch's head when the batch was made, and the commit of the batch that holds its change. */
+type Member = { id: string; tip: string; commit: string };
+
+/** Several accepted changes picked one on another in a landing tree at `main`, whose setup and checks, each command once, are still to run. */
+export type Batch = { head: string; tree: string; target: string; setup: string[]; checks: string[]; members: Member[] };
+
+/**
+ * Makes a batch of the accepted tasks, in the order they were accepted, up
+ * to a number of them: each task's commits picked on those before it, in
+ * one landing tree. A task whose single landing would not go straight to
+ * `main` is left out, for that landing to settle: its branch moved since
+ * its review, it holds files outside its paths, its commits do not apply,
+ * or picking them changed its own diff. Nothing when fewer than two fit.
+ * It writes nothing of the board.
+ */
+export function batchToLand(context: Context, most: number): Batch | undefined {
+  const { places } = context;
+  const ids = waitingToLand(context);
+  if (most < 2 || ids.length < 2) return undefined;
+  const head = git(places.root, "rev-parse", "HEAD");
+  const tree = join(places.trees, `landing-batch-${process.pid}`);
+  git(places.root, "worktree", "add", "--quiet", "--detach", tree, head);
+  const members: Member[] = [];
+  const checks: string[] = [];
+  for (const id of ids) {
+    if (members.length === most) break;
+    const { stored, submission } = acceptedOf(places, id);
+    const tip = git(places.root, "rev-parse", submission.branch);
+    const base = baseOf(places, submission.branch);
+    if (tip !== submission.commit || changedFiles(submission.tree, base).some((file) => !inScope(stored.task, file))) continue;
+    const before = git(tree, "rev-parse", "HEAD");
+    // A change that is ahead of the batch as it stands is taken as it is, with the commits that were reviewed; any other is picked on it.
+    const ahead = tryGit(places.root, "merge-base", "--is-ancestor", before, tip).status === 0;
+    const picked =
+      tryGit(tree, ...(ahead ? ["merge", "--quiet", "--ff-only", tip] : ["cherry-pick", "--allow-empty", `${base}..${tip}`])).status === 0;
+    const after = picked ? git(tree, "rev-parse", "HEAD") : before;
+    if (!picked || after === before || patchId(places.root, base, tip) !== patchId(places.root, before, after)) {
+      tryGit(tree, "cherry-pick", "--abort");
+      git(tree, "reset", "--quiet", "--hard", before);
+      continue;
+    }
+    members.push({ id, tip, commit: after });
+    for (const command of stored.task.fields.checks) if (!checks.includes(command)) checks.push(command);
+  }
+  if (members.length < 2) {
+    removeLandingTree(places, tree);
+    return undefined;
+  }
+  return { head, tree, target: git(tree, "rev-parse", "HEAD"), setup: configOf(places).setup, checks, members };
+}
+
+/**
+ * Lands a batch whose checks all passed, under the landing lock: one
+ * fast-forward of `main`, and each member done. Nothing, and nothing
+ * written, when `main`, a member's branch or a member's status moved since
+ * the batch was made.
+ */
+function carryOutBatch(context: Context, batch: Batch): Landing[] | undefined {
+  const { places } = context;
+  if (git(places.root, "rev-parse", "HEAD") !== batch.head) return undefined;
+  const found = batch.members.map((member) => {
+    const stored = taskOf(readBoard(places), member.id);
+    const submission = submissionOf(places, member.id);
+    return stored.task.fields.status === "accepted" && submission && git(places.root, "rev-parse", submission.branch) === member.tip
+      ? { member, submission }
+      : undefined;
+  });
+  if (found.some((each) => each === undefined)) return undefined;
+  git(places.root, "merge", "--quiet", "--ff-only", batch.target);
+  return found.map((each) => {
+    const { member, submission } = each!;
+    const others = batch.members.filter((other) => other.id !== member.id).map((other) => other.id);
+    const how = member.commit === member.tip ? "" : `, picked from ${member.tip.slice(0, 12)}; the pick changed nothing of its diff`;
+    const note = `Landed on main as ${member.commit.slice(0, 12)}, in a batch with ${others.join(", ")}${how}.`;
+    // Each member is read again: the landing of the one before it wrote the board.
+    return { task: settleLanded(context, member.id, taskOf(readBoard(places), member.id), submission, note), landed: member.commit };
+  });
+}
+
+/** How a batch's setup and checks are run in its tree, in that order. */
+export type RunBatch = (batch: Batch) => Promise<CheckRun[]>;
+
+/**
+ * Checks the accepted tasks together and lands them together, up to a
+ * number of them. What it gives: the tasks it landed; none when no batch
+ * was made, when a check failed, or when `main` moved meanwhile, and the
+ * tasks then land singly.
+ */
+export async function landBatchThrough(context: Context, most: number, runChecks: RunBatch): Promise<string[]> {
+  const batch = batchToLand(context, most);
+  if (!batch) return [];
+  let passed: boolean;
+  try {
+    passed = (await runChecks(batch)).every((run) => run.result === "passed");
+  } finally {
+    removeLandingTree(context.places, batch.tree);
+  }
+  if (!passed) return [];
+  const landed = whileNoOtherLands(context.places, () => carryOutBatch(context, batch));
+  return landed ? batch.members.map((member) => member.id) : [];
+}
+
+/** Lands a batch as `landBatchThrough` does, with its checks run in this process. */
+export function landBatch(context: Context, most: number): string[] {
+  const batch = batchToLand(context, most);
+  if (!batch) return [];
+  let passed: boolean;
+  try {
+    passed = runAll(context, [...batch.setup, ...batch.checks], batch.tree).every((run) => run.result === "passed");
+  } finally {
+    removeLandingTree(context.places, batch.tree);
+  }
+  if (!passed) return [];
+  const landed = whileNoOtherLands(context.places, () => carryOutBatch(context, batch));
+  return landed ? batch.members.map((member) => member.id) : [];
 }
 
 /** What a landing sets off: a parent whose parts are all done is done, and a backlog task that waited for this one alone is ready. */
