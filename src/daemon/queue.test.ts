@@ -80,3 +80,22 @@ test("bounds that make no sense are refused", () => {
   assert.throws(() => queue.setBounds({ margin: 1 }), /a share of the machine/);
   rmSync(at, { recursive: true });
 });
+
+test("the owner moves a waiting run before the others that wait", async () => {
+  const at = home();
+  const queue = createQueue({ home: at, machine: { cores: 4, memory: 8 }, loadAverage: () => 0.4 });
+  queue.setBounds({ lowest: 1, highest: 1, margin: 0 });
+  queue.read(0.1);
+  const order: string[] = [];
+  const run = (task: string) => queue.run(ask(task, "sleep 0.3")).then(() => order.push(task));
+  const all = [run("T-0001"), run("T-0002"), run("T-0003")];
+  queue.first(queue.view().queue.find((wait) => wait.task === "T-0003")!.n);
+  assert.deepEqual(
+    queue.view().queue.map((wait) => wait.task),
+    ["T-0003", "T-0002"],
+  );
+  assert.throws(() => queue.first(999), /no such run waits/);
+  await Promise.all(all);
+  assert.deepEqual(order, ["T-0001", "T-0003", "T-0002"]);
+  rmSync(at, { recursive: true });
+});

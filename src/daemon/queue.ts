@@ -54,6 +54,8 @@ export type SlotsView = {
     bound: number;
   }[];
   queue: {
+    /** Its place in the order the runs asked. */
+    n: number;
     task: string;
     by: string;
     what: Ask["what"];
@@ -211,7 +213,7 @@ export function createQueue(options: { home: string; now?: () => Date; machine?:
           })
             .then((ran) => resolve({ ...ran, waitedMs: waited > 500 ? waited : 0 }), reject)
             .finally(() => {
-              tickets.delete(n);
+              tickets.delete(ticket.n);
               turn();
             });
         };
@@ -226,6 +228,20 @@ export function createQueue(options: { home: string; now?: () => Date; machine?:
       const reading: Reading = { at: stamp(), vm: own, ...(host === undefined ? (inContainer ? {} : { host: own }) : { host }) };
       readings = [...readings, reading].slice(-SAMPLES);
       save("readings.json", readings);
+      turn();
+    },
+    /** The owner moves a waiting run before every other that waits. */
+    first(n: number) {
+      const ticket = tickets.get(n);
+      if (!ticket || ticket.startedAt) throw new Refusal("no such run waits in the queue");
+      const ahead = Math.min(...[...tickets.values()].filter((each) => !each.startedAt).map((each) => each.n));
+      if (ahead === n) return;
+      tickets.delete(n);
+      // A place before every ticket there is, running or waiting, so that it is no other's.
+      ticket.n = Math.min(...tickets.keys(), ahead) - 1;
+      tickets.set(ticket.n, ticket);
+      held.delete(n);
+      record("hold", "Moved first by the owner", ticket.task);
       turn();
     },
     setBounds(change: Partial<Bounds>) {
@@ -264,7 +280,7 @@ export function createQueue(options: { home: string; now?: () => Date; machine?:
               : /sensitive to load|Failed beside/.test(reason)
                 ? "sensitive to load"
                 : "no room";
-            return { task: t.task, by: t.by, what: t.what, command: t.command, since: t.askedAt, cost: t.cost, why, reason };
+            return { n: t.n, task: t.task, by: t.by, what: t.what, command: t.command, since: t.askedAt, cost: t.cost, why, reason };
           }),
         load: readings,
         mark: MARK,

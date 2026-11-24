@@ -34,6 +34,8 @@ type Run = {
 
 /** A run that waits for a seat, and why. */
 export type Waiting = {
+  /** Its place in the order the runs asked. */
+  n: number;
   task: string;
   by: Tool;
   what: Run["what"];

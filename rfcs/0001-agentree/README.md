@@ -547,6 +547,14 @@ requests to the daemon. The daemon holds a snapshot while the board's
 fingerprint stands, for five seconds at most. With no token, no daemon
 or no project, the page says which and what to run.
 
+What the owner does in the pages, each a request to the daemon: a new
+task (its title, kind, priority, parent, sections, paths and checks),
+an answer under a question that waits in the drawer, the release of a
+claim with no beat, a tool's switch for its own tasks, a fact edited,
+retired or put in force, the queue's number held fixed, and a waiting
+run moved first. Creating a project, the planner, and turning a
+subtask into a task or deleting it are not in the pages yet.
+
 The checks of a submit run in the daemon: on each look it starts the
 checks of every task that is `checking` and whose checks wait, each
 command through the queue, and settles the task. `agentree submit`

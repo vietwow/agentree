@@ -33,10 +33,10 @@ type Props = {
   onMove: (ids: string[], status: Status) => void;
   order: (t: Task) => number;
   onOrder: (id: string, order: number) => void;
-  onNotBuilt: (what: string) => void;
+  onNewTask: () => void;
 };
 
-export function TasksPage({ tasks, now, mode, selected, onOpen, onMove, order, onOrder, onNotBuilt }: Props) {
+export function TasksPage({ tasks, now, mode, selected, onOpen, onMove, order, onOrder, onNewTask }: Props) {
   const [view, setView] = useState<View>(() => ({ ...savedView(), ...(mode ? { mode } : {}) }));
   const [landed, setLanded] = useState<string>();
   const change = (next: View) => {
@@ -117,7 +117,7 @@ export function TasksPage({ tasks, now, mode, selected, onOpen, onMove, order, o
         title="Tasks"
         actions={
           <>
-            <Button variant="primary" icon={ic(Plus, 14)} onClick={() => onNotBuilt("Creating a task")}>
+            <Button variant="primary" icon={ic(Plus, 14)} onClick={() => onNewTask()}>
               New task
             </Button>
           </>
@@ -138,7 +138,7 @@ export function TasksPage({ tasks, now, mode, selected, onOpen, onMove, order, o
           onOpen={onOpen}
           landed={landed}
           onLanded={() => setLanded(undefined)}
-          onNotBuilt={onNotBuilt}
+          onNewTask={onNewTask}
         />
       ) : view.mode === "table" ? (
         <TaskGrid
@@ -150,7 +150,7 @@ export function TasksPage({ tasks, now, mode, selected, onOpen, onMove, order, o
           selected={selected}
           onOpen={onOpen}
           onMove={onMove}
-          onNotBuilt={onNotBuilt}
+          onNewTask={onNewTask}
           onClear={() => change({ ...view, filters: [], q: "" })}
         />
       ) : (
@@ -163,7 +163,7 @@ export function TasksPage({ tasks, now, mode, selected, onOpen, onMove, order, o
             selected={selected}
             onOpen={onOpen}
             onMove={onMove}
-            onNotBuilt={onNotBuilt}
+            onNewTask={onNewTask}
           />
         </div>
       )}

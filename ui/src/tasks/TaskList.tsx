@@ -77,12 +77,12 @@ type Props = {
   selected?: string;
   onOpen: (id: string) => void;
   onMove: (ids: string[], status: Status) => void;
-  onNotBuilt: (what: string) => void;
+  onNewTask: () => void;
 };
 
 type PopKey = `status:${string}` | `more:${string}` | "bulk";
 
-export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onMove, onNotBuilt }: Props) {
+export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onMove, onNewTask }: Props) {
   const { popped } = useTicks();
   const [sel, setSel] = useState<Set<string>>(new Set());
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
@@ -308,7 +308,7 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
                   lead={head.html}
                   actions={
                     adds && (
-                      <IconButton label={`Add task to ${head.name}`} size="xs" onClick={() => onNotBuilt("Creating a task")}>
+                      <IconButton label={`Add task to ${head.name}`} size="xs" onClick={() => onNewTask()}>
                         {ic(Plus, 13)}
                       </IconButton>
                     )
@@ -317,7 +317,7 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
               )}
               {!coll && g.tasks.map((t) => row(t, g))}
               {!coll && adds && (
-                <button type="button" className="addrow" onClick={() => onNotBuilt("Creating a task")}>
+                <button type="button" className="addrow" onClick={() => onNewTask()}>
                   {ic(Plus, 14)}Add task
                 </button>
               )}

@@ -1,6 +1,6 @@
 import { Activity, Hourglass, Pause, Play, Plus, ShieldAlert, Timer, type LucideIcon } from "lucide-react";
 
-import { slots } from "../board/daemon.ts";
+import { send, slots } from "../board/daemon.ts";
 import type { Slots, Waiting } from "../board/model.ts";
 import { TOOL_LABEL, type Task, type Tool } from "../board/task.ts";
 import { Ago } from "../design/components/Ago.tsx";
@@ -19,7 +19,6 @@ type Props = {
   tasks: Task[];
   now: Date;
   onOpenTask: (id: string) => void;
-  onNotBuilt: (what: string) => void;
 };
 
 const WHY: Record<Waiting["why"], { label: string; tone: Tone }> = {
@@ -40,7 +39,7 @@ const pct = (n: number) => `${Math.round(n * 100)}%`;
 const minutes = (from: Date, now: Date) => Math.max(1, Math.round((now.getTime() - from.getTime()) / MINUTE));
 
 /** The heavy runs of the machine: what runs in each seat, what waits and why, and why the queue decided as it did. */
-export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
+export function SlotsPage({ tasks, now, onOpenTask }: Props) {
   const s = slots();
   const title = (id: string) => tasks.find((t) => t.id === id)?.title ?? id;
   const last = s.load.at(-1) ?? { host: 0, vm: 0 };
@@ -172,7 +171,7 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                     <span className="muted">{w.reason}</span>
                   </span>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => onNotBuilt("Moving a run first")}>
+                <Button variant="ghost" size="sm" onClick={() => void send(`/api/slots/queue/${w.n}/first`)}>
                   Move first
                 </Button>
               </div>
@@ -189,7 +188,12 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
               <Bound name="Mark of the host's load" value={pct(s.mark)} />
               <label className="flex items-center gap-2 justify-between cursor-pointer">
                 <span className="muted">Hold the number fixed</span>
-                <input type="checkbox" className="toggle" checked={s.bounds.fixed} onChange={() => onNotBuilt("Holding the number fixed")} />
+                <input
+                  type="checkbox"
+                  className="toggle"
+                  checked={s.bounds.fixed}
+                  onChange={() => void send("/api/slots/bounds", { fixed: !s.bounds.fixed })}
+                />
               </label>
             </PanelBody>
           </Panel>

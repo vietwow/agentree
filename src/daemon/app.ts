@@ -225,6 +225,10 @@ export function createApp(daemon: Daemon) {
     });
     return request.json(ran);
   });
+  app.post("/api/slots/queue/:n/first", (request) => {
+    daemon.queue.first(Number(request.req.param("n")));
+    return request.json({ ok: true });
+  });
   app.post("/api/slots/bounds", async (request) => {
     daemon.queue.setBounds((await request.req.json()) as Partial<Bounds>);
     return request.json(daemon.queue.view().bounds);

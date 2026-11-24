@@ -25,7 +25,7 @@ type Props = {
   selected?: string;
   onOpen: (id: string) => void;
   onMove: (ids: string[], status: Status) => void;
-  onNotBuilt: (what: string) => void;
+  onNewTask: () => void;
   onClear: () => void;
 };
 
@@ -38,7 +38,7 @@ const SORTABLE: Partial<Record<Column, SortKey>> = {
   updated: "updated",
 };
 
-export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, onMove, onNotBuilt, onClear }: Props) {
+export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, onMove, onNewTask, onClear }: Props) {
   const pop = usePop<string>();
   const justResized = useRef(false);
   const cols = COLUMNS.filter(([c]) => c === "title" || !v.hidden.includes(c));
@@ -238,7 +238,7 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
               );
             })}
             <tr>
-              <td className="sticky cellbtn text-ink-3" colSpan={cols.length} onClick={() => onNotBuilt("Creating a task")}>
+              <td className="sticky cellbtn text-ink-3" colSpan={cols.length} onClick={() => onNewTask()}>
                 <span className="flex items-center gap-1.5">{ic(Plus, 14)}New task</span>
               </td>
             </tr>

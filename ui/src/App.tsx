@@ -28,6 +28,7 @@ import { Shortcuts } from "./shell/Shortcuts.tsx";
 import { Sidebar } from "./shell/Sidebar.tsx";
 import { useTheme } from "./shell/theme.ts";
 import { TopBar, type Crumb } from "./shell/TopBar.tsx";
+import { NewTask } from "./tasks/NewTask.tsx";
 import { TaskDrawer } from "./tasks/TaskDrawer.tsx";
 import { TasksPage } from "./tasks/TasksPage.tsx";
 import { StatusIcon } from "./ui/StatusIcon.tsx";
@@ -70,6 +71,7 @@ export function App({ projects: listed, board, onProject }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [palette, setPalette] = useState<"cmd" | "search">();
   const [shortcuts, setShortcuts] = useState(false);
+  const [newTask, setNewTask] = useState(false);
   const [shownId, setShownId] = useState<string>();
   const [closing, setClosing] = useState(false);
   const [full, setFull] = useState(false);
@@ -199,7 +201,7 @@ export function App({ projects: listed, board, onProject }: Props) {
         setPalette("search");
       } else if (event.key === "?") setShortcuts(true);
       else if (event.key === "[") toggleSide();
-      else if (key === "n") notBuilt("Creating a task");
+      else if (key === "n") setNewTask(true);
       else if (key === "p") notBuilt("Creating a project");
     };
     addEventListener("keydown", onKey);
@@ -239,7 +241,7 @@ export function App({ projects: listed, board, onProject }: Props) {
     return { key: `go-${key}`, icon: ic(icon, 15), name: `Go to ${label}`, kbd: kbd ? `G ${kbd.toUpperCase()}` : undefined, run: () => go(key) };
   });
   const commands: PaletteItem[] = [
-    { key: "c-task", icon: ic(Plus, 15), name: "Create task", kbd: "N", run: () => notBuilt("Creating a task") },
+    { key: "c-task", icon: ic(Plus, 15), name: "Create task", kbd: "N", run: () => setNewTask(true) },
     { key: "c-proj", icon: ic(FolderPlus, 15), name: "Create project", kbd: "P", run: () => notBuilt("Creating a project") },
     { key: "c-search", icon: ic(Search, 15), name: "Search workspace", kbd: "/", run: () => setTimeout(() => setPalette("search")) },
     ...goItems,
@@ -329,7 +331,7 @@ export function App({ projects: listed, board, onProject }: Props) {
       onMove={move}
       order={taskOrder}
       onOrder={(id, n) => setOrders((now) => ({ ...now, [id]: n }))}
-      onNotBuilt={notBuilt}
+      onNewTask={() => setNewTask(true)}
     />
   );
   /** The pages built so far; any other shows that it is not built yet. */
@@ -349,13 +351,13 @@ export function App({ projects: listed, board, onProject }: Props) {
     activity: () => <ActivityPage entries={activity} tasks={tasks} now={now} onOpenTask={openTask} />,
     progress: () => <ProgressPage tasks={tasks} now={now} onOpenTask={openTask} selected={selected} />,
     review: () => <ReviewPage tasks={tasks} now={now} selected={selected} onOpenTask={openTask} />,
-    agents: () => <AgentsPage tasks={tasks} now={now} onOpenTask={openTask} onNotBuilt={notBuilt} />,
+    agents: () => <AgentsPage tasks={tasks} now={now} onOpenTask={openTask} />,
     live: () => (
       <LivePage tasks={tasks} activity={activity} now={now} projects={projects} project={project} onProject={onProject} onOpenTask={openTask} />
     ),
     documents: () => <DocumentsPage tasks={tasks} onOpenTask={openTask} />,
-    slots: () => <SlotsPage tasks={tasks} now={now} onOpenTask={openTask} onNotBuilt={notBuilt} />,
-    memory: () => <MemoryPage now={now} onOpenTask={openTask} onNotBuilt={notBuilt} />,
+    slots: () => <SlotsPage tasks={tasks} now={now} onOpenTask={openTask} />,
+    memory: () => <MemoryPage now={now} onOpenTask={openTask} />,
     numbers: () => <NumbersPage tasks={tasks} now={now} onOpenTask={openTask} />,
     tasks: tasksPage,
     board: tasksPage,
@@ -373,7 +375,7 @@ export function App({ projects: listed, board, onProject }: Props) {
             onMenu={() => setMenuOpen(true)}
             onSearch={() => setPalette("cmd")}
             onNotices={() => go("inbox")}
-            onNewTask={() => notBuilt("Creating a task")}
+            onNewTask={() => setNewTask(true)}
             onNewProject={() => notBuilt("Creating a project")}
             onPlan={() => notBuilt("The planner")}
             owner={owner}
@@ -430,6 +432,7 @@ export function App({ projects: listed, board, onProject }: Props) {
           ]}
         />
       )}
+      {newTask && <NewTask onClose={() => setNewTask(false)} />}
       {shortcuts && <Shortcuts onClose={() => setShortcuts(false)} />}
     </>
   );

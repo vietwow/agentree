@@ -1,7 +1,21 @@
-import { Archive, BookMarked, Brain, Clock, FileText, Handshake, Lightbulb, Pencil, Search, TriangleAlert, type LucideIcon } from "lucide-react";
+import {
+  Archive,
+  BookMarked,
+  Brain,
+  Check,
+  Clock,
+  FileText,
+  Handshake,
+  Lightbulb,
+  Pencil,
+  Search,
+  TriangleAlert,
+  type LucideIcon,
+} from "lucide-react";
 import { useState } from "react";
-import { board } from "../board/daemon.ts";
+import { board, send } from "../board/daemon.ts";
 import type { Fact } from "../board/model.ts";
+import { EditFact } from "./EditFact.tsx";
 import { TOOL_LABEL } from "../board/task.ts";
 import { Ago } from "../design/components/Ago.tsx";
 import { Badge, type Tone } from "../design/components/Badge.tsx";
@@ -38,11 +52,11 @@ type Props = {
   query?: string;
   now: Date;
   onOpenTask: (id: string) => void;
-  onNotBuilt: (what: string) => void;
 };
 
 /** The facts of `work/memory/`: what every session is told, and what it may recall. */
-export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
+export function MemoryPage({ query = "", now, onOpenTask }: Props) {
+  const [editing, setEditing] = useState<Fact>();
   const { facts } = board();
   const [kind, setKind] = useState<Kind | "all">("all");
   const [q, setQ] = useState(query);
@@ -116,14 +130,24 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
                 <span className="mono trunc">work/memory/{f.file}.md</span>
                 <span className="flex-1" />
                 {f.state === "proposed" ? (
-                  <span className="pr-2 whitespace-nowrap">Accepted with {f.task}'s review</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => void send(`/api/projects/${board().project.id}/memory/${f.file}`, { accept: true })}
+                  >
+                    {ic(Check, 13)}Put in force
+                  </Button>
                 ) : (
                   f.state === "in-force" && (
                     <>
-                      <Button variant="ghost" size="sm" onClick={() => onNotBuilt("Editing a fact")}>
+                      <Button variant="ghost" size="sm" onClick={() => setEditing(f)}>
                         {ic(Pencil, 13)}Edit
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => onNotBuilt("Retiring a fact")}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => void send(`/api/projects/${board().project.id}/memory/${f.file}`, { retire: true })}
+                      >
                         {ic(Archive, 13)}Retire
                       </Button>
                     </>
@@ -237,6 +261,7 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
       ) : (
         <Empty icon={Brain} title="No fact found" text="Nothing in work/memory/ matches the search." />
       )}
+      {editing && <EditFact fact={editing} onClose={() => setEditing(undefined)} />}
     </Page>
   );
 }

@@ -1,31 +1,13 @@
-import {
-  ChevronRight,
-  CircleAlert,
-  CircleCheck,
-  CircleDot,
-  Clock,
-  Ellipsis,
-  Folder,
-  GitBranch,
-  Link,
-  Maximize2,
-  MessageCircleQuestion,
-  Minimize2,
-  SignalHigh,
-  Star,
-  Tag,
-  User,
-  X,
-} from "lucide-react";
+import { ChevronRight, CircleCheck, CircleDot, Clock, Ellipsis, Folder, GitBranch, Link, Maximize2, MessageCircleQuestion, Minimize2, SignalHigh, Star, Tag, User, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { send } from "../board/daemon.ts";
 import { toggleStar, useStars } from "../board/favorites.ts";
 import type { Project } from "../board/projects.ts";
 import { isStale, openQuestions, partsOf } from "../board/summary.ts";
 import { KIND_LABEL, STATUS_LABEL, TOOL_LABEL, type Status, type Task, type TaskDetail } from "../board/task.ts";
 import { useTicks } from "../board/ticks.ts";
 import { Ago } from "../design/components/Ago.tsx";
-import { Badge } from "../design/components/Badge.tsx";
-import { IconButton } from "../design/components/Button.tsx";
+import { Button, IconButton } from "../design/components/Button.tsx";
 import { ic } from "../design/components/icon.tsx";
 import { KeyValues } from "../design/components/KeyValues.tsx";
 import { MenuItem, MenuSeparator } from "../design/components/Menu.tsx";
@@ -182,7 +164,17 @@ export function TaskDrawer(props: Props) {
               ) : stale ? (
                 <div className="alert danger mb-3">
                   {ic(Clock, 15)}
-                  <span>No beat from its worker in over 30 minutes.</span>
+                  <span className="flex-1">No beat from its worker in over 30 minutes.</span>
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      void send(`/api/projects/${project.id}/tasks/${t.id}/release`, {
+                        why: "Released by the owner: no beat from its worker in over 30 minutes.",
+                      })
+                    }
+                  >
+                    Release it
+                  </Button>
                 </div>
               ) : asking > 0 ? (
                 <div className="alert warn mb-3">
@@ -348,9 +340,7 @@ export function TaskDrawer(props: Props) {
                             <b>You</b> {q.answer}
                           </div>
                         ) : (
-                          <Badge tone="bad" className="mt-1.5" icon={ic(CircleAlert, 12)}>
-                            Waiting for you
-                          </Badge>
+                          <Answer project={project.id} task={t.id} question={i + 1} />
                         )}
                       </div>
                     </div>
@@ -457,5 +447,32 @@ export function TaskDrawer(props: Props) {
         </Pop>
       )}
     </>
+  );
+}
+
+/** The owner's answer to a question that waits: written under it on the card by the daemon. */
+function Answer({ project, task, question }: { project: string; task: string; question: number }) {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const answer = async () => {
+    setBusy(true);
+    await send(`/api/projects/${project}/tasks/${task}/answer`, { question, text });
+    setBusy(false);
+  };
+  return (
+    <div className="flex flex-col gap-1.5 mt-1.5">
+      <textarea
+        className="textarea"
+        value={text}
+        placeholder="Your answer"
+        aria-label={`Answer to question ${question}`}
+        onChange={(event) => setText(event.target.value)}
+      />
+      <div className="flex">
+        <Button variant="primary" size="sm" disabled={busy || text.trim() === ""} onClick={() => void answer()}>
+          Answer
+        </Button>
+      </div>
+    </div>
   );
 }

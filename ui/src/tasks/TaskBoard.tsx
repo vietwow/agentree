@@ -24,10 +24,10 @@ type Props = Open & {
   /** The card just dropped, which lands with gr8r's motion. */
   landed?: string;
   onLanded: () => void;
-  onNotBuilt: (what: string) => void;
+  onNewTask: () => void;
 };
 
-export function TaskBoard({ tasks, all, now, selected, onOpen, landed, onLanded, onNotBuilt }: Props) {
+export function TaskBoard({ tasks, all, now, selected, onOpen, landed, onLanded, onNewTask }: Props) {
   return (
     <div className="flex min-h-0 flex-1 items-start gap-3 overflow-x-auto pt-3.5 px-(--gutter) pb-6">
       {COLUMNS.map((status, index) => (
@@ -42,7 +42,7 @@ export function TaskBoard({ tasks, all, now, selected, onOpen, landed, onLanded,
           onOpen={onOpen}
           landed={landed}
           onLanded={onLanded}
-          onNotBuilt={onNotBuilt}
+          onNewTask={onNewTask}
         />
       ))}
     </div>
@@ -59,7 +59,7 @@ function Column({
   onOpen,
   landed,
   onLanded,
-  onNotBuilt,
+  onNewTask,
 }: Omit<Props, "tasks"> & { index: number; status: Status; tasks: Task[] }) {
   const working = [...new Set(tasks.filter(isClaimed).map((t) => t.holder!.tool))] as Tool[];
 
@@ -88,7 +88,7 @@ function Column({
               type="button"
               aria-label={`New task in ${STATUS_LABEL[status]}`}
               title={`New task in ${STATUS_LABEL[status]}`}
-              onClick={() => onNotBuilt("Creating a task")}
+              onClick={() => onNewTask()}
               className="inline-flex size-7 items-center justify-center rounded-md text-ink-4 transition-colors hover:bg-surface-3 hover:text-ink"
             >
               <Plus size={16} aria-hidden />

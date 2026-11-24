@@ -1,6 +1,6 @@
 import { Check, Clock, CornerDownRight, Minus, Network, Plug, Webhook } from "lucide-react";
 import { useState } from "react";
-import { board } from "../board/daemon.ts";
+import { board, send } from "../board/daemon.ts";
 import type { AgentSession, AgentState } from "../board/model.ts";
 import { TOOL_LABEL, TOOLS, type Task, type Tool } from "../board/task.ts";
 import { Ago } from "../design/components/Ago.tsx";
@@ -30,11 +30,10 @@ type Props = {
   tasks: Task[];
   now: Date;
   onOpenTask: (id: string) => void;
-  onNotBuilt: (what: string) => void;
 };
 
 /** The sessions of each tool and the subagents they started, as the tools' hooks and their calls of the board tell them. */
-export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
+export function AgentsPage({ tasks, now, onOpenTask }: Props) {
   const { sessions, tools } = board();
   const [closed, setClosed] = useState<Record<string, boolean>>({});
   const title = (id: string) => tasks.find((t) => t.id === id)?.title ?? id;
@@ -241,7 +240,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                         type="checkbox"
                         className="toggle"
                         checked={t.reviewsOwn}
-                        onChange={() => onNotBuilt("Changing a tool's switch")}
+                        onChange={() => void send(`/api/projects/${board().project.id}/options`, { tool: t.tool, reviewOwnTasks: !t.reviewsOwn })}
                         aria-label={`${TOOL_LABEL[t.tool]} may review its own tasks`}
                       />
                     </td>

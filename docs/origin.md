@@ -91,3 +91,18 @@ impossible rather than repeat their fixes.
 13. **A bounded wait that regresses hangs the test run.** The lock's
     waits are a synchronous loop that the test runner's timeout cannot
     stop; such a case belongs in a child process with a timeout.
+14. **The landing becomes the board's bottleneck.** With about eighteen
+    builders and four slots for heavy checks, 21 accepted tasks waited to
+    land on 2026-11-24. Almost every accepted branch was stale, so each
+    landing rebased it and ran its checks again while it held the
+    landing lock, and those checks waited in the slot queue behind every
+    submit's (four slots held by checks of 40 to 73 minutes, twelve
+    tickets waiting). Claims whose paths met an accepted, unlanded tree
+    were refused, so builders stopped with nothing to take. The answers
+    there are T-1088 (a landing rebases, installs and checks before it
+    takes the lock; under the lock it confirms `main` has not moved and
+    fast-forwards, or starts again) and T-1115 (a landing's checks take
+    the next free slot before any submit's). Here, `land` in
+    `src/core/board/lifecycle.ts` runs `runAll` inside
+    `whileNoOtherLands`, outside the daemon's queue: both answers apply
+    once they are built there.
