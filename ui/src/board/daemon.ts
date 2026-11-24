@@ -23,7 +23,7 @@ export type Board = {
   activity: ActivityEntry[];
   numbers: Numbers;
   /** What the owner set on the project. */
-  options: { releaseStale: boolean };
+  options: { releaseStale: boolean; goal: number };
   milestones: Milestone[];
   facts: Fact[];
   docs: Doc[];

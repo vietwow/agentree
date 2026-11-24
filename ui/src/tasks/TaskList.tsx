@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toggleStar, useStars } from "../board/favorites.ts";
-import { parentTitles } from "../board/daemon.ts";
+import { board, parentTitles } from "../board/daemon.ts";
 import { openQuestions, partsOf } from "../board/summary.ts";
 import { KIND_LABEL, STATUS_LABEL, TOOL_LABEL, type Status, type Task } from "../board/task.ts";
 import { useTicks } from "../board/ticks.ts";
@@ -412,7 +412,7 @@ function TaskMenu({
       <MenuItem icon={Star} onClick={() => toast(toggleStar(`task:${t.id}`) ? "Added to favorites" : "Removed from favorites", { ms: 1800 })}>
         {starred ? "Remove from favorites" : "Add to favorites"}
       </MenuItem>
-      <MenuItem icon={Link} onClick={() => copy(`${location.origin}/task/${t.id}`)}>
+      <MenuItem icon={Link} onClick={() => copy(`${location.origin}/project/${board().project.id}/task/${t.id}`)}>
         Copy link
       </MenuItem>
     </>

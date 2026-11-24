@@ -3,7 +3,7 @@ import { DAY, HOUR } from "../design/format/time.ts";
 import type { ActivityEntry } from "./activity.ts";
 import { board, detail } from "./daemon.ts";
 import type { AgentSession } from "./model.ts";
-import { isStale, openQuestions, startOfDay, totals } from "./summary.ts";
+import { openQuestions, startOfDay, totals } from "./summary.ts";
 import type { Status, Task, Tool } from "./task.ts";
 
 /** A file of an area as the board marks it; "main" is a file no task holds, checks, landed or wants. */
@@ -54,27 +54,33 @@ export function markCounts(areas: readonly FileArea[]): Record<FileMark, number>
   return n;
 }
 
-/** The hours a held task is estimated to need before it lands, from where it is now. */
+/** The statuses a held task goes through before it lands, in their order. */
+const TO_LAND: Status[] = ["in-progress", "checking", "review", "accepted"];
+
+/**
+ * The hours a held task is estimated to need before it lands: what is left of
+ * the middle time this project's tasks stayed in its status, and the middle
+ * time of each status after it. A project where a status has no such time
+ * yet gives no estimate for a task that has to go through it.
+ */
 function hoursToLand(t: Task, now: Date): number | undefined {
-  const open = t.subtasks.filter((s) => !s.done).length;
-  switch (t.status) {
-    case "accepted":
-      return 1;
-    case "review":
-      return 2;
-    case "checking":
-      return t.checks.state === "queued" ? 4 : 3;
-    case "in-progress":
-      return 2 + 2 * open + (isStale(t, now) ? 4 : 0) + (t.holder?.tool === "person" ? 2 : 0);
-    default:
-      return undefined;
+  const from = TO_LAND.indexOf(t.status);
+  if (from < 0) return undefined;
+  const middle = new Map(board().numbers.timeIn.map((each) => [each.status, each.medianMs]));
+  let left = 0;
+  for (const status of TO_LAND.slice(from)) {
+    const usual = middle.get(status);
+    if (usual === undefined) return undefined;
+    left += status === t.status ? Math.max(0, usual - (now.getTime() - t.statusSince.getTime())) : usual;
   }
+  return left / HOUR;
 }
 
 export type Forecast = {
   hours: Date[];
   withAgents: number[];
   without: number[];
+  /** The owner's goal of open tasks; 0 when the project names none. */
   goal: number;
   /** The tasks the agents hold; the people's own land with or without them. */
   held: number;
@@ -86,7 +92,7 @@ export type Forecast = {
 
 export function forecast(tasks: readonly Task[], now: Date, span: 12 | 24): Forecast {
   const open = totals(tasks).open;
-  const held = tasks.filter((t) => t.parent !== undefined && hoursToLand(t, now) !== undefined);
+  const held = tasks.filter((t) => hoursToLand(t, now) !== undefined);
   const step = span === 12 ? 1 : 2;
   const hours = Array.from({ length: 13 }, (_, i) => new Date(now.getTime() + i * step * HOUR));
   const landed = (h: number, of = held) => of.filter((t) => hoursToLand(t, now)! <= h).length;
@@ -112,7 +118,7 @@ export function forecast(tasks: readonly Task[], now: Date, span: 12 | 24): Fore
       what: e.reviewed === e.n ? ("reviewed" as const) : e.reviewed === 0 ? ("claims" as const) : ("tasks" as const),
     }));
   const lands = hours.map((_, i) => held.filter((t) => Math.ceil(hoursToLand(t, now)! / step) === i));
-  return { hours, withAgents, without, held: held.length - byPeople.length, goal: 15, lands, marks };
+  return { hours, withAgents, without, held: held.length - byPeople.length, goal: board().options.goal, lands, marks };
 }
 
 /** The last fourteen days of a number, oldest first. */

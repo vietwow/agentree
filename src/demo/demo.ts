@@ -202,7 +202,7 @@ function stateOf(places: Places, row: Row, detail: TaskDetail, now: Date, sessio
 function mainFiles(rows: Row[], details: Map<string, TaskDetail>): Record<string, string> {
   const files: Record<string, string> = {
     "CHANGELOG.md": "# Changelog\n",
-    [CONFIG_FILE]: `${JSON.stringify({ areas: FILE_AREAS.map(({ path, name }) => ({ path, name })) }, null, 2)}\n`,
+    [CONFIG_FILE]: `${JSON.stringify({ goal: 15, areas: FILE_AREAS.map(({ path, name }) => ({ path, name })) }, null, 2)}\n`,
   };
   for (const doc of DOCS) {
     const front = [

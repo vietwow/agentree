@@ -163,7 +163,7 @@ export function createApp(daemon: Daemon) {
       details: Object.fromEntries(board.tasks.map((stored) => [stored.task.fields.id, taskDetailView(board, stored.task, now)])),
       activity: activityView(board),
       numbers: numbersView(board, now),
-      options: readOptions(board.places),
+      options: { ...readOptions(board.places), goal: configOf(board.places).goal },
       milestones: milestonesView(board),
       facts: readMemory(board.places).facts,
       documents: documentsView(board.places),

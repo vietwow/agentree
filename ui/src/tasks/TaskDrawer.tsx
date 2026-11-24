@@ -107,7 +107,7 @@ export function TaskDrawer(props: Props) {
 
   const closeSub = useCallback(() => setSub(undefined), []);
   const star = () => toast(toggleStar(`task:${t.id}`) ? "Added to favorites" : "Removed from favorites", { ms: 1800 });
-  const link = () => copy(`${location.origin}/task/${t.id}`);
+  const link = () => copy(`${location.origin}/project/${project.id}/task/${t.id}`);
   const prop = (icon: ReactNode, label: string, value: ReactNode) => (
     <>
       <dt>

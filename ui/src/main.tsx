@@ -18,7 +18,8 @@ const TROUBLES: Record<Trouble, [string, string]> = {
 
 /** The pages once the daemon gave its first read; before it, or without it, what is missing and what to run. */
 function Root() {
-  const [project, setProject] = useState<string>();
+  // An address names a project, and a task of it: `/project/<id>` and `/project/<id>/task/<T-NNNN>`.
+  const [project, setProject] = useState<string | undefined>(() => /^\/project\/([^/]+)/.exec(location.pathname)?.[1]);
   const daemon = useDaemon(project);
   if (!daemon) return null;
   if ("trouble" in daemon) {

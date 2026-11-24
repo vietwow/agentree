@@ -186,11 +186,15 @@ function Chart({ f, onTip }: { f: Forecast; onTip: (tip?: Tip) => void }) {
                 {v}
               </text>
             ))}
-            <rect className="home-band" x={PAD.l} y={goal} width={w - PAD.l - PAD.r} height={base - goal} />
-            <line className="home-goal" x1={PAD.l} x2={w - PAD.r} y1={goal} y2={goal} />
-            <text className="home-band-t" x={PAD.l + 10} y={goal + 19}>
-              Goal zone, under {f.goal} open
-            </text>
+            {f.goal > 0 && (
+              <>
+                <rect className="home-band" x={PAD.l} y={goal} width={w - PAD.l - PAD.r} height={base - goal} />
+                <line className="home-goal" x1={PAD.l} x2={w - PAD.r} y1={goal} y2={goal} />
+                <text className="home-band-t" x={PAD.l + 10} y={goal + 19}>
+                  Goal zone, under {f.goal} open
+                </text>
+              </>
+            )}
             {f.hours.map((_, i) =>
               i === 0 ? null : (
                 <rect
@@ -312,6 +316,7 @@ export function HomePage({ project, sample, tasks, activity, now, onOpenTask, on
 
   const end = f.withAgents.length - 1;
   const under = f.withAgents.findIndex((v) => v < f.goal);
+  const underWithout = f.without.findIndex((v) => v < f.goal);
   const byAgents = f.without[end]! - f.withAgents[end]!;
 
   const [chartKey, setChartKey] = useState(0);
@@ -428,7 +433,11 @@ export function HomePage({ project, sample, tasks, activity, now, onOpenTask, on
             <div className="home-ph">
               <div>
                 <h2>Open tasks, next {span} hours</h2>
-                <p>Each bar is the gap the {f.held} tasks the agents hold close</p>
+                <p>
+                  {f.held
+                    ? `Estimated from this project's own times: the gap the ${count(f.held, "task")} the agents hold close`
+                    : "No estimate yet: it needs tasks of this project that have landed"}
+                </p>
               </div>
               <div className="home-chart-tools">
                 <ul className="home-legend">
@@ -487,8 +496,14 @@ export function HomePage({ project, sample, tasks, activity, now, onOpenTask, on
                     Under goal from
                   </div>
                   <div className="home-stat-v green">
-                    <b>{under < 0 ? "Never" : clock(f.hours[under]!)}</b>
-                    <span>never without them</span>
+                    <b>{f.goal === 0 ? "No goal" : under < 0 ? "Not yet" : clock(f.hours[under]!)}</b>
+                    <span>
+                      {f.goal === 0
+                        ? "none is set"
+                        : underWithout < 0
+                          ? "not within these hours without them"
+                          : `${clock(f.hours[underWithout]!)} without them`}
+                    </span>
                   </div>
                 </div>
               </div>

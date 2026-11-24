@@ -152,6 +152,16 @@ export function App({ projects: listed, board, onProject }: Props) {
     }
   }, []);
 
+  // The task an address names is opened once, and the address is the app's own again.
+  useEffect(() => {
+    const named = /^\/project\/[^/]+(?:\/task\/(T-\d+))?/.exec(location.pathname);
+    if (!named) return;
+    if (named[1] && board.tasks.some((task) => task.id === named[1])) setShownId(named[1]);
+    history.replaceState(null, "", "/");
+    // Read once, with the first board: a later board is the same project's.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const openTask = (id: string) => {
     if (id === shownId && !closing) {
       closePanel();
