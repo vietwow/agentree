@@ -33,7 +33,7 @@ export type Checks = { commit: string; state: "queued" | "running" | "finished";
 /** How the setup of a task's tree went: the commands that make it runnable, run at its claim; while it runs, the process that runs it. */
 export type Setup = { state: "waiting" | "running" | "done" | "failed"; output: string; runner?: Runner };
 
-type Kind = "claims" | "reviews" | "submissions" | "checks" | "setups";
+type Kind = "claims" | "reviews" | "submissions" | "checks" | "setups" | "comments";
 
 const directory = (places: Places, kind: Kind) => join(places.state, kind);
 const fileOf = (places: Places, kind: Kind, id: string) => join(directory(places, kind), `${id}.json`);
@@ -92,6 +92,13 @@ export const putClaim = (places: Places, id: string, claim: Claim) => put(places
 export const submissionOf = (places: Places, id: string) => read<Submission>(places, "submissions", id);
 export const putSubmission = (places: Places, id: string, submission: Submission) => put(places, "submissions", id, submission);
 export const removeSubmission = (places: Places, id: string) => rmSync(fileOf(places, "submissions", id), { force: true });
+
+/** A comment on a line of a task's diff, made while it is in review. */
+export type Comment = { file: string; line: number; text: string; by: string; at: string };
+
+export const commentsOf = (places: Places, id: string) => read<Comment[]>(places, "comments", id) ?? [];
+export const putComments = (places: Places, id: string, comments: Comment[]) => put(places, "comments", id, comments);
+export const removeComments = (places: Places, id: string) => rmSync(fileOf(places, "comments", id), { force: true });
 
 export const setupOf = (places: Places, id: string) => read<Setup>(places, "setups", id);
 export const putSetup = (places: Places, id: string, setup: Setup) => put(places, "setups", id, setup);

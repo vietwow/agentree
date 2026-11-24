@@ -22,6 +22,8 @@ import {
   putChecks,
   putSubmission,
   removeClaim,
+  commentsOf,
+  removeComments,
   removeReview,
   removeSetup,
   removeSubmission,
@@ -139,7 +141,12 @@ export function checksToRun(context: Context, id: string, role: "daemon" | "comm
   const { task } = taskOf(readBoard(context.places), id);
   const submission = submissionOf(context.places, id);
   if (task.fields.status !== "checking" || !submission) throw new Refusal(`${id} is ${task.fields.status}; its checks run while it is checking`);
-  putChecks(context.places, id, { commit: submission.commit, state: "running", runs: [], runner: role === "daemon" ? thisRunner(role) : thisRunner(role, task.fields.checks.length * BOUND_MS) });
+  putChecks(context.places, id, {
+    commit: submission.commit,
+    state: "running",
+    runs: [],
+    runner: role === "daemon" ? thisRunner(role) : thisRunner(role, task.fields.checks.length * BOUND_MS),
+  });
   return { task, tree: submission.tree };
 }
 
@@ -220,6 +227,11 @@ export function accept(context: Context, actor: Actor, id: string, entry: string
   if (entry.trim() === "") throw new Refusal("an acceptance says what was read and which checks were run again; it is empty");
   return fromItsRead(() => {
     const { stored } = deciding(context, actor, id, readBoard(context.places));
+    const comments = commentsOf(context.places, id);
+    if (comments.length)
+      throw new Refusal(
+        `${id} has ${comments.length} ${comments.length === 1 ? "comment" : "comments"} on its diff: reject it with them, or remove them, before it is accepted`,
+      );
     const task = writeTask(context.places, stored, moved(stored.task, "accepted", worker(actor), stamp(context.now()), entry), "accepted").task;
     removeReview(context.places, id);
     return task;
@@ -228,10 +240,14 @@ export function accept(context: Context, actor: Actor, id: string, entry: string
 
 /** Rejects a reviewed task with findings, each checkable; it is ready again, with its tree and branch kept. */
 export function reject(context: Context, actor: Actor, id: string, findings: string): Task {
-  if (findings.trim() === "") throw new Refusal("a rejection names its findings, each one checkable; it is empty");
+  // A comment on a line of the diff is a finding: the entry holds each after the findings given in words.
+  const comments = commentsOf(context.places, id);
+  const whole = [findings.trim(), ...comments.map((each) => `- \`${each.file}:${each.line}\`: ${each.text}`)].filter(Boolean).join("\n");
+  if (whole === "") throw new Refusal("a rejection names its findings, each one checkable; it is empty");
   return fromItsRead(() => {
     const { stored, submission } = deciding(context, actor, id, readBoard(context.places));
-    const task = writeTask(context.places, stored, moved(stored.task, "ready", worker(actor), stamp(context.now()), findings), "rejected").task;
+    const task = writeTask(context.places, stored, moved(stored.task, "ready", worker(actor), stamp(context.now()), whole), "rejected").task;
+    removeComments(context.places, id);
     removeReview(context.places, id);
     removeSubmission(context.places, id);
     tryGit(context.places.root, "worktree", "unlock", submission.tree);
@@ -287,9 +303,7 @@ export const LANDING_ATTEMPTS = 3;
  * branch head it read: the commit to land, or where the task goes instead.
  */
 type Plan = { head: string; tip: string } & (
-  | { to: "done"; target: string }
-  | { to: "ready"; why: string }
-  | { to: "review"; target: string; why: string }
+  { to: "done"; target: string } | { to: "ready"; why: string } | { to: "review"; target: string; why: string }
 );
 
 /** A change rebased on `main` in a landing tree of its own, whose setup (the project's, which makes a tree runnable) and checks are still to run. */

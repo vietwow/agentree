@@ -13,7 +13,10 @@ import { acceptFact, editFact, readMemory, remember, type NewFact } from "../cor
 import { readOptions, setReleaseStale, setReviewOwnTasks } from "../core/board/options.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
 import { existsSync } from "node:fs";
+import { comment, diffOf, uncomment } from "../core/board/comments.ts";
 import { CONFIG_FILE, configOf } from "../core/board/config.ts";
+import { reject } from "../core/board/lifecycle.ts";
+import { commentsOf } from "../core/board/state.ts";
 import { treeOf } from "../core/board/places.ts";
 import { writeRecord, type Reading } from "../core/clone/records.ts";
 import { Refusal } from "../core/errors.ts";
@@ -176,6 +179,10 @@ export function createApp(daemon: Daemon) {
     const board = readBoard(contextOf(request).places);
     return request.json(taskDetailView(board, taskOf(board, request.req.param("task")).task, daemon.now()));
   });
+  app.get("/api/projects/:project/tasks/:task/diff", (request) => {
+    const { places } = contextOf(request);
+    return request.json({ files: diffOf(places, request.req.param("task")), comments: commentsOf(places, request.req.param("task")) });
+  });
   app.get("/api/projects/:project/files", (request) => request.json(filesView(readBoard(contextOf(request).places))));
   app.get("/api/projects/:project/memory", (request) => request.json(readMemory(contextOf(request).places).facts));
   app.get("/api/projects/:project/documents", (request) => request.json(documentsView(contextOf(request).places)));
@@ -214,6 +221,10 @@ export function createApp(daemon: Daemon) {
       tick: () => tick(context, OWNER, id, Number(body.subtask), body.done !== false),
       answer: () => answer(context, OWNER, id, String(body.text ?? ""), body.question === undefined ? undefined : Number(body.question)),
       release: () => release(context, OWNER, id, String(body.why ?? ""), { blocked: body.blocked === true }),
+      // Review on the diff: the owner's comment on a line, its removal, and the rejection that writes each as a finding.
+      comment: () => comment(context, OWNER, id, { file: String(body.file ?? ""), line: Number(body.line), text: String(body.text ?? "") }),
+      uncomment: () => uncomment(context, OWNER, id, Number(body.comment)),
+      reject: () => reject(context, OWNER, id, String(body.findings ?? "")),
     };
     const action = actions[request.req.param("action")];
     if (!action) return request.json({ error: `"${request.req.param("action")}" is nothing the owner does to a task here` }, 404);

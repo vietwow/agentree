@@ -32,7 +32,9 @@ import { setUpTree } from "../core/board/setup.ts";
 import { claims, ownerToken, setupOf } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
 import { comparePart } from "../clone/compare.ts";
+import { comment, diffOf, uncomment } from "../core/board/comments.ts";
 import { CONFIG_FILE, configOf, type CloneConfig } from "../core/board/config.ts";
+import { commentsOf } from "../core/board/state.ts";
 import type { Element } from "../core/clone/record.ts";
 import { writeRecord } from "../core/clone/records.ts";
 import { partTasks } from "../core/clone/tasks.ts";
@@ -83,6 +85,8 @@ const USAGE = `Usage: agentree <subcommand> [options]
   reject T-NNNN < findings.md           ready again, with the findings
   land [T-NNNN]                         land an accepted task on main, or each that waits, in turn
   option review-own-tasks <tool> on|off (the owner's)
+  diff T-NNNN                           what a task in review changed, and the comments on its lines
+  comment T-NNNN --file <path> --line <n>   comment a line of the diff, its words on standard input; --remove <n> takes one back
   trees [--sweep]                      the trees of the project; with --sweep, remove those of done and dropped tasks
   option release-stale on|off          whether the daemon releases a claim that went stale (the owner's)
   move T-NNNN backlog|ready|dropped     (the owner's)
@@ -132,6 +136,9 @@ function given() {
         goal: { type: "string" },
         state: { type: "string" },
         base: { type: "string" },
+        file: { type: "string" },
+        line: { type: "string" },
+        remove: { type: "string" },
         sweep: { type: "boolean" },
         to: { type: "string" },
         clone: { type: "string" },
@@ -438,9 +445,22 @@ const COMMANDS: Record<string, () => unknown> = {
     accept(at, actor(at), id(), stdin("the review"));
     say(`${id()} is accepted; it waits for its turn to land`);
   },
+  diff() {
+    const at = context();
+    const comments = commentsOf(at.places, id());
+    for (const file of diffOf(at.places, id())) say(file.patch);
+    comments.forEach((each, index) => say(`comment ${index + 1}, ${each.by}, ${each.file}:${each.line}: ${each.text}`));
+  },
+  comment() {
+    const at = context();
+    if (values.remove) return say(`${uncomment(at, actor(at), id(), Number(values.remove) - 1).length} comments are left on ${id()}`);
+    const all = comment(at, actor(at), id(), { file: values.file ?? "", line: Number(values.line), text: stdin("the comment") });
+    say(`comment ${all.length} is on ${values.file}:${values.line}; a rejection of ${id()} writes it as a finding`);
+  },
   reject() {
     const at = context();
-    reject(at, actor(at), id(), stdin("the findings"));
+    // A reviewer whose findings are all comments on the diff gives no more words.
+    reject(at, actor(at), id(), process.stdin.isTTY ? "" : readFileSync(0, "utf8"));
     say(`${id()} is ready again, with the findings in its Log`);
   },
   land() {

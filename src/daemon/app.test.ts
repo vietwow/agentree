@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, test } from "node:test";
 import { claim, type Context } from "../core/board/actions.ts";
-import { ask } from "../core/board/actions.ts";
+import { ask, log } from "../core/board/actions.ts";
+import { check, commit, submit } from "../core/board/lifecycle.ts";
 import { CODEX, project, type Project } from "../core/board/testing.ts";
 import { register } from "../core/machine/projects.ts";
 import { createApp, createEvents, type Change } from "./app.ts";
@@ -216,4 +217,33 @@ test("a browser's extension is let through for a record alone, and only with the
   assert.equal((await from("/api/projects/project/records", undefined)).status, 403);
   assert.equal((await from("/api/projects/project/tasks", TOKEN)).status, 403);
   assert.equal((await from("/api/projects/project/board", TOKEN, "GET")).status, 403);
+});
+
+test("the owner reads the diff of a task in review, comments its lines, and rejects it with them as findings", async () => {
+  await post("/api/projects/project/tasks", NEW);
+  const { claim: held } = claim(context, CODEX, "T-0001");
+  mkdirSync(join(held.tree, "src"), { recursive: true });
+  writeFileSync(join(held.tree, "src/a.ts"), "export const a = 1;\n");
+  commit(context, CODEX, "T-0001", "The change");
+  log(context, CODEX, "T-0001", "Did: it.");
+  assert.equal(
+    (await app.request("/api/projects/project/tasks/T-0001/diff", { headers })).status,
+    409,
+    "a task that is not in review has no diff to read here",
+  );
+  submit(context, CODEX, "T-0001");
+  check(context, "T-0001");
+  assert.equal(
+    (await post("/api/projects/project/tasks/T-0001/comment", { file: "src/a.ts", line: 1, text: "Name it for what it is." })).status,
+    200,
+  );
+  assert.equal((await post("/api/projects/project/tasks/T-0001/comment", { file: "src/a.ts", line: 7, text: "No such line." })).status, 409);
+  const read = await get("/api/projects/project/tasks/T-0001/diff");
+  assert.deepEqual(
+    [read.files.map((file: { path: string }) => file.path), read.comments.map((each: { line: number; by: string }) => [each.line, each.by])],
+    [["src/a.ts"], [[1, "person/owner"]]],
+  );
+  assert.equal((await post("/api/projects/project/tasks/T-0001/reject", {})).status, 200);
+  const detail = await get("/api/projects/project/tasks/T-0001");
+  assert.equal(detail.status ?? (await get("/api/projects/project/board")).tasks[0].status, "ready");
 });

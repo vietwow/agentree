@@ -13,6 +13,7 @@ import { reportSession } from "../core/board/sessions.ts";
 import { claimOf, claims } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
 import { comparePart } from "../clone/compare.ts";
+import { comment } from "../core/board/comments.ts";
 import { CONFIG_FILE, configOf } from "../core/board/config.ts";
 import { prepareIconRun } from "../core/clone/icons.ts";
 import type { Element } from "../core/clone/record.ts";
@@ -292,11 +293,26 @@ export function boardServer(board: Board): McpServer {
     },
   );
   tool(
+    "comment",
+    "Comment a line of the diff of the task you review: a line the diff shows, by its number in the file after the change. A rejection writes each comment as a finding.",
+    ...acting(
+      {
+        task: TASK,
+        file: text("The file's path."),
+        line: { type: "integer", description: "The line's number." },
+        text: text("What is wrong, checkable."),
+      },
+      ["task", "file", "line", "text"],
+    ),
+    (args, actor) =>
+      `Comment ${comment(context, actor, args.task, { file: args.file, line: args.line, text: args.text }).length} is on ${args.file}:${args.line}.`,
+  );
+  tool(
     "reject",
     "Reject the task you reviewed, with findings, each one checkable.",
-    ...acting({ task: TASK, findings: text("The findings, as a list.") }, ["task", "findings"]),
+    ...acting({ task: TASK, findings: text("The findings, as a list. The comments on the diff are added to them.") }, ["task"]),
     (args, actor) => {
-      reject(context, actor, args.task, args.findings);
+      reject(context, actor, args.task, args.findings ?? "");
       return `${args.task} is ready again, with the findings in its Log.`;
     },
   );
