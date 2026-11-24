@@ -380,6 +380,13 @@ owner's standing rules in one assistant's private notes
   MCP tool search the rest.
 - The UI lists, edits and retires them.
 
+As built: a fact's file holds its kind, title, state (`proposed`,
+`in-force`, `retired`), paths, task, who wrote it and when, then its
+words. A worker's fact is proposed and is put in force by the owner or
+by a worker other than the one that proposed it; the owner's is in
+force at once. A claim or a review mark is stale after 30 minutes
+without a beat.
+
 Plain Markdown files and a search of their text. No open-source memory
 for agents is taken as the store: those read keep their facts in a
 database no person reviews in git (mem0, Graphiti, cognee, MemOS,

@@ -26,9 +26,11 @@ function scalar(raw: string): string {
   return value;
 }
 
-const quoted = (value: string) => `'${value.replaceAll("'", "''")}'`;
+/** A string as a YAML scalar in single quotes. */
+export const quoted = (value: string) => `'${value.replaceAll("'", "''")}'`;
 
-function frontmatter(lines: string[]): Record<string, string | string[]> {
+/** The fields between the two lines of `---`: scalars as strings, block lists as lists. */
+export function frontmatter(lines: string[]): Record<string, string | string[]> {
   const raw: Record<string, string | string[]> = {};
   let key: string | undefined;
   lines.forEach((line, index) => {

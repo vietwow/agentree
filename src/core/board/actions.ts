@@ -13,8 +13,8 @@ import { dependenciesDone, isHeld as held, nextId, obstacles, overlaps } from ".
 import { beat as beatHold, claimOf, claims, createClaim, putClaim, removeClaim, reviewOf, type Claim } from "./state.ts";
 import { fromItsRead, readBoard, taskOf, writeTask, type Board, type Stored } from "./store.ts";
 
-/** A claim, or a review mark, not beaten for this long is stale. */
-export const STALE_AFTER_MS = 4 * 60 * 60 * 1000;
+/** A claim, or a review mark, not beaten for this long is stale: a tool's hooks beat it at each call. */
+export const STALE_AFTER_MS = 30 * 60 * 1000;
 
 /** Where a change runs and what time it is. */
 export type Context = { places: Places; now: () => Date; run?: Run };
