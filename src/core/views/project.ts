@@ -16,6 +16,8 @@ export type ProjectView = {
   color: string;
   status: "planning" | "active" | "risk" | "hold" | "complete";
   private: boolean;
+  /** Its content is a sample, made by `agentree demo`. */
+  sample: boolean;
   /** The tools that have worked on it. */
   tools: Tool[];
   createdAt: string;
@@ -57,6 +59,7 @@ export function projectView(project: Registered, board: Board): ProjectView {
     color: project.color,
     status,
     private: project.private,
+    sample: project.sample === true,
     tools: TOOLS.filter((tool) => tool !== "person" && worked.has(tool)),
     createdAt: project.registeredAt,
     lastAt: entries.reduce((latest, entry) => (entry.at > latest ? entry.at : latest), project.registeredAt),

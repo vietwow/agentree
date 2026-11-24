@@ -14,6 +14,8 @@ import { style } from "./parts.tsx";
 
 type Props = {
   project: string;
+  /** The project's content is a sample, made by `agentree demo`. */
+  sample: boolean;
   tasks: readonly Task[];
   activity: readonly ActivityEntry[];
   now: Date;
@@ -291,7 +293,7 @@ function Chart({ f, onTip }: { f: Forecast; onTip: (tip?: Tip) => void }) {
   );
 }
 
-export function HomePage({ project, tasks, activity, now, onOpenTask, onAgents }: Props) {
+export function HomePage({ project, sample, tasks, activity, now, onOpenTask, onAgents }: Props) {
   const [span, setSpan] = useState<12 | 24>(12);
   const [tip, setTip] = useState<Tip>();
   useEffect(() => {
@@ -328,10 +330,12 @@ export function HomePage({ project, tasks, activity, now, onOpenTask, onAgents }
                 {count(counts.held, "file")} held
               </p>
             </div>
-            <span className="home-badge amber">
-              <i />
-              Sample data
-            </span>
+            {sample && (
+              <span className="home-badge amber">
+                <i />
+                Sample data
+              </span>
+            )}
           </header>
           <Panel className="home-kpis">
             <Kpi

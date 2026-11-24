@@ -37,6 +37,7 @@ test("a board with no task has no number, and none is made up", () => {
     reviews: { accepted: 0, rejected: 0, rejectedShare: 0 },
     wait: { runs: 0, medianMs: 0, longestMs: 0 },
     failing: [],
+    history: { review: Array(14).fill(0), ready: Array(14).fill(0) },
   });
 });
 
@@ -68,6 +69,13 @@ test("the numbers are read from the Logs and from what the checks recorded", () 
 
   const read = numbers();
   assert.deepEqual(read.reviews, { accepted: 1, rejected: 1, rejectedShare: 0.5 });
+  const ready = readBoard(context.places).tasks.filter(({ task }) => task.fields.status === "ready").length;
+  assert.deepEqual(
+    [read.history.review.at(-1), read.history.ready.at(-1), read.history.review.length],
+    [0, ready, 14],
+    "today's count is the board's own",
+  );
+  assert.deepEqual([read.history.review[0], read.history.ready[0]], [0, 0], "before a task was created it was in no status");
   assert.deepEqual(read.failing, [{ command: "test -f src/missing.txt", runs: 1, failed: 1 }], "a command that always passed is not listed");
   assert.equal(read.wait.runs, 4);
   // The board's clock moves a second with each act: the times are told to the minute.

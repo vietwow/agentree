@@ -38,6 +38,7 @@ type Numbers = {
   reviews: { accepted: number; rejected: number; rejectedShare: number };
   wait: { runs: number; medianMs: number; longestMs: number };
   failing: { command: string; runs: number; failed: number }[];
+  history: { review: number[]; ready: number[] };
 };
 
 const ICONS: Record<string, LucideIcon> = { layers: Layers, "building-2": Building2, palette: Palette, folder: Folder };

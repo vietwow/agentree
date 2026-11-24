@@ -340,7 +340,17 @@ export function App({ projects: listed, board, onProject }: Props) {
   );
   /** The pages built so far; any other shows that it is not built yet. */
   const views: Partial<Record<Page, () => ReactNode>> = {
-    home: () => <HomePage project={current.name} tasks={tasks} activity={activity} now={now} onOpenTask={openTask} onAgents={() => go("agents")} />,
+    home: () => (
+      <HomePage
+        project={current.name}
+        sample={current.sample === true}
+        tasks={tasks}
+        activity={activity}
+        now={now}
+        onOpenTask={openTask}
+        onAgents={() => go("agents")}
+      />
+    ),
     projects: () => <ProjectsPage projects={projects} now={now} onOpen={(id) => openProject(id, "board")} onNew={() => setNewProject(true)} />,
     favorites: () => (
       <FavoritesPage

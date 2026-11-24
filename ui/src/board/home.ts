@@ -132,15 +132,18 @@ export type Numbers = {
 };
 
 export function numbers(tasks: readonly Task[], activity: readonly ActivityEntry[], now: Date): Numbers {
-  const counted = tasks.filter((t) => t.status !== "dropped" && t.parent !== undefined);
+  // A task that has parts is counted by its parts.
+  const parents = new Set(tasks.map((t) => t.parent));
+  const counted = tasks.filter((t) => t.status !== "dropped" && !parents.has(t.id));
   const landed = counted.filter((t) => t.landedAt);
   const ends = days(now);
   const review = tasks.filter((t) => t.status === "review");
-  const ready = tasks.filter((t) => t.status === "ready" && t.parent !== undefined);
+  const ready = tasks.filter((t) => t.status === "ready" && !parents.has(t.id));
+  const { history } = board().numbers;
   const agents = activity.filter((e) => e.who !== "daemon" && e.who !== "person");
   return {
     done: {
-      pct: Math.round((landed.length / counted.length) * 100),
+      pct: counted.length ? Math.round((landed.length / counted.length) * 100) : 0,
       landed: landed.length,
       all: counted.length,
       spark: ends.map((end) => landed.filter((t) => t.landedAt!.getTime() < end).length),
@@ -148,7 +151,7 @@ export function numbers(tasks: readonly Task[], activity: readonly ActivityEntry
     review: {
       n: review.length,
       oldest: review.map((t) => t.statusSince).sort((a, b) => a.getTime() - b.getTime())[0],
-      spark: [1, 2, 1, 0, 1, 2, 2, 3, 2, 1, 2, 3, 2, review.length],
+      spark: [...history.review.slice(0, -1), review.length],
     },
     landed: {
       week: landed.filter((t) => now.getTime() - t.landedAt!.getTime() < 7 * DAY).length,
@@ -158,7 +161,7 @@ export function numbers(tasks: readonly Task[], activity: readonly ActivityEntry
     ready: {
       n: ready.length,
       waiting: ready.filter((t) => detail(t).dependsOn.some((d) => d.status !== "done")).length,
-      spark: [2, 3, 3, 4, 3, 5, 4, 4, 3, 3, 4, 3, 2, ready.length],
+      spark: [...history.ready.slice(0, -1), ready.length],
     },
     actions: {
       day: agents.filter((e) => now.getTime() - e.at.getTime() < DAY).length,

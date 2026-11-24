@@ -21,6 +21,8 @@ export type Project = {
   status: ProjectStatus;
   /** Its repository is not on a remote anyone else reads. */
   private?: boolean;
+  /** Its content is a sample, made by `agentree demo`. */
+  sample?: boolean;
   tools: Tool[];
   createdAt: Date;
   lastAt: Date;

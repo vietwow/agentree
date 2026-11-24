@@ -26,6 +26,8 @@ export type Registered = {
   private: boolean;
   /** The owner set it aside: its state is "on hold" whatever its board says. */
   hold: boolean;
+  /** It was made by `agentree demo`: its content is a sample, and the UI says so. */
+  sample?: boolean;
   registeredAt: string;
 };
 
@@ -55,7 +57,7 @@ const slug = (name: string) =>
 export function register(
   directory: string,
   at: Date,
-  more: Partial<Pick<Registered, "name" | "desc" | "color" | "icon" | "private">> = {},
+  more: Partial<Pick<Registered, "name" | "desc" | "color" | "icon" | "private" | "sample">> = {},
 ): Registered {
   const { root } = boardOf(directory);
   const list = projects();
@@ -74,6 +76,7 @@ export function register(
     icon: more.icon ?? "folder",
     private: more.private ?? false,
     hold: false,
+    ...(more.sample ? { sample: true } : {}),
     registeredAt: at.toISOString().replace(/\.\d{3}Z$/, "Z"),
   };
   save([...list, project]);

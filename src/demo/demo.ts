@@ -374,23 +374,26 @@ export function demo(directory: string, now: Date): string[] {
       desc: "Runs coding agents on one board: tasks, trees, checks, review and landing.",
       color: "indigo",
       icon: "layers",
+      sample: true,
     }),
     register(
       other(join(directory, "aep"), now, { total: 128, done: 87, tools: ["claude-code", "cursor", "codex"], created: 64, last: 0.2, blocked: true })
         .root,
       ago(64),
-      { desc: "The engineering platform the design of agentree comes from.", color: "amber", icon: "building-2" },
+      { desc: "The engineering platform the design of agentree comes from.", color: "amber", icon: "building-2", sample: true },
     ),
     register(other(join(directory, "icon-grab"), now, { total: 18, done: 15, tools: ["antigravity"], created: 31, last: 6 }).root, ago(31), {
       desc: "Fetches and normalises icon sets into one sprite.",
       color: "teal",
       icon: "palette",
       private: true,
+      sample: true,
     }),
     register(other(join(directory, "notes-sync"), now, { total: 22, done: 22, tools: ["claude-code"], created: 120, last: 40 }).root, ago(120), {
       desc: "Mirrors a folder of notes between two machines.",
       color: "green",
       icon: "folder",
+      sample: true,
     }),
   ];
   editProject(made[2]!.id, { hold: true });
