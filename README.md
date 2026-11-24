@@ -21,10 +21,13 @@ Built: the task file, the board on its branch `agentree/board`, the
 machine's state under the git common directory, a task's whole way from
 `new` to `land`, the memory, what each session used, the documents, the
 machine's list of projects, the sessions of the tools, the queue of
-heavy runs, and the daemon with its API, its events and its landings of
-accepted tasks. Not built yet:
-a tree's install into a volume at its claim, and what the RFC lists
-after its first version beyond these.
+heavy runs, the daemon with its API, its events and its landings of
+accepted tasks, and the cloning of an interface: the reader, the
+records, `agentree compare`, the extension that carries records
+(`extension/`, loaded unpacked in Chrome) and the run that fetches
+drawings. Not built yet: the comparison inside the daemon's container
+(it runs on the host), a submit that compares the parts by itself, and
+what the RFC lists after its first version beyond these.
 
 ```sh
 pnpm install

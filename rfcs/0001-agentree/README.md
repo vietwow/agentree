@@ -1194,7 +1194,14 @@ asks, in order:
 2. the tools that will work on it;
 3. the slots of the machine, when it is the first project;
 4. whether it reproduces the interface of a site
-   ([below](#cloning-an-interface-from-a-site));
+   ([below](#cloning-an-interface-from-a-site)): the reference's
+   address, whether the colours and the font are the project's own, and
+   whether fetched drawings are committed. The answers are written
+   under `clone` in the project's part, and the agreements about the
+   reference into its memory as the owner's; a project that declares a
+   reference already is left as it is. The command takes the same as
+   `agentree init --clone <address>` with `--viewport`, `--theme`,
+   `--colours`, `--font` and `--committed`;
 5. the stack ([The stack](#the-stack)), each question optional;
 6. a first goal, in words, which becomes the first card and can be
    given to the planner.
@@ -1279,12 +1286,49 @@ the machine or are committed with the project.
 **The comparison is agentree's own.** The origin's is a test inside its
 application's own test suite. Here `agentree compare <part>` starts the
 project's application by the command its part names, opens the part's
-address in a browser of its own (Playwright's Chromium, in the
-container), brings the page to the record's viewport, theme and state
-by the part's steps, reads it with the reader and compares. It asks of
-a project only that it serves pages to a browser and marks an element
-with its record's id, whatever it is built or tested with. An interface
+address in a browser of its own (Playwright's Chromium), brings the
+page to the record's viewport, theme and state by the part's steps,
+reads it with the reader and compares. It asks of a project only that
+it serves pages to a browser and marks an element with its record's id
+in `data-record`, whatever it is built or tested with. An interface
 that is no web page is not compared.
+
+The comparison runs on the host, not in the daemon's container: the
+image is Alpine's, and Playwright's browsers are not supported on a
+system of the musl library
+([Playwright, Docker](https://playwright.dev/docs/docker), read on
+2026-11-24). In the container the command says that it has no browser.
+A build task's check `agentree compare <part>` is therefore the
+worker's and the reviewer's to run on the host, until the image has a
+browser.
+
+What the project's part (`agentree.config.json`) says under `clone`:
+the reference's address, viewport and theme; `records`, the directory
+of the records; `url`, where the project's own application answers, and
+`serve`, the command that starts it when it does not; `colours` and
+`font`, each `own` or `reference`; `drawings`, `machine` or
+`committed`; `parts`, for each part its page's path and, for each
+state, the steps that show it (a click, the pointer over an element, a
+focus by a key, a key); and `exceptions`, the ids whose differences
+are left out, each with its stated reason.
+
+Positions are compared from the part's root, the record's first
+element, since the two pages need not put the part at one place of the
+window; a side of a box may differ by half a pixel. The command prints
+the share of values that match, each value that differs (what the page
+has, what the record has) and each element the page does not mark, and
+exits 1 when there is any.
+
+**The commands of a measure.** `agentree part <part>` writes the two
+tasks from their templates. `agentree reader` prints the reader's
+source, which a session runs in the page once.
+`agentree record <part> [--state <state>]` takes the reader's reading
+on standard input and writes the record in the checkout it is run in:
+the part at rest whole, any other state as its difference from its
+base. A record is written once: a second writing of a state is
+refused, by the rule that a value a record holds is not measured
+again, and a wrong reading is removed in the task's tree and read
+again. The address is kept without its query string.
 
 **Measuring, and the extension.** A measure task is offered only to a
 tool whose session can drive the owner's Chrome, which the project's
@@ -1298,10 +1342,35 @@ and nothing else: no cookie, storage or header, and it asks for no
 permission to debug. States are still produced for real, by the session
 or by the owner's hand.
 
-**What is not general yet.** The reader's general functions (capture,
-difference, overlays, focus, export) are apart from its part
-definitions, which hold the origin's reference's selectors; a project
-writes its own part definitions.
+The extension is the directory `extension/`. Its permissions are
+`activeTab`, `scripting` and `storage`, and the host
+`http://127.0.0.1/*`, which a background script needs to send a
+request there. The owner sets, in its popup, the daemon's address and
+token, the project, the task that measures and the part; opening the
+popup on a tab is what lets the extension read that tab. The reader
+and a listener are added in the extension's own world, which the
+page's scripts do not reach. A session asks for a record by a message
+to the page's window,
+`window.postMessage({ agentree: "record", state: "<name>" }, location.origin)`,
+and the answer, or the daemon's refusal in its words, comes back as a
+message `{ agentree: "recorded", ok, text }`. That message can name a
+state, the state it differs from, the root to read from and what was
+not measured, and nothing else: a page's own script can send it too,
+and where a record goes is the owner's alone. A shortcut records the
+state the page shows without the pointer leaving the page, for a state
+under the pointer. The daemon lets the origin of an extension through
+for this one request and only with the token in the request itself;
+it writes the record in the tree of the task that measures, never in
+the main checkout.
+
+**What is not general yet.** The origin's reader is in the seed as it
+was, with its part definitions, which hold the origin's reference's
+selectors. The reader built here (`extension/reader.js`) is the
+general one: it reads every element under a root a session names, and
+needs no part definition. It does not have the origin's functions for
+overlays and for the focus; a state is recorded as the difference of
+two whole readings. A submit does not compare the parts a task's files
+can change by itself: the build task's check does.
 
 ### The drawings
 
@@ -1343,6 +1412,15 @@ memory. The session is no worker: it claims nothing and is given no
 name of a task. What a tool keeps of its own for every session of a
 user (its global rules, its own memory) is that tool's, and whether each
 tool can be started without it is not verified.
+
+The command is `agentree grab-icons --page <address> --where <steps>
+--set <name>`. The folder of a run is
+`<the machine's home>/icon-runs/<repository>-<set>`. It is refused when
+a set of that name is there already, when a rules file (`AGENTS.md`,
+`CLAUDE.md`) is in any directory above the folder, or when the
+drawings are to be committed and the repository has a remote. The card
+is written as backlog, needing `browser` and `owner`. Without
+`--committed`, the project's choice under `clone.drawings` stands.
 
 **What it is asked.** A request is a card of kind `assets`, made by the
 owner in the UI or by a measure task that found icons (the origin's
@@ -1636,6 +1714,15 @@ Docker, Node, git and Chrome, read on 2026-11-22:
 [an extension's requests](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests),
 [loading an unpacked extension](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world).
 
+Chrome's extensions, read on 2026-11-24 for the extension as built:
+[`activeTab`](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab),
+[`chrome.scripting`](https://developer.chrome.com/docs/extensions/reference/api/scripting)
+and its worlds,
+[`chrome.commands`](https://developer.chrome.com/docs/extensions/reference/api/commands),
+[match patterns](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns)
+(a pattern without a port matches every port), and again the pages on
+content scripts and on an extension's requests.
+
 What each tool reports of its model and its use, read on 2026-11-22:
 Claude Code's [headless runs](https://code.claude.com/docs/en/headless),
 [hooks](https://code.claude.com/docs/en/hooks) and
@@ -1767,8 +1854,16 @@ The numbers of [Performance](#performance) were counted in the origin's
 - The time of the host's script, which every hook calls, and of an
   install into a volume of the container.
 - That SQLite as Node builds it has full-text search.
-- The extension: nothing of it is built, and what Chrome shows the
-  owner when it is loaded unpacked was not looked at.
+- The extension was tried on 2026-11-24 in Playwright's Chromium, on a
+  page at the loopback address, where its host permission stands in for
+  `activeTab`: a record at rest and a state's were written in the
+  task's tree, and the daemon's refusal came back to the page. Not
+  tried: its popup, its shortcut, the grant of `activeTab` on a site,
+  the owner's own Chrome, and what Chrome shows the owner when it is
+  loaded unpacked.
+- The comparison was tried on 2026-11-24 on a page of five elements
+  made for the test, at rest and in one state under the pointer; on no
+  project's page and against no record of a real reference.
 - The queue's reading of processes on Linux, and everything on Windows.
 - The engineering standard's template: the origin's rules were read and
   sorted into what is general and what is the origin's; which tool of
