@@ -23,6 +23,7 @@ import { AGENT_TOOLS } from "../core/init/tools.ts";
 import type { Bounds } from "../core/machine/queue.ts";
 import type { Tool } from "../core/task/model.ts";
 import { documentsView } from "../core/views/documents.ts";
+import { numbersView } from "../core/views/numbers.ts";
 import { filesView } from "../core/views/files.ts";
 import { agentsView, milestonesView, projectView } from "../core/views/project.ts";
 import { activityView, taskDetailView, taskView } from "../core/views/tasks.ts";
@@ -173,6 +174,7 @@ export function createApp(daemon: Daemon) {
   app.get("/api/projects/:project/files", (request) => request.json(filesView(readBoard(contextOf(request).places))));
   app.get("/api/projects/:project/memory", (request) => request.json(readMemory(contextOf(request).places).facts));
   app.get("/api/projects/:project/documents", (request) => request.json(documentsView(contextOf(request).places)));
+  app.get("/api/projects/:project/numbers", (request) => request.json(numbersView(readBoard(contextOf(request).places), daemon.now())));
   app.get("/api/projects/:project/agents", (request) => {
     const { places } = contextOf(request);
     return request.json({ sessions: agentsView(places, daemon.now()), tools: toolsView(places), options: readOptions(places) });
