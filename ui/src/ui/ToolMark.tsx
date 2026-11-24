@@ -13,8 +13,8 @@ const LETTER: Record<Tool, string> = {
 
 const SIZES = {
   32: "size-8 text-2xs",
-  24: "size-6 text-[9px]",
-  20: "size-5 text-[8px]",
+  24: "size-6 text-(length:--text-3xs)",
+  20: "size-5 text-(length:--text-4xs)",
 };
 
 export function ToolMark({ tool, size = 32 }: { tool?: Tool; size?: 20 | 24 | 32 }) {

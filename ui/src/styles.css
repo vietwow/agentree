@@ -9,7 +9,7 @@
 @import "./design/base.css";
 @import "./design/motion.css";
 @import "./design/components.css";
-@import "./ui/domain.css";
+@import "./themes/domain.css";
 @import "./live.css";
 @import "./gr8r.css";
 
@@ -101,7 +101,7 @@
   .mnav-btn {
     display: none;
   }
-  @media (max-width: 900px) {
+  @media (width <= 900px) {
     .mnav-btn {
       display: inline-flex;
     }
@@ -321,7 +321,7 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: currentColor;
+    background: currentcolor;
   }
   .home-badge.green {
     color: var(--good);
@@ -833,7 +833,7 @@
     font-variant-numeric: tabular-nums;
   }
 
-  @media (max-width: 1280px) {
+  @media (width <= 1280px) {
     .home-grid {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -841,7 +841,7 @@
       grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
     }
   }
-  @media (max-width: 900px) {
+  @media (width <= 900px) {
     .home-kpis {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }

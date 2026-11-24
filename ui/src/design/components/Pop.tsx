@@ -21,6 +21,8 @@ export function Pop({ anchor, onClose, width, role = "menu", label, className = 
   const box = useRef<HTMLDivElement>(null);
   const [place, setPlace] = useState<CSSProperties>({ visibility: "hidden" });
 
+  // Re-measures after every render, since the content can change its size; setPlace bails out when the place holds.
+  // oxlint-disable-next-line react-hooks/exhaustive-deps
   useLayoutEffect(() => {
     const el = box.current;
     if (!el) return;

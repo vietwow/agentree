@@ -132,6 +132,8 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
     const r = right.current;
     if (!r) return;
     r.scrollLeft = Math.max(0, todayX - r.clientWidth + 160);
+    // Scrolls to today only when the zoom changes, not when time moves on.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [zoom]);
 
   const toToday = () => {

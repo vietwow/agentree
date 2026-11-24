@@ -1,3 +1,4 @@
+import { OWNER_COLOR } from "../board/fixtures.ts";
 import { Keyboard, LogOut, Monitor, Moon, Settings, Sun, User } from "lucide-react";
 import { MenuItem, MenuLabel, MenuSeparator } from "../design/components/Menu.tsx";
 import { Segmented } from "../design/components/Segmented.tsx";
@@ -9,8 +10,6 @@ export type OwnerMenuProps = {
   onSettings: () => void;
   onShortcuts: () => void;
 };
-
-const OWNER_COLOR = "#5A67D8";
 
 export function OwnerAvatar({ size, presence = false }: { size: "sm" | "md" | "lg"; presence?: boolean }) {
   return (

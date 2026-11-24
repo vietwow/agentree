@@ -17,7 +17,7 @@
   --card: var(--surface);
   --float: var(--surface);
   --hover: var(--surface-2);
-  --overlay: rgb(24 22 19 / 0.28);
+  --overlay: rgb(24 22 19 / 28%);
 
   /* Lines. */
   --line: var(--stone-200);
@@ -79,9 +79,9 @@
   /* A box that stands a little off its tray: a lit top edge, a darker foot. */
   --lift-top: var(--stone-0);
   --lift-bottom: #f5f6f6;
-  --lift-highlight: rgb(255 255 255 / 0.9);
-  --lift-edge: rgb(16 16 14 / 0.07);
-  --lift-shade: rgb(16 16 14 / 0.06);
+  --lift-highlight: rgb(255 255 255 / 90%);
+  --lift-edge: rgb(16 16 14 / 7%);
+  --lift-shade: rgb(16 16 14 / 6%);
 }
 
 .dark {
@@ -97,7 +97,7 @@
   --card: var(--zinc-875);
   --float: var(--zinc-850);
   --hover: var(--zinc-725);
-  --overlay: rgb(0 0 0 / 0.6);
+  --overlay: rgb(0 0 0 / 60%);
 
   --line: var(--zinc-700);
   --line-strong: var(--zinc-650);
@@ -142,21 +142,21 @@
 
   --lift-top: var(--zinc-800);
   --lift-bottom: var(--zinc-875);
-  --lift-highlight: rgb(255 255 255 / 0.06);
-  --lift-edge: rgb(0 0 0 / 0.7);
-  --lift-shade: rgb(0 0 0 / 0.45);
+  --lift-highlight: rgb(255 255 255 / 6%);
+  --lift-edge: rgb(0 0 0 / 70%);
+  --lift-shade: rgb(0 0 0 / 45%);
 
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 30%);
   --shadow-card: 0 0 0 1px var(--line);
-  --shadow-pop: 0 16px 40px -10px rgb(0 0 0 / 0.6), 0 0 0 1px var(--line-strong);
-  --shadow-drag: 0 18px 40px -10px rgb(0 0 0 / 0.7), 0 0 0 1px var(--line-strong);
-  --shadow-drawer: -24px 0 48px -16px rgb(0 0 0 / 0.7);
-  --shadow-tip: 0 8px 22px rgb(0 0 0 / 0.5), 0 0 0 1px var(--line-strong);
+  --shadow-pop: 0 16px 40px -10px rgb(0 0 0 / 60%), 0 0 0 1px var(--line-strong);
+  --shadow-drag: 0 18px 40px -10px rgb(0 0 0 / 70%), 0 0 0 1px var(--line-strong);
+  --shadow-drawer: -24px 0 48px -16px rgb(0 0 0 / 70%);
+  --shadow-tip: 0 8px 22px rgb(0 0 0 / 50%), 0 0 0 1px var(--line-strong);
   --shadow-primary:
     0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent), 0 6px 22px -8px color-mix(in srgb, var(--primary) 45%, transparent);
   --shadow-primary-hover:
     0 0 0 1px color-mix(in srgb, var(--primary) 55%, transparent), 0 6px 22px -8px color-mix(in srgb, var(--primary) 65%, transparent);
-  --shadow-primary-pressed: inset 0 2px 4px rgb(0 0 0 / 0.2);
+  --shadow-primary-pressed: inset 0 2px 4px rgb(0 0 0 / 20%);
 }
 
 /* Tailwind's colour utilities, one for each token of this tier: `text-ink-2`, `bg-tray`, `border-line`. */

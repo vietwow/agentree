@@ -25,8 +25,16 @@
   --live-glow: color-mix(in srgb, var(--ochre-300) 95%, transparent);
   --live-wash-in: 24%;
   --live-wash-mid: 8%;
-  --live-card-shadow: 0 1px 2px rgb(27 26 23 / 0.04), 0 6px 18px rgb(27 26 23 / 0.05);
-  --live-pop-shadow: 0 14px 44px rgb(27 26 23 / 0.16);
+  --live-card-shadow: 0 1px 2px rgb(27 26 23 / 4%), 0 6px 18px rgb(27 26 23 / 5%);
+  --live-pop-shadow: 0 14px 44px rgb(27 26 23 / 16%);
+
+  --live-text-hero: 56px;
+  --live-text-hero-narrow: 40px;
+  --live-text-figure: 30px;
+  --live-text-lg: 15px;
+  --live-text-md: 14px;
+  --live-text-sm: 13px;
+  --live-text-micro: 10px;
 }
 .dark .page.live {
   --surface: var(--zinc-800);
@@ -48,6 +56,6 @@
   --live-halo: color-mix(in srgb, var(--good) 45%, transparent);
   --live-wash-in: 20%;
   --live-wash-mid: 6%;
-  --live-card-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 18px rgb(0 0 0 / 0.35);
-  --live-pop-shadow: 0 14px 44px rgb(0 0 0 / 0.55);
+  --live-card-shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 6px 18px rgb(0 0 0 / 35%);
+  --live-pop-shadow: 0 14px 44px rgb(0 0 0 / 55%);
 }

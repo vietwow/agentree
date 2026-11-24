@@ -22,7 +22,7 @@ const SHORTCUTS: [string, [string, string[]][]][] = [
       ["New project", ["P"]],
     ],
   ],
-  ["Navigate", [...Object.entries(GO).map(([key, page]): [string, string[]] => [`Go to ${PAGE_INFO[page].label}`, ["G", key.toUpperCase()]])]],
+  ["Navigate", Object.entries(GO).map(([key, page]): [string, string[]] => [`Go to ${PAGE_INFO[page].label}`, ["G", key.toUpperCase()]])],
   [
     "Command menu",
     [

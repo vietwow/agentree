@@ -66,8 +66,7 @@
   /* Scrolls without a visible bar: a scrollbar would eat width and push the nav off the logo's centre line when collapsed. */
   .side-scroll {
     flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden auto;
     padding: 4px 8px 12px;
     scrollbar-width: none;
   }
@@ -957,7 +956,6 @@
     align-items: center;
     gap: 6px;
     padding: 0 8px;
-    font-size: var(--text-xs);
     color: var(--ink);
     cursor: grab;
     overflow: hidden;
@@ -1052,13 +1050,15 @@
     background: var(--card);
     transition:
       border-color var(--dur),
-      box-shadow var(--dur);
+      box-shadow var(--dur-3) var(--ease),
+      transform var(--dur-3) var(--ease);
     text-align: left;
     position: relative;
   }
   .pcard:hover {
     border-color: var(--line-strong);
     box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
   }
   .pcard .desc {
     font-size: var(--text-sm);
@@ -1428,7 +1428,7 @@
     margin-top: 3px;
     line-height: 1.55;
     white-space: pre-wrap;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
   .react {
     display: inline-flex;
@@ -1738,7 +1738,7 @@
   .fx-done .tt,
   .fx-done .title {
     text-decoration: none !important;
-    background: linear-gradient(currentColor, currentColor) 0 58%/0 1.5px no-repeat;
+    background: linear-gradient(currentcolor, currentcolor) 0 58%/0 1.5px no-repeat;
     animation: strike var(--dur-5) 0.1s var(--ease) forwards;
   }
   /* dropped, created */
@@ -1756,15 +1756,6 @@
   .toggle::after {
     transition: transform var(--dur-4) var(--spring);
   }
-  .pcard {
-    transition:
-      border-color var(--dur),
-      box-shadow var(--dur-3) var(--ease),
-      transform var(--dur-3) var(--ease);
-  }
-  .pcard:hover {
-    transform: translateY(-2px);
-  }
   @media (prefers-reduced-motion: reduce) {
     .pcard:hover,
     .check:active,
@@ -1774,7 +1765,7 @@
   }
 
   /* RESPONSIVE */
-  @media (max-width: 1100px) {
+  @media (width <= 1100px) {
     .topsearch {
       width: auto;
     }
@@ -1783,7 +1774,7 @@
       display: none;
     }
   }
-  @media (max-width: 900px) {
+  @media (width <= 900px) {
     .shell,
     .shell.collapsed {
       grid-template-columns: minmax(0, 1fr);
@@ -1816,8 +1807,6 @@
     }
     .set {
       grid-template-columns: minmax(0, 1fr);
-    }
-    .set {
       grid-template-rows: auto minmax(0, 1fr);
     }
     .tl {
@@ -1827,7 +1816,7 @@
       padding-bottom: 90px;
     }
   }
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     .hide-m {
       display: none !important;
     }
@@ -1867,10 +1856,7 @@
     .drawer,
     .drawer.full {
       width: 100vw;
-      right: 0;
-      left: 0;
-      top: 0;
-      bottom: 0;
+      inset: 0;
       transform: none;
       border-radius: 0;
       border: 0;

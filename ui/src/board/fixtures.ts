@@ -49,6 +49,9 @@ const PARENTS = {
 
 export const PARENT_TITLES: Record<string, string> = PARENTS;
 
+/** The owner's avatar colour. */
+export const OWNER_COLOR = "#5A67D8";
+
 const ROWS: Row[] = [
   { id: "T-0031", title: PARENTS["T-0031"], status: "done", kind: "build", priority: 1, created: 29600, since: 20300, landed: 20300 },
   { id: "T-0001", title: PARENTS["T-0001"], status: "in-progress", kind: "build", priority: 1, created: 25600, since: 23040 },
@@ -723,7 +726,7 @@ function sessions(task: Task, now: Date): Session[] {
   const n = seedOf(task.id);
   const { tool, model, since } = task.holder;
   const working = task.status === "in-progress" || task.status === "checking";
-  const use = (scale: number): Pick<Session, "tokens" | "costUsd" | "unknown"> =>
+  const usage = (scale: number): Pick<Session, "tokens" | "costUsd" | "unknown"> =>
     REPORTS_USE.has(tool)
       ? {
           tokens: {
@@ -742,7 +745,7 @@ function sessions(task: Task, now: Date): Session[] {
     models: n % 4 === 0 && tool !== "person" ? [model, `${model}-mini`] : [model],
     startedAt: since,
     endedAt: working ? undefined : new Date(Math.min(task.statusSince.getTime(), now.getTime())),
-    ...use(1),
+    ...usage(1),
   };
   if (!["review", "accepted", "done"].includes(task.status)) return [build];
 

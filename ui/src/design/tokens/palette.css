@@ -1,12 +1,12 @@
 /*
  * Tier 1: the raw colours. Nothing but a theme (`design/tokens/theme.css`,
- * a page theme in `themes/`) reads these; a rule asks for what a colour is for (`--ink-2`, `--good`), never
+ * or one in `themes/`) reads these; a rule asks for what a colour is for (`--ink-2`, `--good`), never
  * which colour it is. Stone is the light theme's warm grey, zinc the dark
  * theme's cool one; each hue has a deep step for light backgrounds and a
  * pale one for dark backgrounds.
  */
 :root {
-  --stone-0: #ffffff;
+  --stone-0: #fff;
   --stone-25: #fbfaf8;
   --stone-50: #f7f6f3;
   --stone-75: #f6f5f2;

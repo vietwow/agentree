@@ -44,7 +44,7 @@
     width: 1px;
     height: 1px;
     overflow: hidden;
-    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
     white-space: nowrap;
   }
   kbd,
@@ -67,7 +67,7 @@
   .only-m {
     display: none;
   }
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     .only-m {
       display: block;
     }
@@ -89,7 +89,8 @@
       background var(--dur),
       border-color var(--dur),
       color var(--dur),
-      box-shadow var(--dur);
+      box-shadow var(--dur),
+      transform var(--dur);
     border: 1px solid transparent;
     user-select: none;
     position: relative;
@@ -99,9 +100,6 @@
   }
   .btn:active:not(:disabled) {
     transform: scale(0.97);
-  }
-  .btn {
-    transition-property: background, border-color, color, box-shadow, transform;
   }
   .btn-sm {
     --h: var(--ctl-sm);
@@ -520,7 +518,7 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: currentColor;
+    background: currentcolor;
   }
   .badge.good {
     color: var(--good);
@@ -970,7 +968,6 @@
     animation: float-in var(--dur-2) var(--ease) both;
   }
   .pop .pin {
-    padding: 4px 4px 6px;
     border-bottom: 1px solid var(--divider);
     margin: -4px -4px 4px;
     padding: 8px;
@@ -1054,7 +1051,6 @@
   }
   .toast {
     pointer-events: auto;
-    animation-timing-function: var(--spring) !important;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -1067,11 +1063,11 @@
     box-shadow: var(--shadow-pop);
     --float-y: 14px;
     --float-scale: 0.96;
-    animation: float-in var(--dur-3) var(--ease) both;
+    animation: float-in var(--dur-3) var(--spring) both;
     max-width: 400px;
   }
   .toast.out {
-    animation: toast-out var(--dur-2) ease both;
+    animation: toast-out var(--dur-2) var(--spring) both;
   }
   .toast .i.ok {
     color: var(--good);
@@ -1201,9 +1197,6 @@
   .alert b {
     font-weight: 600;
   }
-  .stat .v {
-    font-variant-numeric: tabular-nums;
-  }
   @keyframes toast-count {
     to {
       stroke-dashoffset: 56.55;
@@ -1215,12 +1208,12 @@
       transform: translateY(4px);
     }
   }
-  @media (max-width: 1100px) {
+  @media (width <= 1100px) {
     .grid2 {
       grid-template-columns: minmax(0, 1fr);
     }
   }
-  @media (max-width: 900px) {
+  @media (width <= 900px) {
     .page {
       padding: 20px var(--gutter) 96px;
     }
@@ -1234,7 +1227,7 @@
       border-top: 1px solid var(--line);
     }
   }
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     .ph h1 {
       font-size: var(--text-xl);
     }

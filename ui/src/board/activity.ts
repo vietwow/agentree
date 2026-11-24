@@ -14,7 +14,7 @@ export type ActivityEntry = {
 
 function kindOf(text: string): ActivityKind {
   if (/^Asked|answered/.test(text)) return "question";
-  if (/check/i.test(text) && !/^Checks passed/.test(text)) return "check";
+  if (/check/i.test(text) && !text.startsWith("Checks passed")) return "check";
   return "status";
 }
 

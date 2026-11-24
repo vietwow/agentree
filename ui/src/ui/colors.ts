@@ -1,6 +1,6 @@
 import type { Kind, Status } from "../board/task.ts";
 
-/** Each status's colour, from the board's tokens in domain.css. */
+/** Each status's colour, from the board's tokens in themes/domain.css. */
 export const STATUS_COLOR: Record<Status, string> = {
   backlog: "var(--status-backlog)",
   ready: "var(--status-ready)",
@@ -13,7 +13,7 @@ export const STATUS_COLOR: Record<Status, string> = {
   dropped: "var(--status-dropped)",
 };
 
-/** Each kind's colour, from the board's tokens in domain.css. */
+/** Each kind's colour, from the board's tokens in themes/domain.css. */
 export const KIND_COLOR: Record<Kind, string> = {
   build: "var(--kind-build)",
   fix: "var(--kind-fix)",
