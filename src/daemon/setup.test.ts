@@ -67,7 +67,7 @@ test("a setup left running by a process that ended runs again to its end", async
   configured({ setup: ["echo ready > .ready"] });
   const { claim: hold } = claim(context, CODEX, "T-0001");
   const ended = spawnSync("true").pid;
-  putSetup(context.places, "T-0001", { state: "running", output: "", runner: { pid: ended, since: new Date().toISOString() } });
+  putSetup(context.places, "T-0001", { state: "running", output: "", runner: { pid: ended, since: new Date().toISOString(), role: "daemon" } });
   await runWaitingSetups("project", context, queue);
   assert.equal(setupOf(context.places, "T-0001")!.state, "done");
   assert.equal(readFileSync(join(hold.tree, ".ready"), "utf8"), "ready\n");

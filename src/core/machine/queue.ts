@@ -41,6 +41,12 @@ export type Ticket = {
   cost: Cost;
   /** It failed beside other runs and passed alone: it runs with nothing heavy beside it. */
   sensitive: boolean;
+  /**
+   * It goes before every waiting run that is not marked so: a landing's
+   * check, since the accepted tasks behind its landing wait for it, or a
+   * run the owner moved first.
+   */
+  first?: boolean;
   /** Set when it starts. */
   startedAt?: string;
   seat?: number;
@@ -88,14 +94,18 @@ function loadSays(machine: Machine, readings: readonly Reading[], now: Date): st
   return undefined;
 }
 
+/** The order runs wait in: those marked first before the rest, and the first to ask first among each. */
+export const inOrder = (a: Ticket, b: Ticket) => Number(b.first ?? false) - Number(a.first ?? false) || a.n - b.n;
+
 /**
  * Which waiting runs start now, in which seat, and why each of the others
- * waits. The first to ask is the first to run, but for a run that fits
- * while one before it does not, and that leaves room for that one.
+ * waits. The first to ask is the first to run (a landing's before every
+ * other), but for a run that fits while one before it does not, and that
+ * leaves room for that one.
  */
 export function decide(machine: Machine, bounds: Bounds, tickets: readonly Ticket[], readings: readonly Reading[], now: Date): Decision {
   const running = tickets.filter((ticket) => ticket.startedAt).sort((a, b) => a.n - b.n);
-  const waiting = tickets.filter((ticket) => !ticket.startedAt).sort((a, b) => a.n - b.n);
+  const waiting = tickets.filter((ticket) => !ticket.startedAt).sort(inOrder);
   const starts: Start[] = [];
   const waits: Waits[] = [];
   const stopped = bounds.fixed ? undefined : loadSays(machine, readings, now);

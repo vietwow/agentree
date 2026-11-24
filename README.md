@@ -21,7 +21,8 @@ Built: the task file, the board on its branch `agentree/board`, the
 machine's state under the git common directory, a task's whole way from
 `new` to `land`, the memory, what each session used, the documents, the
 machine's list of projects, the sessions of the tools, the queue of
-heavy runs, and the daemon with its API and its events. Not built yet:
+heavy runs, and the daemon with its API, its events and its landings of
+accepted tasks. Not built yet:
 a tree's install into a volume at its claim, and what the RFC lists
 after its first version beyond these.
 

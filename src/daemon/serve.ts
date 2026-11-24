@@ -8,6 +8,7 @@ import { machineHome, placesOfProject, projects } from "../core/machine/projects
 import { createApp, createEvents, type Events } from "./app.ts";
 import { fingerprint } from "./fingerprint.ts";
 import { runWaitingChecks } from "./checks.ts";
+import { runWaitingLandings } from "./landings.ts";
 import { createQueue, type Queue } from "./queue.ts";
 import { removeLeftVolumes, runWaitingSetups } from "./setup.ts";
 
@@ -41,6 +42,7 @@ function watch(events: Events, queue: Queue, now: () => Date) {
         // A task's checks run in the tree of its project, each heavy one in its turn of the machine's queue.
         runWaitingChecks(id, { places: placesOfProject(id), now }, queue).catch((error: unknown) => console.error(error));
         runWaitingSetups(id, { places: placesOfProject(id), now }, queue).catch((error: unknown) => console.error(error));
+        runWaitingLandings(id, { places: placesOfProject(id), now }, queue).catch((error: unknown) => console.error(error));
         const print = fingerprint(id);
         if (seen.has(id) && seen.get(id) !== print) {
           events.emit({ project: id, what: "board" });

@@ -46,7 +46,7 @@ export function runWaitingChecks(project: string, context: Context, queue: Queue
       const key = `${project} ${fields.id}`;
       running.add(key);
       try {
-        const { task, tree } = checksToRun(context, fields.id);
+        const { task, tree } = checksToRun(context, fields.id, "daemon");
         const by = submissionOf(context.places, fields.id)?.by ?? "";
         const runs: CheckRun[] = [];
         for (const command of task.fields.checks) {

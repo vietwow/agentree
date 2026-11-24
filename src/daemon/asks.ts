@@ -30,5 +30,6 @@ export function askFor(
   };
 }
 
-/** The task a volume of a project's trees belongs to, by its name. */
-export const taskOfVolume = (project: string, name: string) => /^T-\d{4}/.exec(basename(name).slice(volumePrefix(project).length))?.[0];
+/** The task a volume of a project's trees belongs to, by its name: a task's tree, or a landing's of it. */
+export const taskOfVolume = (project: string, name: string) =>
+  /^(?:landing-)?(T-\d{4})/.exec(basename(name).slice(volumePrefix(project).length))?.[1];

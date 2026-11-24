@@ -3,17 +3,18 @@
  * another worker, and the landing. A submit checks a commit; what was
  * checked and reviewed is what lands.
  */
-import { existsSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { Refusal } from "../errors.ts";
 import { git, patchId, tryGit } from "../git.ts";
-import { thisRunner } from "../machine/runner.ts";
+import { runnerRuns, thisRunner, type Runner } from "../machine/runner.ts";
 import { CHECKED_KINDS, DAEMON, stamp, toolOf, type Task } from "../task/model.ts";
 import { holding, isStale, moved, tasks, worker, type Actor, type Context } from "./actions.ts";
+import { configOf } from "./config.ts";
 import { readOptions } from "./options.ts";
 import type { Places } from "./places.ts";
 import { dependenciesDone, inScope, isHeld } from "./rules.ts";
-import { runInShell } from "./run.ts";
+import { BOUND_MS, runInShell } from "./run.ts";
 import {
   beat,
   claimOf,
@@ -129,16 +130,16 @@ function runAll(context: Context, commands: string[], cwd: string): CheckRun[] {
  * during them.
  */
 export function check(context: Context, id: string): Task {
-  const { task, tree } = checksToRun(context, id);
+  const { task, tree } = checksToRun(context, id, "command");
   return settleChecks(context, id, runAll(context, task.fields.checks, tree));
 }
 
-/** The task whose checks are to run, and the tree they run in; its checks are marked as running, by this process. */
-export function checksToRun(context: Context, id: string): { task: Task; tree: string } {
+/** The task whose checks are to run, and the tree they run in; its checks are marked as running, by this process as the daemon or as a command. */
+export function checksToRun(context: Context, id: string, role: "daemon" | "command"): { task: Task; tree: string } {
   const { task } = taskOf(readBoard(context.places), id);
   const submission = submissionOf(context.places, id);
   if (task.fields.status !== "checking" || !submission) throw new Refusal(`${id} is ${task.fields.status}; its checks run while it is checking`);
-  putChecks(context.places, id, { commit: submission.commit, state: "running", runs: [], runner: thisRunner() });
+  putChecks(context.places, id, { commit: submission.commit, state: "running", runs: [], runner: role === "daemon" ? thisRunner(role) : thisRunner(role, task.fields.checks.length * BOUND_MS) });
   return { task, tree: submission.tree };
 }
 
@@ -238,19 +239,40 @@ export function reject(context: Context, actor: Actor, id: string, findings: str
   });
 }
 
-/** Runs a landing while no other runs: one at a time, in the main checkout. */
+/**
+ * Runs a landing while no other runs: one at a time, in the main checkout.
+ * The lock names the process that holds it; a lock whose process ended is
+ * taken over, so that a lander killed while it held the lock stops none
+ * after it.
+ */
 function whileNoOtherLands<T>(places: Places, landing: () => T): T {
   const lock = join(places.state, "landing.lock");
+  const take = () => writeFileSync(lock, `${JSON.stringify(thisRunner("command", LANDING_LOCK_MS))}\n`, { flag: "wx" });
   try {
-    writeFileSync(lock, `${process.pid}\n`, { flag: "wx" });
+    take();
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
-    throw new Refusal(`another landing runs (${lock}); a landing takes its turn`);
+    if (!lockIsLeft(lock)) throw new Refusal(`another landing runs (${lock}); a landing takes its turn`);
+    rmSync(lock, { force: true });
+    take();
   }
   try {
     return landing();
   } finally {
     rmSync(lock, { force: true });
+  }
+}
+
+/** How long a landing holds its lock at most: a fast-forward and the writes of the board, never a check. */
+const LANDING_LOCK_MS = 5 * 60 * 1000;
+
+/** Whether the landing lock was left by a process that ended; a lock whose holder cannot be read is not. */
+function lockIsLeft(lock: string): boolean {
+  try {
+    const holder: unknown = JSON.parse(readFileSync(lock, "utf8"));
+    return typeof holder === "object" && holder !== null && "pid" in holder && !runnerRuns(holder as Runner);
+  } catch {
+    return false;
   }
 }
 
@@ -270,6 +292,15 @@ type Plan = { head: string; tip: string } & (
   | { to: "review"; target: string; why: string }
 );
 
+/** A change rebased on `main` in a landing tree of its own, whose setup (the project's, which makes a tree runnable) and checks are still to run. */
+export type Rebased = { head: string; tip: string; base: string; tree: string; target: string; setup: string[]; checks: string[] };
+
+/** How a landing runs the setup and the checks of a rebase in its tree, in that order: in its own process, or through the daemon's queue. */
+export type RunChecks = (rebased: Rebased) => Promise<CheckRun[]>;
+
+const movedEachTime = (id: string) =>
+  new Refusal(`main moved while each of ${LANDING_ATTEMPTS} landings of ${id} checked its rebase: it is still accepted; land it again`);
+
 /**
  * Lands an accepted task on the main checkout's branch, by a fast-forward
  * only. A change that `main` has moved past is rebased in a tree of the
@@ -279,18 +310,41 @@ type Plan = { head: string; tip: string } & (
  * before the landing lock is taken, so that other landings go on meanwhile;
  * under the lock the landing goes ahead only on the `main` and the branch
  * head its checks ran on, and checks again when `main` moved, up to
- * `LANDING_ATTEMPTS` times.
+ * `LANDING_ATTEMPTS` times. Its checks run in this process.
  */
 export function land(context: Context, id: string): Landing {
-  for (let attempt = 1; ; attempt++) {
-    const plan = planLanding(context, id);
+  for (let attempt = 1; attempt <= LANDING_ATTEMPTS; attempt++) {
+    const rebased = rebaseToLand(context, id);
+    let plan: Plan;
+    if ("to" in rebased) plan = rebased;
+    else
+      try {
+        plan = planOfChecks(context.places, rebased, runAll(context, [...rebased.setup, ...rebased.checks], rebased.tree));
+      } finally {
+        removeLandingTree(context.places, rebased.tree);
+      }
     const landing = whileNoOtherLands(context.places, () => carryOut(context, id, plan));
     if (landing) return landing;
-    if (attempt === LANDING_ATTEMPTS)
-      throw new Refusal(
-        `main moved while each of ${LANDING_ATTEMPTS} landings of ${id} checked its rebase: it is still accepted; land it again`,
-      );
   }
+  throw movedEachTime(id);
+}
+
+/** Lands a task as `land` does, with the checks of its rebase run by `runChecks`: the daemon's, through its queue. */
+export async function landThrough(context: Context, id: string, runChecks: RunChecks): Promise<Landing> {
+  for (let attempt = 1; attempt <= LANDING_ATTEMPTS; attempt++) {
+    const rebased = rebaseToLand(context, id);
+    let plan: Plan;
+    if ("to" in rebased) plan = rebased;
+    else
+      try {
+        plan = planOfChecks(context.places, rebased, await runChecks(rebased));
+      } finally {
+        removeLandingTree(context.places, rebased.tree);
+      }
+    const landing = whileNoOtherLands(context.places, () => carryOut(context, id, plan));
+    if (landing) return landing;
+  }
+  throw movedEachTime(id);
 }
 
 /** The task a landing reads: accepted, with its submission; refused otherwise. */
@@ -302,8 +356,12 @@ function acceptedOf(places: Places, id: string): { stored: Stored; submission: S
   return { stored, submission };
 }
 
-/** What landing a task would do on `main` as it is now; it writes nothing of the board. */
-function planLanding(context: Context, id: string): Plan {
+/**
+ * What landing a task would do on `main` as it is now, short of the checks
+ * of a rebase: those are left to run in the landing tree it returns. It
+ * writes nothing of the board.
+ */
+function rebaseToLand(context: Context, id: string): Plan | Rebased {
   const { places } = context;
   const { stored, submission } = acceptedOf(places, id);
   const head = git(places.root, "rev-parse", "HEAD");
@@ -325,25 +383,30 @@ function planLanding(context: Context, id: string): Plan {
   // A name of its own for each process: two landings of one task may check at once, and the first to take the lock lands it.
   const tree = join(places.trees, `landing-${id}-${process.pid}`);
   git(places.root, "worktree", "add", "--quiet", "--detach", tree, tip);
-  try {
-    if (tryGit(tree, "rebase", "--quiet", head).status !== 0)
-      return ready("Not landed: its rebase on what landed since its base stopped. Rebase its branch in its tree, and submit again.");
-    const target = git(tree, "rev-parse", "HEAD");
-    const runs = runAll(context, stored.task.fields.checks, tree);
-    if (runs.some((run) => run.result !== "passed"))
-      return ready(`Not landed: rebased on ${head.slice(0, 12)}, its checks fail:\n\n${runs.map(lineOf).join("\n")}`);
-    if (patchId(places.root, submission.base, tip) !== patchId(places.root, head, target))
-      return {
-        head,
-        tip,
-        to: "review",
-        target,
-        why: `Rebased on ${head.slice(0, 12)} as ${target.slice(0, 12)}, and the rebase changed the task's own diff: it is reviewed again, as \`git diff ${head.slice(0, 12)} ${target.slice(0, 12)}\`.`,
-      };
-    return { head, tip, to: "done", target };
-  } finally {
-    tryGit(places.root, "worktree", "remove", "--force", tree);
+  if (tryGit(tree, "rebase", "--quiet", head).status !== 0) {
+    removeLandingTree(places, tree);
+    return ready("Not landed: its rebase on what landed since its base stopped. Rebase its branch in its tree, and submit again.");
   }
+  const target = git(tree, "rev-parse", "HEAD");
+  return { head, tip, base: submission.base, tree, target, setup: configOf(places).setup, checks: stored.task.fields.checks };
+}
+
+const removeLandingTree = (places: Places, tree: string) => tryGit(places.root, "worktree", "remove", "--force", tree);
+
+/** Where a rebased change goes on the results of its checks. */
+function planOfChecks(places: Places, rebased: Rebased, runs: CheckRun[]): Plan {
+  const { head, tip, target } = rebased;
+  if (runs.some((run) => run.result !== "passed"))
+    return { head, tip, to: "ready", why: `Not landed: rebased on ${head.slice(0, 12)}, its checks fail:\n\n${runs.map(lineOf).join("\n")}` };
+  if (patchId(places.root, rebased.base, tip) !== patchId(places.root, head, target))
+    return {
+      head,
+      tip,
+      to: "review",
+      target,
+      why: `Rebased on ${head.slice(0, 12)} as ${target.slice(0, 12)}, and the rebase changed the task's own diff: it is reviewed again, as \`git diff ${head.slice(0, 12)} ${target.slice(0, 12)}\`.`,
+    };
+  return { head, tip, to: "done", target };
 }
 
 /** Carries out a plan under the landing lock; nothing, and nothing written, when `main` or the branch moved since it was made. */

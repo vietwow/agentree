@@ -11,6 +11,7 @@ import { join } from "node:path";
 import {
   costOf,
   decide,
+  inOrder,
   DEFAULT_BOUNDS,
   freeOf,
   MARK,
@@ -35,6 +36,8 @@ export type Ask = {
   boundMinutes: number;
   /** Keep what the command said when it passes too: a worker's own run, whose words it asked for. */
   keepOutput?: boolean;
+  /** A landing's check: it waits before every run that is not marked first. */
+  first?: boolean;
   /** The project's image, and the directory mounted into its container at the same path: the one that holds the repository and its trees. */
   container?: { image: string; mount: string; volumes?: { name: string; path: string }[] };
 };
@@ -257,6 +260,7 @@ export function createQueue(options: { home: string; now?: () => Date; machine?:
           askedAt: stamp(),
           cost: costOf(costs, ask.command, machine),
           sensitive: false,
+          ...(ask.first ? { first: true } : {}),
         };
         const start = (seat: number, workers: number) => {
           const [port, debug] = portsOf(seat);
@@ -293,11 +297,12 @@ export function createQueue(options: { home: string; now?: () => Date; machine?:
     first(n: number) {
       const ticket = tickets.get(n);
       if (!ticket || ticket.startedAt) throw new Refusal("no such run waits in the queue");
-      const ahead = Math.min(...[...tickets.values()].filter((each) => !each.startedAt).map((each) => each.n));
-      if (ahead === n) return;
+      const waiting = [...tickets.values()].filter((each) => !each.startedAt).sort(inOrder);
+      if (waiting[0] === ticket) return;
       tickets.delete(n);
-      // A place before every ticket there is, running or waiting, so that it is no other's.
-      ticket.n = Math.min(...tickets.keys(), ahead) - 1;
+      // A place before every ticket there is, running or waiting, so that it is no other's, among the runs marked first.
+      ticket.n = Math.min(...tickets.keys(), n) - 1;
+      ticket.first = true;
       tickets.set(ticket.n, ticket);
       held.delete(n);
       record("hold", "Moved first by the owner", ticket.task);
@@ -313,7 +318,7 @@ export function createQueue(options: { home: string; now?: () => Date; machine?:
       turn();
     },
     view(): SlotsView {
-      const all = [...tickets.values()].sort((a, b) => a.n - b.n);
+      const all = [...tickets.values()].sort(inOrder);
       const running = all.filter((ticket) => ticket.startedAt);
       return {
         cores: machine.cores,

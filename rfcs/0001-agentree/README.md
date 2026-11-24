@@ -287,7 +287,14 @@ when `merge-tree` reports no conflict, and runs the task's narrowed
 checks on the result. When the rebase changed no file of the task (the
 task's own diff is the same before and after), the review stands and
 the change lands. When it changed one, the task goes back to review
-with the difference shown. A conflict goes back to the worker.
+with the difference shown. A conflict goes back to the worker. The
+rebase and its checks run before the landing lock is taken, in a
+landing tree named for the lander's process, so that other landings go
+on while they run: in the origin, a landing that held its lock through
+its checks kept 21 accepted tasks waiting. Under the lock the landing
+goes ahead only on the `main` and the branch head its checks ran on;
+when `main` moved meanwhile it rebases and checks again, three times at
+most, and then leaves the task accepted and says so.
 
 **A tree's setup.** The project's part names the commands that make a
 new tree runnable (an install, a copy of ignored files it lists) and the
@@ -627,11 +634,32 @@ checks of every task that is `checking` and whose checks wait, each
 command through the queue, and settles the task. `agentree submit`
 waits for them unless `--no-wait`, and runs them itself when no daemon
 answers. While checks or a tree's setup run, their record names the
-process that runs them, by its id and the moment it started (which
-tells it from a later process given the same id); on each look the
-daemon puts back to wait a run whose process ended, a daemon that
+process that runs them, by its id, the moment it started (which tells
+it from a later process given the same id) and its host; on each look
+the daemon puts back to wait a run whose process ended, a daemon that
 stopped or a command killed while it ran them, so a task never stays
-`checking` and a setup runs to its end. `agentree run [T-NNNN] -- <command>` asks the daemon to run a
+`checking` and a setup runs to its end. The daemon in its container and
+a command on the host do not see each other's ids, so a run of another
+host counts as ended when it is a daemon's (a machine has one) and, when
+it is a command's, once the bound of each of its commands has passed.
+
+The daemon lands. On each look it lands the accepted tasks of each
+project, one at a time, in the order they were accepted, as a
+coordinator would by hand; the setup of a rebased landing's tree (the
+project's part's `setup`, as at a claim) and then its checks go through
+the queue before every run that waits but another landing's, since
+every accepted task behind a landing waits for it. A run the owner
+moves first goes before those too. Decided on
+2026-11-24, on the owner's word that the decision be made: a landing
+is the board's own work, like the checks of a submit, and the daemon
+is the one process that is always there to do it; in the origin a
+worker kept a loop of landings running, and accepted tasks waited
+behind checks of submits for hours. `agentree land` and the MCP tool
+still land by themselves, with their checks in their own process. Two
+landers meet only at the landing lock, which a landing holds only to
+move `main`; a lock left by a process that ended is taken over.
+
+`agentree run [T-NNNN] -- <command>` asks the daemon to run a
 command in the main checkout or a task's tree and prints what it said;
 `agentree load` says the load, the runs, what is free and how many more
 workers to start now; `agentree wait T-NNNN` returns when the owner

@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, test } from "node:test";
 import { Refusal } from "../errors.ts";
 import { git, tryGit } from "../git.ts";
+import { thisRunner } from "../machine/runner.ts";
 import { claim, create, log, type Actor, type Context, type NewTask } from "./actions.ts";
-import { accept, check, commit, land, reject, review, scope, submit, waitingToLand } from "./lifecycle.ts";
+import { accept, check, commit, land, LANDING_ATTEMPTS, reject, review, scope, submit, waitingToLand } from "./lifecycle.ts";
 import { setReviewOwnTasks } from "./options.ts";
+import { runInShell } from "./run.ts";
 import { checksOf, claimOf, reviewOf, submissionOf } from "./state.ts";
 import { readBoard, taskOf } from "./store.ts";
 import { CODEX, CURSOR, OWNER, project, type Project } from "./testing.ts";
@@ -50,6 +53,16 @@ function built(id: string, actor: Actor, files: Record<string, string>) {
   log(context, actor, id, "Did: the change.\nLeft: nothing.");
   return hold;
 }
+
+/** A commit on main made by hand, of one new file. */
+function byHand(file: string) {
+  writeFileSync(join(context.places.root, file), `${file}\n`);
+  main("add", file);
+  main("commit", "--quiet", "-m", `${file} by hand`);
+}
+
+/** The trees landings made for themselves that are still there. */
+const landingTrees = () => (existsSync(context.places.trees) ? readdirSync(context.places.trees).filter((name) => name.startsWith("landing-")) : []);
 
 /** Takes a built task through its submit, its checks, and its acceptance by another tool. */
 function accepted(id: string, builder: Actor, reviewer: Actor) {
@@ -189,7 +202,66 @@ test("a change main has moved past is rebased by the lander, checked, and landed
   assert.deepEqual(main("ls-files", "src").split("\n"), ["src/a.txt", "src/b.txt", "src/c.txt"]);
   assert.equal(main("log", "--format=%p", "-1").includes(" "), false, "main holds no merge commit");
   assert.ok(!existsSync(three.tree));
-  assert.ok(!existsSync(join(context.places.trees, "landing-T-0003")), "the lander's own tree is removed");
+  assert.deepEqual(landingTrees(), [], "the lander's own tree is removed");
+});
+
+test("a landing checks its rebase before it takes the lock: another lands meanwhile, and the first checks again on what landed", () => {
+  build("One", { writes: ["src/a.txt"], checks: ["test -f src/a.txt"] });
+  build("Two", { writes: ["src/b.txt"], checks: ["test -f src/b.txt"] });
+  built("T-0001", CODEX, { "src/a.txt": "a\n" });
+  built("T-0002", CURSOR, { "src/b.txt": "b\n" });
+  accepted("T-0001", CODEX, CURSOR);
+  accepted("T-0002", CURSOR, CODEX);
+  byHand("hand.txt");
+  const ran: string[] = [];
+  const during: Context = {
+    ...context,
+    run: (command, cwd) => {
+      ran.push(command);
+      // The first check of T-0001's rebase: another lander lands T-0002 while it runs.
+      if (ran.length === 1) assert.equal(land(context, "T-0002").task.fields.status, "done");
+      return runInShell(command, cwd);
+    },
+  };
+  const landing = land(during, "T-0001");
+  assert.equal(landing.task.fields.status, "done");
+  assert.deepEqual(ran, ["test -f src/a.txt", "test -f src/a.txt"], "its checks ran again on what landed meanwhile");
+  assert.deepEqual(main("ls-files", "src").split("\n"), ["src/a.txt", "src/b.txt"]);
+  assert.deepEqual(landingTrees(), []);
+});
+
+test("a landing lock left by a process that ended is taken over; one held, or one whose holder cannot be read, turns a landing away", () => {
+  build("One", { writes: ["src/a.txt"] });
+  built("T-0001", CODEX, { "src/a.txt": "a\n" });
+  accepted("T-0001", CODEX, CURSOR);
+  const lock = join(context.places.state, "landing.lock");
+  writeFileSync(lock, `${JSON.stringify(thisRunner("daemon"))}\n`);
+  refused(() => land(context, "T-0001"), /another landing runs/);
+  writeFileSync(lock, "4242\n");
+  refused(() => land(context, "T-0001"), /another landing runs/);
+  writeFileSync(lock, `${JSON.stringify({ pid: spawnSync("true").pid, since: new Date().toISOString(), role: "daemon" })}\n`);
+  assert.equal(land(context, "T-0001").task.fields.status, "done");
+  assert.equal(existsSync(lock), false, "the landing gives the lock back");
+});
+
+test("a landing whose main moves during every check of its rebase stays accepted, and says so", () => {
+  build("One", { writes: ["src/a.txt"] });
+  built("T-0001", CODEX, { "src/a.txt": "a\n" });
+  accepted("T-0001", CODEX, CURSOR);
+  byHand("hand-0.txt");
+  let moves = 0;
+  const moving: Context = {
+    ...context,
+    run: (command, cwd) => {
+      byHand(`hand-${++moves}.txt`);
+      return runInShell(command, cwd);
+    },
+  };
+  refused(() => land(moving, "T-0001"), new RegExp(`main moved while each of ${LANDING_ATTEMPTS} landings of T-0001 checked its rebase`));
+  assert.equal(moves, LANDING_ATTEMPTS);
+  assert.equal(statusOf("T-0001"), "accepted");
+  assert.deepEqual(landingTrees(), []);
+  assert.equal(land(context, "T-0001").task.fields.status, "done", "it lands once main stands still");
 });
 
 test("a change that conflicts with what landed is never landed over it: it goes back to a worker", () => {

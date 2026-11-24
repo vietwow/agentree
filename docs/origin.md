@@ -102,7 +102,8 @@ impossible rather than repeat their fixes.
     there are T-1088 (a landing rebases, installs and checks before it
     takes the lock; under the lock it confirms `main` has not moved and
     fast-forwards, or starts again) and T-1115 (a landing's checks take
-    the next free slot before any submit's). Here, `land` in
-    `src/core/board/lifecycle.ts` runs `runAll` inside
-    `whileNoOtherLands`, outside the daemon's queue: both answers apply
-    once they are built there.
+    the next free slot before any submit's). Here the daemon lands
+    (`src/daemon/landings.ts`): a landing rebases and checks before it
+    takes the lock and goes ahead only on the `main` its checks ran on
+    (`landThrough` in `src/core/board/lifecycle.ts`), and its checks
+    wait in the queue before every run but another landing's.

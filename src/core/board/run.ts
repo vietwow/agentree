@@ -7,7 +7,7 @@ export type Ran = { ok: boolean; timedOut: boolean; tookMs: number; output: stri
 export type Run = (command: string, cwd: string) => Ran;
 
 /** No check runs longer than this. */
-const BOUND_MS = 90 * 60 * 1000;
+export const BOUND_MS = 90 * 60 * 1000;
 /** How much of what a command said is kept with its result. */
 const KEPT = 4000;
 

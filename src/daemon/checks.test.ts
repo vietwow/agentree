@@ -74,7 +74,7 @@ test("checks left running by a process that ended run again, and the task is set
   submitted(["test -f src/a.txt"]);
   const { commit: checked } = checksOf(context.places, "T-0001")!;
   const ended = spawnSync("true").pid;
-  putChecks(context.places, "T-0001", { commit: checked, state: "running", runs: [], runner: { pid: ended, since: new Date().toISOString() } });
+  putChecks(context.places, "T-0001", { commit: checked, state: "running", runs: [], runner: { pid: ended, since: new Date().toISOString(), role: "daemon" } });
   await runWaitingChecks("project", context, createQueue({ home: join(at.home, "machine") }));
   assert.equal(statusOf("T-0001"), "review");
   assert.deepEqual(
@@ -86,7 +86,7 @@ test("checks left running by a process that ended run again, and the task is set
 test("checks that run in a process that still runs are left to it", async () => {
   submitted(["test -f src/a.txt"]);
   const { commit: checked } = checksOf(context.places, "T-0001")!;
-  putChecks(context.places, "T-0001", { commit: checked, state: "running", runs: [], runner: thisRunner() });
+  putChecks(context.places, "T-0001", { commit: checked, state: "running", runs: [], runner: thisRunner("daemon") });
   await runWaitingChecks("project", context, createQueue({ home: join(at.home, "machine") }));
   assert.equal(statusOf("T-0001"), "checking");
   assert.equal(checksOf(context.places, "T-0001")!.state, "running");

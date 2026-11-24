@@ -35,7 +35,7 @@ export function runWaitingSetups(project: string, context: Context, queue: Queue
       const key = `${project} ${id}`;
       running.add(key);
       try {
-        putSetup(places, id, { state: "running", output: "", runner: thisRunner() });
+        putSetup(places, id, { state: "running", output: "", runner: thisRunner("daemon") });
         let output = "";
         for (const command of configOf(places).setup) {
           // A setup is heavy: an install takes the processors and the disk a check would.
