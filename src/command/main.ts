@@ -25,6 +25,7 @@ import { reportedBy, TOOL_OF_COMMAND } from "../core/board/headless.ts";
 import { onHook } from "../core/board/hooks.ts";
 import { accept, check, commit, land, reject, review, scope, submit, waitingToLand } from "../core/board/lifecycle.ts";
 import { setReleaseStale, setReviewOwnTasks } from "../core/board/options.ts";
+import { sweepTrees, trees } from "../core/board/trees.ts";
 import { boardOf } from "../core/board/places.ts";
 import { lintProblems, obstacles, unwritten } from "../core/board/rules.ts";
 import { setUpTree } from "../core/board/setup.ts";
@@ -82,6 +83,7 @@ const USAGE = `Usage: agentree <subcommand> [options]
   reject T-NNNN < findings.md           ready again, with the findings
   land [T-NNNN]                         land an accepted task on main, or each that waits, in turn
   option review-own-tasks <tool> on|off (the owner's)
+  trees [--sweep]                      the trees of the project; with --sweep, remove those of done and dropped tasks
   option release-stale on|off          whether the daemon releases a claim that went stale (the owner's)
   move T-NNNN backlog|ready|dropped     (the owner's)
   promote                               make ready every backlog task that waits for nothing (the owner's)
@@ -130,6 +132,7 @@ function given() {
         goal: { type: "string" },
         state: { type: "string" },
         base: { type: "string" },
+        sweep: { type: "boolean" },
         to: { type: "string" },
         clone: { type: "string" },
         colours: { type: "string" },
@@ -553,6 +556,19 @@ const COMMANDS: Record<string, () => unknown> = {
     say(
       `${task.fields.id} asks for the set. Its run's folder holds nothing of this project:\n  ${folder}\nOpen a tool that can drive Chrome in that folder, and tell it to follow AGENTS.md.`,
     );
+  },
+  trees() {
+    const at = context();
+    if (values.sweep) {
+      const { removed, stayed } = sweepTrees(at);
+      say(removed.length ? `removed the trees of ${removed.join(", ")}` : "no tree of a done or dropped task to remove");
+      for (const each of stayed) say(`${each.id} stays: ${each.why}`);
+    }
+    const all = trees(at);
+    const { maxTrees } = configOf(at.places);
+    for (const tree of all)
+      say(`${tree.id}  ${tree.status.padEnd(12)}${tree.held ? "held  " : "      "}${tree.changed ? "changed  " : "         "}${tree.path}`);
+    say(`${all.length} ${all.length === 1 ? "tree" : "trees"}${maxTrees ? ` of ${maxTrees} at most` : ""}`);
   },
   icons() {
     const at = context();

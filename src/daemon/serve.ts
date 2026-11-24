@@ -7,6 +7,7 @@ import { join, relative } from "node:path";
 import { releaseStale } from "../core/board/actions.ts";
 import { configOf } from "../core/board/config.ts";
 import { readBoard } from "../core/board/store.ts";
+import { sweepTrees } from "../core/board/trees.ts";
 import { machineHome, placesOfProject, projects } from "../core/machine/projects.ts";
 import { lookAt, noticesBetween, type Look } from "../core/views/notices.ts";
 import { createApp, createEvents, type Events } from "./app.ts";
@@ -55,6 +56,8 @@ function watch(events: Events, queue: Queue, now: () => Date) {
         if (seen.has(id) && seen.get(id) !== print) {
           events.emit({ project: id, what: "board" });
           removeLeftVolumes(id, { places: placesOfProject(id), now });
+          // The tree of a task that is done or dropped is of no more use; one with a change no commit has stays.
+          sweepTrees({ places: placesOfProject(id), now });
         }
         if (seen.get(id) !== print) {
           // What the owner is told of: the difference of this look from the last. The first look tells nothing.

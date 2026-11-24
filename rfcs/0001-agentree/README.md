@@ -1501,6 +1501,14 @@ Proposed beyond what was asked, in the order of what they buy:
    becomes a finding in the reject entry.
 6. **Keeping trees few.** A bound on trees, and removal of the trees of
    done tasks in the background.
+   The bound is `maxTrees` in the project's part, none unless named: a
+   claim that needs one more tree is refused, and a task whose tree is
+   there is claimed again. A landing removes its task's tree; the
+   daemon, on a look that found a change, removes the trees of the
+   tasks that are done or dropped, and `agentree trees --sweep` does
+   the same by hand. A tree that is held, or that holds a change no
+   commit has, stays and is named with why; a dropped task's branch
+   stays, so its commits are not lost with its tree.
 
 Not proposed for the first version: a board across machines (the claim
 and the queue are one machine's; the origin's design of a claim as a

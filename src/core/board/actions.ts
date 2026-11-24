@@ -25,6 +25,7 @@ import { TASK_BRANCH, treeOf, type Places } from "./places.ts";
 import type { Run } from "./run.ts";
 import { dependenciesDone, isHeld as held, nextId, obstacles, overlaps } from "./rules.ts";
 import { readOptions } from "./options.ts";
+import { roomForATree } from "./trees.ts";
 import { beat as beatHold, claimOf, claims, createClaim, putClaim, putSetup, removeClaim, reviewOf, type Claim } from "./state.ts";
 import { fromItsRead, readBoard, taskOf, writeTask, type Board, type Stored } from "./store.ts";
 
@@ -165,6 +166,7 @@ function treeFor(places: Places, id: string, by: string): { tree: string; branch
   const branch = TASK_BRANCH(id);
   const exists = tryGit(places.root, "rev-parse", "--verify", "--quiet", `refs/heads/${branch}`).status === 0;
   const made = !existsSync(tree);
+  if (made) roomForATree(places);
   if (made) git(places.root, "worktree", "add", "--quiet", "--relative-paths", ...(exists ? [tree, branch] : ["-b", branch, tree, "HEAD"]));
   else if (!exists) throw new Refusal(`${tree} is there and the branch ${branch} is not: it is no tree of this task. Remove it and claim again`);
   tryGit(places.root, "worktree", "unlock", tree);
