@@ -20,6 +20,7 @@ import { filesView } from "../core/views/files.ts";
 import { agentsView, milestonesView, projectView } from "../core/views/project.ts";
 import { activityView, taskDetailView, taskView } from "../core/views/tasks.ts";
 import { toolsView } from "../core/views/tools.ts";
+import { fingerprint } from "./fingerprint.ts";
 import type { Queue } from "./queue.ts";
 
 /** What changed, for the browser to read again: a project's board, or the machine's queue. */
@@ -44,8 +45,12 @@ const OWNER: Actor = { worker: "person/owner", session: "", owner: true };
 
 export type Daemon = { token: string; queue: Queue; events: Events; now: () => Date; origins: string[] };
 
+/** How long a snapshot of a board that did not change stands for the board. */
+const SNAPSHOT_HOLDS_MS = 5000;
+
 export function createApp(daemon: Daemon) {
   const app = new Hono();
+  const snapshots = new Map<string, { key: string; snapshot: unknown }>();
   const contextOf = (request: Request): Context => ({ places: placesOfProject(request.req.param("project")!), now: daemon.now });
   const changed = (request: Request, what: Change["what"] = "board") => daemon.events.emit({ project: request.req.param("project")!, what });
 
@@ -88,11 +93,16 @@ export function createApp(daemon: Daemon) {
   });
   // Everything a project's pages show, in one read: a page reads no second address.
   app.get("/api/projects/:project/snapshot", (request) => {
-    const board = readBoard(contextOf(request).places);
+    const id = request.req.param("project");
     const now = daemon.now();
-    return request.json({
+    // Read again only when the board is not as it was, or its times have moved on: a read walks every tree.
+    const key = `${fingerprint(id)} ${Math.floor(now.getTime() / SNAPSHOT_HOLDS_MS)}`;
+    const held = snapshots.get(id);
+    if (held?.key === key) return request.json(held.snapshot);
+    const board = readBoard(contextOf(request).places);
+    const snapshot = {
       now: now.toISOString(),
-      project: projectView(projectOf(request.req.param("project")), board),
+      project: projectView(projectOf(id), board),
       tasks: board.tasks.map((stored) => taskView(board.places, stored.task)),
       details: Object.fromEntries(board.tasks.map((stored) => [stored.task.fields.id, taskDetailView(board, stored.task, now)])),
       activity: activityView(board),
@@ -103,7 +113,9 @@ export function createApp(daemon: Daemon) {
       sessions: agentsView(board.places, now),
       tools: toolsView(board.places),
       unreadable: board.unreadable,
-    });
+    };
+    snapshots.set(id, { key, snapshot });
+    return request.json(snapshot);
   });
   app.get("/api/projects/:project/tasks/:task", (request) => {
     const board = readBoard(contextOf(request).places);

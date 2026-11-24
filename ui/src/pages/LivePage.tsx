@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ActivityEntry } from "../board/activity.ts";
-import { fixtureAgents } from "../board/fixtures.ts";
+import { board as read } from "../board/daemon.ts";
 import { liveBoard, saidBy, type Region, type Seat } from "../board/live.ts";
 import type { Task } from "../board/task.ts";
 import { Ago } from "../design/components/Ago.tsx";
@@ -68,20 +68,23 @@ export function LivePage({
   activity,
   now,
   projects,
+  project,
+  onProject,
   onOpenTask,
 }: {
   tasks: readonly Task[];
   activity: readonly ActivityEntry[];
   now: Date;
   projects: readonly { id: string; name: string }[];
+  /** The project whose sessions are drawn; choosing another opens that project. */
+  project: string;
+  onProject: (id: string) => void;
   onOpenTask: (id: string) => void;
 }) {
-  const [project, setProject] = useState(projects[0]?.id ?? "agentree");
   const name = projects.find((p) => p.id === project)?.name ?? project;
   const board = useMemo(() => {
-    const sessions = project === "agentree" ? fixtureAgents(now).sessions : [];
-    return liveBoard(sessions, project === "agentree" ? tasks : [], project === "agentree" ? activity : [], now);
-  }, [project, tasks, activity, now]);
+    return liveBoard(read().sessions, tasks, activity, now);
+  }, [tasks, activity, now]);
   const seats = useMemo(() => board.regions.flatMap((r) => r.seats), [board]);
 
   const graph = useRef<HTMLElement>(null);
@@ -156,7 +159,7 @@ export function LivePage({
     <Page theme="live">
       <div className="live-proj seg" role="group" aria-label="Project">
         {projects.map((p) => (
-          <button key={p.id} type="button" className={p.id === project ? "on" : ""} aria-pressed={p.id === project} onClick={() => setProject(p.id)}>
+          <button key={p.id} type="button" className={p.id === project ? "on" : ""} aria-pressed={p.id === project} onClick={() => onProject(p.id)}>
             {p.name}
           </button>
         ))}

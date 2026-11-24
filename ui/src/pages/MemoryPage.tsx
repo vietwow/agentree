@@ -1,6 +1,7 @@
 import { Archive, BookMarked, Brain, Clock, FileText, Handshake, Lightbulb, Pencil, Search, TriangleAlert, type LucideIcon } from "lucide-react";
-import { useMemo, useState } from "react";
-import { fixtureFacts, type Fact } from "../board/fixtures.ts";
+import { useState } from "react";
+import { board } from "../board/daemon.ts";
+import type { Fact } from "../board/model.ts";
 import { TOOL_LABEL } from "../board/task.ts";
 import { Ago } from "../design/components/Ago.tsx";
 import { Badge, type Tone } from "../design/components/Badge.tsx";
@@ -42,7 +43,7 @@ type Props = {
 
 /** The facts of `work/memory/`: what every session is told, and what it may recall. */
 export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
-  const facts = useMemo(() => fixtureFacts(now), [now]);
+  const { facts } = board();
   const [kind, setKind] = useState<Kind | "all">("all");
   const [q, setQ] = useState(query);
   const [open, setOpen] = useState<string | undefined>();

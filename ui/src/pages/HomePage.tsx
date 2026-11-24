@@ -2,7 +2,7 @@ import { Bot, CircleCheck, CircleGauge, Clock, GitMerge, GitPullRequest, ListTod
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { ActivityEntry } from "../board/activity.ts";
-import { fixtureAgents } from "../board/fixtures.ts";
+import { board } from "../board/daemon.ts";
 import { fileAreas, forecast, markCounts, numbers, toolsLive, type FileArea, type FileCell, type FileMark, type Forecast } from "../board/home.ts";
 import { STATUS_LABEL, TOOL_LABEL, type Task } from "../board/task.ts";
 import { ic } from "../design/components/icon.tsx";
@@ -304,7 +304,7 @@ export function HomePage({ project, tasks, activity, now, onOpenTask, onAgents }
   const counts = markCounts(areas);
   const f = useMemo(() => forecast(tasks, now, span), [tasks, now, span]);
   const k = useMemo(() => numbers(tasks, activity, now), [tasks, activity, now]);
-  const { sessions } = useMemo(() => fixtureAgents(now), [now]);
+  const { sessions } = board();
   const tools = useMemo(() => toolsLive(sessions, tasks), [sessions, tasks]);
   const live = sessions.filter((s) => !s.ended).length;
 

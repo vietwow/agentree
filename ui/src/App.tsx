@@ -1,11 +1,10 @@
 import { ArrowLeftRight, CircleCheck, FolderPlus, Keyboard, LogOut, Moon, PanelLeft, Plus, Search, Sun } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { fixtureActivity } from "./board/activity.ts";
-import { fixtureDetail, fixtureNow, fixtureTasks } from "./board/fixtures.ts";
-import { fixtureProjects } from "./board/projects.ts";
+import { send, type Board } from "./board/daemon.ts";
+import type { Project } from "./board/projects.ts";
 import { isClaimed, openQuestions, stats } from "./board/summary.ts";
 import { STATUS_LABEL, type Status, type Task } from "./board/task.ts";
-import { useTicks, withTicks } from "./board/ticks.ts";
+import { settleTicks, useTicks, withTicks } from "./board/ticks.ts";
 import { useEscape } from "./design/components/escape.ts";
 import { ic } from "./design/components/icon.tsx";
 import { toast } from "./design/components/toast.ts";
@@ -48,25 +47,23 @@ function savedOrder(): string[] {
 
 const notBuilt = (what: string) => toast(`${what} is not built yet`, { kind: "info", ms: 2200 });
 
-export function App() {
-  const now = useMemo(fixtureNow, []);
-  const sample = useMemo(() => fixtureTasks(now), [now]);
-  const [moved, setMoved] = useState<Record<string, Status>>({});
+type Props = {
+  /** The machine's projects, and the board of the open one. */
+  projects: Project[];
+  board: Board;
+  onProject: (id: string) => void;
+};
+
+export function App({ projects: listed, board, onProject }: Props) {
+  const { now, tasks: sample, activity } = board;
+  const project = board.project.id;
   const ticks = useTicks();
-  const tasks = useMemo(
-    () =>
-      withTicks(
-        sample.map((t) => (moved[t.id] ? { ...t, status: moved[t.id]! } : t)),
-        ticks.done,
-      ),
-    [sample, moved, ticks.done],
-  );
+  useEffect(settleTicks, [sample]);
+  const tasks = useMemo(() => withTicks(sample, ticks.done), [sample, ticks.done]);
   const [orders, setOrders] = useState<Record<string, number>>({});
   const taskOrder = useCallback((t: Task) => orders[t.id] ?? sample.findIndex((x) => x.id === t.id), [orders, sample]);
-  const activity = useMemo(() => fixtureActivity(tasks, now), [tasks, now]);
   const theme = useTheme();
   const [page, setPage] = useState<Page>("home");
-  const [project, setProject] = useState("agentree");
   const [inProject, setInProject] = useState(false);
   const [order, setOrder] = useState(savedOrder);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDE_KEY) === "collapsed");
@@ -78,26 +75,29 @@ export function App() {
   const [full, setFull] = useState(false);
   const panel = useRef<HTMLElement>(null);
   const open = tasks.find((t) => t.id === shownId);
-  const detail = useMemo(() => open && fixtureDetail(open, tasks, now), [open, tasks, now]);
+  const detail = open && board.details.get(open.id);
   const selected = closing ? undefined : shownId;
 
   const projects = useMemo(() => {
-    const all = fixtureProjects(tasks, now);
+    const all = [...listed];
     const rank = (id: string) => (order.includes(id) ? order.indexOf(id) : order.length + all.findIndex((p) => p.id === id));
     return all.sort((a, b) => rank(a.id) - rank(b.id));
-  }, [tasks, now, order]);
+  }, [listed, order]);
 
   const go = useCallback((next: Page) => {
     setPage(next);
     setInProject(false);
     setMenuOpen(false);
   }, []);
-  const openProject = useCallback((id: string, next: Page) => {
-    setProject(id);
-    setPage(next);
-    setInProject(true);
-    setMenuOpen(false);
-  }, []);
+  const openProject = useCallback(
+    (id: string, next: Page) => {
+      onProject(id);
+      setPage(next);
+      setInProject(true);
+      setMenuOpen(false);
+    },
+    [onProject],
+  );
 
   const toggleSide = useCallback(() => {
     setCollapsed((now) => {
@@ -117,31 +117,23 @@ export function App() {
     [projects],
   );
 
+  /** Asks the daemon to move tasks; each shows in its place when the daemon tells of it. */
   const move = useCallback(
     (ids: string[], status: Status) => {
-      let before: Partial<Record<string, Status>> = {};
-      setMoved((now) => {
-        before = Object.fromEntries(ids.map((id) => [id, now[id]]));
-        return { ...now, ...Object.fromEntries(ids.map((id) => [id, status])) };
-      });
-      const one = ids.length === 1 && sample.find((t) => t.id === ids[0]);
-      toast(one ? `Moved “${one.title}” to ${STATUS_LABEL[status]}` : `Moved ${ids.length} tasks to ${STATUS_LABEL[status]}`, {
-        ms: 5000,
-        countdown: true,
-        action: "Undo",
-        onAction: () =>
-          setMoved((now) => {
-            const next = { ...now };
-            for (const id of ids) {
-              const was = before[id];
-              if (was === undefined) delete next[id];
-              else next[id] = was;
-            }
-            return next;
-          }),
+      const before = new Map(sample.filter((t) => ids.includes(t.id)).map((t) => [t.id, t.status]));
+      const to = (id: string, where: Status) => send(`/api/projects/${project}/tasks/${id}/move`, { to: where });
+      void Promise.all(ids.map((id) => to(id, status))).then((moved) => {
+        if (!moved.every(Boolean)) return;
+        const one = ids.length === 1 && sample.find((t) => t.id === ids[0]);
+        toast(one ? `Moved “${one.title}” to ${STATUS_LABEL[status]}` : `Moved ${ids.length} tasks to ${STATUS_LABEL[status]}`, {
+          ms: 5000,
+          countdown: true,
+          action: "Undo",
+          onAction: () => void Promise.all(ids.map((id) => to(id, before.get(id)!))),
+        });
       });
     },
-    [sample],
+    [sample, project],
   );
 
   const closePanel = useCallback(() => {
@@ -221,7 +213,6 @@ export function App() {
   const ready = tasks.filter((t) => t.status === "ready").length;
   const current = projects.find((p) => p.id === project) ?? projects[0]!;
   const isProjectPage = inProject && PROJECT_PAGES.some(([key]) => key === page);
-  const fixtureProject = current.id === "agentree";
 
   const owner = {
     theme: theme.choice,
@@ -324,8 +315,6 @@ export function App() {
   }, [routeKey]);
 
   const body = () => {
-    if (isProjectPage && !fixtureProject)
-      return <NotBuilt page={page} note={`The sample data holds only agentree's board, not ${current.name}'s.`} />;
     const render = views[page];
     return render ? render() : <NotBuilt page={page} />;
   };
@@ -345,16 +334,7 @@ export function App() {
   );
   /** The pages built so far; any other shows that it is not built yet. */
   const views: Partial<Record<Page, () => ReactNode>> = {
-    home: () => (
-      <HomePage
-        project={projects.find((p) => p.id === "agentree")!.name}
-        tasks={tasks}
-        activity={activity}
-        now={now}
-        onOpenTask={openTask}
-        onAgents={() => go("agents")}
-      />
-    ),
+    home: () => <HomePage project={current.name} tasks={tasks} activity={activity} now={now} onOpenTask={openTask} onAgents={() => go("agents")} />,
     projects: () => <ProjectsPage projects={projects} now={now} onOpen={(id) => openProject(id, "board")} />,
     favorites: () => (
       <FavoritesPage
@@ -370,7 +350,9 @@ export function App() {
     progress: () => <ProgressPage tasks={tasks} now={now} onOpenTask={openTask} selected={selected} />,
     review: () => <ReviewPage tasks={tasks} now={now} selected={selected} onOpenTask={openTask} />,
     agents: () => <AgentsPage tasks={tasks} now={now} onOpenTask={openTask} onNotBuilt={notBuilt} />,
-    live: () => <LivePage tasks={tasks} activity={activity} now={now} projects={projects} onOpenTask={openTask} />,
+    live: () => (
+      <LivePage tasks={tasks} activity={activity} now={now} projects={projects} project={project} onProject={onProject} onOpenTask={openTask} />
+    ),
     documents: () => <DocumentsPage tasks={tasks} onOpenTask={openTask} />,
     slots: () => <SlotsPage tasks={tasks} now={now} onOpenTask={openTask} onNotBuilt={notBuilt} />,
     memory: () => <MemoryPage now={now} onOpenTask={openTask} onNotBuilt={notBuilt} />,
@@ -408,7 +390,7 @@ export function App() {
           task={open}
           detail={detail}
           tasks={tasks}
-          project={projects.find((p) => p.id === "agentree")!}
+          project={current}
           now={now}
           full={full}
           closing={closing}

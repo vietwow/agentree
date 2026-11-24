@@ -1,7 +1,8 @@
 import { Check, Clock, CornerDownRight, Minus, Network, Plug, Webhook } from "lucide-react";
-import { useMemo, useState } from "react";
-import { fixtureAgents, type AgentSession, type AgentState } from "../board/fixtures.ts";
-import { TOOL_LABEL, type Task, type Tool } from "../board/task.ts";
+import { useState } from "react";
+import { board } from "../board/daemon.ts";
+import type { AgentSession, AgentState } from "../board/model.ts";
+import { TOOL_LABEL, TOOLS, type Task, type Tool } from "../board/task.ts";
 import { Ago } from "../design/components/Ago.tsx";
 import { Badge, type Tone } from "../design/components/Badge.tsx";
 import { GroupHeader } from "../design/components/GroupHeader.tsx";
@@ -34,12 +35,17 @@ type Props = {
 
 /** The sessions of each tool and the subagents they started, as the tools' hooks and their calls of the board tell them. */
 export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
-  const { sessions, tools } = useMemo(() => fixtureAgents(now), [now]);
+  const { sessions, tools } = board();
   const [closed, setClosed] = useState<Record<string, boolean>>({});
   const title = (id: string) => tasks.find((t) => t.id === id)?.title ?? id;
   const live = sessions.filter((s) => s.state !== "ended");
   const subs = live.flatMap((s) => s.subagents.filter((a) => a.state !== "ended"));
-  const byTool = [...new Set(sessions.map((s) => s.tool))].map((tool) => ({ tool, rows: sessions.filter((s) => s.tool === tool) }));
+  // Each tool's sessions: those that hold a task or started subagents first, then by their last beat.
+  const busy = (s: AgentSession) => (s.task || s.subagents.length ? 0 : 1);
+  const byTool = TOOLS.filter((tool) => sessions.some((s) => s.tool === tool)).map((tool) => ({
+    tool,
+    rows: sessions.filter((s) => s.tool === tool).sort((a, b) => busy(a) - busy(b) || b.beat.getTime() - a.beat.getTime()),
+  }));
 
   const badge = (state: AgentState) => (
     <Badge tone={STATE[state].tone} dot>

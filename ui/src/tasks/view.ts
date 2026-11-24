@@ -1,4 +1,4 @@
-import { PARENT_TITLES } from "../board/fixtures.ts";
+import { parentTitles } from "../board/daemon.ts";
 import { KINDS, STATUSES, TOOLS, type Task } from "../board/task.ts";
 import { DAY } from "../design/format/time.ts";
 
@@ -75,7 +75,7 @@ export function fieldOpts(f: Field, tasks: readonly Task[]): Opt[] {
         ...[...new Set(tasks.flatMap((t) => (t.rfc ? [t.rfc] : [])))].sort().map((r) => ({ id: `rfc:${r}`, name: rfcLabel(r) })),
       ];
     case "parent":
-      return [...Object.entries(PARENT_TITLES).map(([id, title]) => ({ id, name: title })), { id: "none", name: "No parent" }];
+      return [...Object.entries(parentTitles()).map(([id, title]) => ({ id, name: title })), { id: "none", name: "No parent" }];
     case "created":
     case "updated":
       return [
@@ -138,7 +138,7 @@ export function groupTasks(tasks: Task[], g: GroupKey): Group[] {
         ? [...new Set(tasks.map((t) => t.priority))].sort().map(String)
         : g === "assignee"
           ? [...TOOLS, "none"]
-          : [...Object.keys(PARENT_TITLES), "none"];
+          : [...Object.keys(parentTitles()), "none"];
   const of = (t: Task) =>
     g === "status" ? t.status : g === "priority" ? String(t.priority) : g === "assignee" ? (t.holder?.tool ?? "none") : (t.parent ?? "none");
   const groups = keys.map((key) => ({ key, tasks: tasks.filter((t) => of(t) === key) }));

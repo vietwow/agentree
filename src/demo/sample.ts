@@ -1,28 +1,25 @@
-import { MINUTE } from "../design/format/time.ts";
+import type { AgentSession, Doc, Fact, Slots, ToolSetup } from "../../ui/src/board/model.ts";
 import {
   KIND_LABEL,
   type CheckRun,
   type Checks,
   type Kind,
-  type LogEntry,
   type Session,
   type Status,
   type Task,
   type TaskDetail,
   type Tool,
-} from "./task.ts";
+} from "../../ui/src/board/task.ts";
+
+type LogEntry = TaskDetail["log"][number];
+
+const MINUTE = 60_000;
 
 /**
  * Sample tasks for the first page, until the daemon serves the board.
  * Times are minutes before the fixtures' clock, 15:00 of the current day,
  * so the page reads the same whenever it is opened.
  */
-
-export function fixtureNow(): Date {
-  const now = new Date();
-  now.setHours(15, 0, 0, 0);
-  return now;
-}
 
 type Row = {
   id: string;
@@ -47,10 +44,7 @@ const PARENTS = {
   "T-0003": "The daemon and the UI",
 } as const;
 
-export const PARENT_TITLES: Record<string, string> = PARENTS;
-
-/** The owner's avatar colour. */
-export const OWNER_COLOR = "#5A67D8";
+const PARENT_TITLES: Record<string, string> = PARENTS;
 
 const ROWS: Row[] = [
   { id: "T-0031", title: PARENTS["T-0031"], status: "done", kind: "build", priority: 1, created: 29600, since: 20300, landed: 20300 },
@@ -557,24 +551,19 @@ export function fixtureTasks(now: Date): Task[] {
     status: row.status,
     kind: row.kind,
     priority: row.priority,
-    parent: row.parent,
+    ...(row.parent ? { parent: row.parent } : {}),
     rfc: "0001",
-    holder: row.holder && {
-      tool: row.holder[0],
-      model: row.holder[1],
-      since: ago(now, row.holder[2]),
-      beat: ago(now, row.holder[3]),
-    },
-    branch: row.holder && row.status !== "done" ? `task/${row.id}` : undefined,
+    ...(row.holder ? { holder: { tool: row.holder[0], model: row.holder[1], since: ago(now, row.holder[2]), beat: ago(now, row.holder[3]) } } : {}),
+    ...(row.holder && row.status !== "done" ? { branch: `task/${row.id}` } : {}),
     checks: { total: 0, passed: 0, failed: 0, state: "none", ...row.checks },
     questions: (row.asked ?? []).map((minutes, i) => ({
       askedAt: ago(now, minutes),
-      answeredAt: row.answered?.[i] === undefined ? undefined : ago(now, row.answered[i]),
+      ...(row.answered?.[i] === undefined ? {} : { answeredAt: ago(now, row.answered[i]!) }),
     })),
     subtasks: (SUBTASKS[row.id] ?? []).map(([title, done], i) => ({ id: `${row.id}-${i + 1}`, title, done: done === 1 })),
     createdAt: ago(now, row.created),
     statusSince: ago(now, row.since),
-    landedAt: row.landed === undefined ? undefined : ago(now, row.landed),
+    ...(row.landed === undefined ? {} : { landedAt: ago(now, row.landed) }),
   }));
 }
 
@@ -744,7 +733,7 @@ function sessions(task: Task, now: Date): Session[] {
     tool,
     models: n % 4 === 0 && tool !== "person" ? [model, `${model}-mini`] : [model],
     startedAt: since,
-    endedAt: working ? undefined : new Date(Math.min(task.statusSince.getTime(), now.getTime())),
+    ...(working ? {} : { endedAt: new Date(Math.min(task.statusSince.getTime(), now.getTime())) }),
     ...usage(1),
   };
   if (!["review", "accepted", "done"].includes(task.status)) return [build];
@@ -759,13 +748,13 @@ function sessions(task: Task, now: Date): Session[] {
       tool: reviewer,
       models: [reviewer === "codex" ? "gpt-5.6" : "opus-5.5"],
       startedAt: reviewing ? new Date(now.getTime() - 4 * MINUTE) : start,
-      endedAt: reviewing ? undefined : new Date(start.getTime() + 12 * MINUTE),
+      ...(reviewing ? {} : { endedAt: new Date(start.getTime() + 12 * MINUTE) }),
       ...(REPORTS_USE.has(reviewer)
         ? {
             tokens: { input: 64_000 + n * 800, cachedInput: 310_000, output: 6_200, reasoning: 9_800 },
             costUsd: Math.round((0.42 + n * 0.03) * 100) / 100,
           }
-        : { unknown: UNKNOWN_USE[reviewer] }),
+        : { unknown: UNKNOWN_USE[reviewer] ?? "The tool reports no use" }),
     },
   ];
 }
@@ -783,7 +772,7 @@ function timeIn(task: Task, now: Date): { status: Status; ms: number }[] {
   return rows;
 }
 
-export function fixtureLog(task: Task, now: Date): LogEntry[] {
+function fixtureLog(task: Task, now: Date): LogEntry[] {
   const entries: LogEntry[] = [{ at: task.createdAt, who: "person", text: "Created in backlog" }];
   task.questions.forEach((q, i) => {
     entries.push({ at: q.askedAt, who: task.holder?.tool ?? "person", text: `Asked the owner: ${QUESTIONS[task.id]?.[i] ?? "a question"}` });
@@ -821,7 +810,14 @@ export function fixtureLog(task: Task, now: Date): LogEntry[] {
   return entries.filter((e) => e.at <= now).sort((a, b) => b.at.getTime() - a.at.getTime());
 }
 
-export function fixtureDetail(task: Task, tasks: readonly Task[], now: Date): TaskDetail {
+/** A card opened on the sample board; what a task lacks is said as undefined. */
+export type SampleDetail = Omit<TaskDetail, "parentTitle" | "tree" | "review"> & {
+  parentTitle: string | undefined;
+  tree: TaskDetail["tree"] | undefined;
+  review: TaskDetail["review"] | undefined;
+};
+
+export function fixtureDetail(task: Task, tasks: readonly Task[], now: Date): SampleDetail {
   const area = TASK_AREAS[task.id] ?? (task.parent ? (AREAS[task.parent] ?? "work") : "work");
   const name = slug(task.title);
   const writes =
@@ -844,8 +840,8 @@ export function fixtureDetail(task: Task, tasks: readonly Task[], now: Date): Ta
     questions: task.questions.map((q, i) => ({
       askedAt: q.askedAt,
       text: QUESTIONS[task.id]?.[i] ?? "A question",
-      answeredAt: q.answeredAt,
-      answer: ANSWERS[task.id]?.[i],
+      ...(q.answeredAt ? { answeredAt: q.answeredAt } : {}),
+      ...(ANSWERS[task.id]?.[i] ? { answer: ANSWERS[task.id]![i]! } : {}),
     })),
     tree:
       task.branch || task.landedAt
@@ -885,39 +881,6 @@ const REJECTED: Record<string, { at: number; findings: string[] }> = {
     at: 300,
     findings: ["The dark theme's tokens are not in the page's CSS", "The sidebar's icons are drawn at 18px where the design has 16px"],
   },
-};
-
-/** A point on the Progress page: an RFC or ADR accepted, or an epic done. */
-export type Milestone = { at: Date; name: string; kind: "document" | "epic" };
-
-/** The documents accepted on the sample board, with when. */
-const ACCEPTED: [string, number][] = [
-  ["ADR 0001 Trees only, no shared checkout", 1500],
-  ["ADR 0002 The memory in Markdown", 1480],
-];
-
-export function fixtureMilestones(tasks: readonly Task[], now: Date): Milestone[] {
-  const docs = ACCEPTED.map(([name, minutes]): Milestone => ({ at: ago(now, minutes), name, kind: "document" }));
-  const epics = Object.entries(PARENT_TITLES).flatMap(([id, title]): Milestone[] => {
-    const kids = tasks.filter((t) => t.parent === id);
-    if (!kids.length || kids.some((t) => t.status !== "done" || !t.landedAt)) return [];
-    const at = new Date(Math.max(...kids.map((t) => t.landedAt!.getTime())));
-    return [{ at, name: `${title} done`, kind: "epic" }];
-  });
-  return [...docs, ...epics].sort((a, b) => a.at.getTime() - b.at.getTime());
-}
-
-/** A file of `work/memory/`: one fact, what it is about, and where it came from. */
-export type Fact = {
-  file: string;
-  kind: "agreement" | "decision" | "pitfall" | "how-to";
-  title: string;
-  body: string;
-  paths: string[];
-  task?: string;
-  by: Tool;
-  state: "in-force" | "proposed" | "retired";
-  at: Date;
 };
 
 const FACTS: [Omit<Fact, "at">, number][] = [
@@ -1078,45 +1041,6 @@ export function fixtureFacts(now: Date): Fact[] {
   return FACTS.map(([fact, minutes]) => ({ ...fact, at: ago(now, minutes) }));
 }
 
-/** A heavy run that holds a seat: a check or a command a worker ran through `agentree run`. */
-type Run = {
-  task: string;
-  by: Tool;
-  what: "check" | "command";
-  command: string;
-  since: Date;
-  seat: number;
-  ports: number[];
-  cpu: { used: number; given: number };
-  memory: { used: number; given: number };
-  bound: number;
-};
-
-/** A run that waits for a seat, and why. */
-export type Waiting = {
-  task: string;
-  by: Tool;
-  what: Run["what"];
-  command: string;
-  since: Date;
-  cost: { cpu: number; memory: number };
-  why: "no room" | "its turn" | "sensitive to load";
-  reason: string;
-};
-
-export type Slots = {
-  cores: number;
-  memory: number;
-  runs: Run[];
-  queue: Waiting[];
-  /** A sample a minute over the last hour: the host's load and Docker's machine's, each over its processors. */
-  load: { at: Date; host: number; vm: number }[];
-  mark: number;
-  free: { cpu: number; memory: number };
-  bounds: { lowest: number; highest: number; margin: number; fixed: boolean };
-  decisions: { at: Date; kind: "start" | "hold" | "stop" | "add" | "mark"; text: string; task?: string }[];
-};
-
 export function fixtureSlots(now: Date): Slots {
   const load = Array.from({ length: 61 }, (_, i) => {
     const m = 60 - i;
@@ -1202,34 +1126,6 @@ export function fixtureSlots(now: Date): Slots {
   };
 }
 
-/** A session of a tool, as its hooks and its calls of the board report it, with the subagents it started. */
-export type AgentSession = {
-  id: string;
-  tool: Tool;
-  model: string;
-  started: "owner" | "headless";
-  by?: string;
-  since: Date;
-  beat: Date;
-  ended?: Date;
-  state: AgentState;
-  task?: string;
-  /** What it does when it holds no task: reading, planning, writing memory. */
-  note?: string;
-  subagents: { kind: "agentree-worker" | "agentree-reviewer"; task: string; state: AgentState; since: Date; ended?: Date }[];
-};
-export type AgentState = "working" | "checking" | "reviewing" | "asking" | "stale" | "ended";
-
-/** What `init` set up in each tool, and the owner's switch for its own tasks. */
-export type ToolSetup = {
-  tool: Tool;
-  hooks: string[];
-  mcp: boolean;
-  definitions: boolean;
-  reportsUse: "full" | "model only" | "none";
-  reviewsOwn: boolean;
-};
-
 /** Claude Code's other sessions: id, model, minutes since its beat, what it does, started headless by 7f3a21, minutes since its start. */
 const CLAUDE_FLEET: [string, string, number, string, boolean, number][] = [
   ["3b9e02", "opus-5.5", 1, "reading T-0017 before its claim", false, 320],
@@ -1288,7 +1184,7 @@ export function fixtureAgents(now: Date): { sessions: AgentSession[]; tools: Too
         tool: "claude-code" as const,
         model,
         started: by ? ("headless" as const) : ("owner" as const),
-        by: by ? "Claude Code 7f3a21" : undefined,
+        ...(by ? { by: "Claude Code 7f3a21" } : {}),
         since: at(since),
         beat: at(beat),
         state: beat > 30 ? ("stale" as const) : ("working" as const),
@@ -1380,20 +1276,6 @@ export function fixtureAgents(now: Date): { sessions: AgentSession[]; tools: Too
     ],
   };
 }
-
-/** An RFC or ADR of `main`, as the Documents page reads it. */
-export type Doc = {
-  id: string;
-  kind: "RFC" | "ADR";
-  number: string;
-  title: string;
-  status: "draft" | "accepted" | "superseded";
-  date: string;
-  path: string;
-  supersedes?: string;
-  supersededBy?: string;
-  sections: { h: string; body: string[] }[];
-};
 
 export const DOCS: Doc[] = [
   {

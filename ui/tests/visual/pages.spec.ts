@@ -28,6 +28,7 @@ async function open(page: Page, theme: (typeof THEMES)[number], name: string) {
   await page.addInitScript((t) => localStorage.setItem("agentree.theme", t), theme);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
+  await page.locator(".shell").waitFor();
   if (name !== "Home")
     await page
       .locator(".side .sitem", { has: page.locator(".trunc", { hasText: new RegExp(`^${name}$`) }) })

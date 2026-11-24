@@ -1,7 +1,8 @@
 import { count } from "../design/format/text.ts";
 import { DAY, HOUR } from "../design/format/time.ts";
 import type { ActivityEntry } from "./activity.ts";
-import { FILE_AREAS, fixtureDetail, type AgentSession } from "./fixtures.ts";
+import { board, detail } from "./daemon.ts";
+import type { AgentSession } from "./model.ts";
 import { isStale, openQuestions, startOfDay, totals } from "./summary.ts";
 import type { Status, Task, Tool } from "./task.ts";
 
@@ -36,9 +37,9 @@ export function fileAreas(tasks: readonly Task[], now: Date): FileArea[] {
     const landedRecently = t.landedAt && now.getTime() - t.landedAt.getTime() < 10 * DAY;
     const mark = t.status === "done" ? (landedRecently ? "landed" : undefined) : MARK_OF[t.status];
     if (!mark) continue;
-    for (const path of fixtureDetail(t, tasks, now).writes) marks.set(path, { mark, path, task: t });
+    for (const path of detail(t).writes) marks.set(path, { mark, path, task: t });
   }
-  return FILE_AREAS.map((area) => {
+  return board().areas.map((area) => {
     const grid: FileCell[] = Array.from({ length: area.files }, () => ({ mark: "main" }));
     const taken = new Set<number>();
     for (const [path, cell] of marks) if (path.startsWith(`${area.path}/`)) grid[place(path, area.files, taken)] = cell;
@@ -156,7 +157,7 @@ export function numbers(tasks: readonly Task[], activity: readonly ActivityEntry
     },
     ready: {
       n: ready.length,
-      waiting: ready.filter((t) => fixtureDetail(t, tasks, now).dependsOn.some((d) => d.status !== "done")).length,
+      waiting: ready.filter((t) => detail(t).dependsOn.some((d) => d.status !== "done")).length,
       spark: [2, 3, 3, 4, 3, 5, 4, 4, 3, 3, 4, 3, 2, ready.length],
     },
     actions: {

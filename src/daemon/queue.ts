@@ -96,7 +96,7 @@ export function createQueue(options: { home: string; now?: () => Date; machine?:
   let bounds = load<Bounds>("bounds.json", DEFAULT_BOUNDS);
   const costs = load<Costs>("costs.json", {});
   let decisions = load<Decided[]>("decisions.json", []);
-  let readings: Reading[] = [];
+  let readings = load<Reading[]>("readings.json", []);
   let next = 1;
   const tickets = new Map<number, Ticket & { ask: Ask; start: (seat: number, workers: number) => void }>();
   const held = new Map<number, string>();
@@ -221,6 +221,7 @@ export function createQueue(options: { home: string; now?: () => Date; machine?:
       const inContainer = existsSync("/.dockerenv");
       const reading: Reading = { at: stamp(), vm: own, ...(host === undefined ? (inContainer ? {} : { host: own }) : { host }) };
       readings = [...readings, reading].slice(-SAMPLES);
+      save("readings.json", readings);
       turn();
     },
     setBounds(change: Partial<Bounds>) {

@@ -1,6 +1,6 @@
 import { ChartGantt, Crosshair, Diamond } from "lucide-react";
 import { Fragment, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { fixtureDetail, fixtureMilestones, PARENT_TITLES } from "../board/fixtures.ts";
+import { board, detail, parentTitles } from "../board/daemon.ts";
 import { partsOf } from "../board/summary.ts";
 import { KIND_LABEL, KINDS, STATUS_LABEL, type Task } from "../board/task.ts";
 import { Button } from "../design/components/Button.tsx";
@@ -59,12 +59,12 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
   const counted = tasks.filter((t) => t.status !== "dropped");
   const done = counted.filter((t) => t.status === "done").length;
   const share = counted.length ? Math.round((done / counted.length) * 100) : 0;
-  const leaves = useMemo(() => tasks.filter((t) => !(t.id in PARENT_TITLES)), [tasks]);
+  const leaves = useMemo(() => tasks.filter((t) => !(t.id in parentTitles())), [tasks]);
 
-  const deps = useMemo(() => new Map(tasks.map((t) => [t.id, fixtureDetail(t, tasks, now).dependsOn.map((d) => d.id)])), [tasks, now]);
+  const deps = useMemo(() => new Map(tasks.map((t) => [t.id, detail(t).dependsOn.map((d) => d.id)])), [tasks]);
   /* As gr8r-studio's bar runs from a task's start to its due date, a bar here runs from its claim to its landing. */
   const shown = useMemo(() => applyView(leaves, view, () => 0, now).filter((t) => t.holder), [leaves, view, now]);
-  const ms = useMemo(() => fixtureMilestones(tasks, now), [tasks, now]);
+  const ms = board().milestones;
   const start = (t: Task) => t.holder?.since ?? t.createdAt;
 
   const end = (t: Task) => t.landedAt ?? (t.status === "dropped" ? t.statusSince : now);
@@ -93,7 +93,7 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
   const keyOf = (t: Task): [string, string, React.ReactNode?] =>
     group === "parent"
       ? t.parent
-        ? [t.parent, PARENT_TITLES[t.parent] ?? t.parent]
+        ? [t.parent, parentTitles()[t.parent] ?? t.parent]
         : ["none", "No parent"]
       : group === "status"
         ? [t.status, STATUS_LABEL[t.status], <StatusIcon key="s" status={t.status} />]

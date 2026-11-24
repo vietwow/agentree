@@ -1,6 +1,7 @@
 import { ArrowRight, BookOpen, ChevronDown, ChevronUp, FileText, Hash, ListChecks, ListTree, Search } from "lucide-react";
 import { useState } from "react";
-import { DOCS, type Doc } from "../board/fixtures.ts";
+import { board } from "../board/daemon.ts";
+import type { Doc } from "../board/model.ts";
 import type { Task } from "../board/task.ts";
 import { Badge, type Tone } from "../design/components/Badge.tsx";
 import { Empty } from "../design/components/Empty.tsx";
@@ -31,21 +32,29 @@ const slug = (h: string) => h.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 export function DocumentsPage({ tasks, onOpenTask }: Props) {
   const [kind, setKind] = useState<(typeof KINDS)[number][0]>("all");
   const [q, setQ] = useState("");
-  const [openId, setOpenId] = useState(DOCS[0]!.id);
+  const docs = board().docs;
+  const [openId, setOpenId] = useState(docs[0]?.id);
   const [allTasks, setAllTasks] = useState(false);
   const openDoc = (id: string) => {
     setOpenId(id);
     setAllTasks(false);
   };
   const words = q.trim().toLowerCase();
-  const shown = DOCS.filter(
+  const shown = docs.filter(
     (d) =>
       (kind === "all" || d.kind === kind) &&
       (!words || [d.title, d.number, ...d.sections.flatMap((s) => [s.h, ...s.body])].some((x) => x.toLowerCase().includes(words))),
   );
-  const doc = DOCS.find((d) => d.id === openId)!;
+  const doc = docs.find((d) => d.id === openId) ?? docs[0];
+  const link = (id?: string) => docs.find((d) => d.id === id);
+  if (!doc)
+    return (
+      <Page layout="flush">
+        <PageHeader title="Documents">The project's RFCs and ADRs, read from the files of main. The page changes none of them.</PageHeader>
+        <Empty icon={FileText} title="No document on main yet" text="An RFC under rfcs/ or an ADR under docs/adr/ shows here once it has landed." />
+      </Page>
+    );
   const named = doc.kind === "RFC" ? tasks.filter((t) => t.rfc === doc.number) : [];
-  const link = (id?: string) => DOCS.find((d) => d.id === id);
 
   return (
     <Page layout="flush">

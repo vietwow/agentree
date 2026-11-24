@@ -13,11 +13,11 @@ import { agentsView, milestonesView, projectView } from "../core/views/project.t
 import { taskDetailView, taskView } from "../core/views/tasks.ts";
 import { demo } from "./demo.ts";
 
-test("the demo makes four projects whose boards read as the sample the UI was built on", async () => {
+test("the demo makes four projects whose boards read as the sample the UI was built on", () => {
   const home = realpathSync(mkdtempSync(join(tmpdir(), "agentree-demo-")));
   process.env.AGENTREE_HOME = join(home, "machine");
   const now = new Date("2026-11-24T15:00:00Z");
-  const ids = await demo(join(home, "projects"), now);
+  const ids = demo(join(home, "projects"), now);
   assert.deepEqual(ids, ["agentree", "aep", "icon-grab", "notes-sync"]);
   const views = ids.map((id) => projectView(projectOf(id), readBoard(placesOfProject(id))));
   assert.deepEqual(

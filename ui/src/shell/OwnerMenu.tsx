@@ -1,4 +1,4 @@
-import { OWNER_COLOR } from "../board/fixtures.ts";
+import { OWNER_COLOR } from "../board/projects.ts";
 import { Keyboard, LogOut, Monitor, Moon, Settings, Sun, User } from "lucide-react";
 import { MenuItem, MenuLabel, MenuSeparator } from "../design/components/Menu.tsx";
 import { Segmented } from "../design/components/Segmented.tsx";

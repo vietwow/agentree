@@ -1,6 +1,7 @@
 import { Activity, Hourglass, Pause, Play, Plus, ShieldAlert, Timer, type LucideIcon } from "lucide-react";
-import { useMemo } from "react";
-import { fixtureSlots, type Slots, type Waiting } from "../board/fixtures.ts";
+
+import { slots } from "../board/daemon.ts";
+import type { Slots, Waiting } from "../board/model.ts";
 import { TOOL_LABEL, type Task, type Tool } from "../board/task.ts";
 import { Ago } from "../design/components/Ago.tsx";
 import { Badge, type Tone } from "../design/components/Badge.tsx";
@@ -40,9 +41,9 @@ const minutes = (from: Date, now: Date) => Math.max(1, Math.round((now.getTime()
 
 /** The heavy runs of the machine: what runs in each seat, what waits and why, and why the queue decided as it did. */
 export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
-  const s = useMemo(() => fixtureSlots(now), [now]);
+  const s = slots();
   const title = (id: string) => tasks.find((t) => t.id === id)?.title ?? id;
-  const last = s.load.at(-1)!;
+  const last = s.load.at(-1) ?? { host: 0, vm: 0 };
   const longest = s.queue.reduce((m, w) => Math.max(m, minutes(w.since, now)), 0);
 
   const taskRef = (id: string) => (
@@ -233,20 +234,24 @@ function Legend({ color, dashed, children }: { color: string; dashed?: boolean; 
   );
 }
 
-function Use({ label, used, given, unit = "" }: { label: string; used: number; given: number; unit?: string }) {
-  const share = used / given;
+/** What a run takes of what it was given; where it is not measured, what it was given alone. */
+function Use({ label, used, given, unit = "" }: { label: string; used?: number; given: number; unit?: string }) {
+  const share = used === undefined ? undefined : used / given;
   return (
     <div className="flex flex-col gap-1 text-2xs text-ink-3">
       <span className="flex items-center gap-2 justify-between">
         <span>{label}</span>
         <span className="num">
-          {used} of {given}
+          {used === undefined ? "given " : `${used} of `}
+          {given}
           {unit}
         </span>
       </span>
-      <span className="flex">
-        <ProgressBar value={Math.round(share * 100)} tone={share > 0.85 ? "warn" : undefined} />
-      </span>
+      {share !== undefined && (
+        <span className="flex">
+          <ProgressBar value={Math.round(share * 100)} tone={share > 0.85 ? "warn" : undefined} />
+        </span>
+      )}
     </div>
   );
 }
@@ -260,13 +265,15 @@ function Bound({ name, value }: { name: string; value: string }) {
   );
 }
 
+/** The minutes of the hour the chart spans. */
+const STEPS = 60;
 const W = 600;
 const H = 150;
 
 function LoadChart({ s }: { s: Slots }) {
-  const n = s.load.length - 1;
-  const x = (i: number) => (i / n) * W;
-  const y = (v: number) => H - v * H;
+  // A sample a minute, the last one now: the hour's width holds sixty steps, however many samples there are yet.
+  const x = (i: number) => ((STEPS - (s.load.length - 1 - i)) / STEPS) * W;
+  const y = (v: number) => H - Math.min(1, v) * H;
   const line = (key: "host" | "vm") => s.load.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p[key]).toFixed(1)}`).join(" ");
   const area = `${line("host")} L${W},${H} L0,${H} Z`;
   return (

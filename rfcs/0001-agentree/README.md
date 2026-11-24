@@ -536,6 +536,16 @@ boards. Every time is counted back from the moment the demo is made. A
 task's row names who holds it and, once it is submitted, who built it.
 A project is at risk while a task of it is blocked.
 
+The UI reads the daemon and holds no sample data: the machine's
+projects, its slots, and the open project's board in one snapshot (its
+tasks, each card opened, what happened, the milestones, the memory, the
+documents, the files by area, the sessions and the tools), read again
+on each event. The pages of the workspace show the open project. A
+card dragged between Backlog and Ready and a subtask marked are
+requests to the daemon. The daemon holds a snapshot while the board's
+fingerprint stands, for five seconds at most. With no token, no daemon
+or no project, the page says which and what to run.
+
 ### How it looks
 
 The owner gave a picture of an interface to follow (a screenshot of a
@@ -1271,8 +1281,7 @@ of the UI.
 | The tests                | Node's own runner (`node:test`), as the origin.                                                           |
 | MCP                      | `@modelcontextprotocol/server` 2.4.0, over standard input and over streamable HTTP.                       |
 | The daemon's HTTP        | Hono 4.13.20 with `@hono/node-server` 2.1.11; its `streamSSE` for the events.                             |
-| The UI                   | React 19.3.1, Vite 8.3.8, Tailwind CSS 4.3.5, TanStack Query 5.108.3, React Router 8.5.2.                 |
-| The UI's parts           | Base UI (`@base-ui/react`) 1.9.0; `@dnd-kit/react` 0.5.3 for the board; `lucide-react` 1.78.0 for icons.  |
+| The UI                   | React 19.3.1, Vite 8.3.8, Tailwind CSS 4.3.5, `lucide-react` 1.78.0 for icons. It reads the daemon with `fetch` and an `EventSource`, and takes no library for data, routing, parts or dragging. |
 | The comparison           | Playwright 1.65.1.                                                                                        |
 | Packages                 | pnpm 12.21.0.                                                                                             |
 | Running it               | Docker Compose 5.8.0, a `compose.yaml`; git 2.48 or later in the image, for relative links of worktrees. |

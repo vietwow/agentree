@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toggleStar, useStars } from "../board/favorites.ts";
-import { PARENT_TITLES } from "../board/fixtures.ts";
+import { parentTitles } from "../board/daemon.ts";
 import { openQuestions, partsOf } from "../board/summary.ts";
 import { KIND_LABEL, STATUS_LABEL, TOOL_LABEL, type Status, type Task } from "../board/task.ts";
 import { useTicks } from "../board/ticks.ts";
@@ -117,7 +117,7 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
   const groupHead = (g: Group) => {
     const opt =
       v.group === "parent"
-        ? { name: g.key === "none" ? "No parent" : (PARENT_TITLES[g.key] ?? g.key) }
+        ? { name: g.key === "none" ? "No parent" : (parentTitles()[g.key] ?? g.key) }
         : optLabel(v.group as never, g.key, `P${g.key}`);
     return { html: "html" in opt ? opt.html : undefined, name: opt.name };
   };
@@ -161,7 +161,7 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
       case "parent":
         return t.parent ? (
           <button type="button" className="pillbtn" aria-label="Parent" onClick={() => onOpen(t.parent!)} data-opens-task>
-            <span className="trunc">{PARENT_TITLES[t.parent] ?? t.parent}</span>
+            <span className="trunc">{parentTitles()[t.parent] ?? t.parent}</span>
           </button>
         ) : (
           <span className="pillbtn empty">

@@ -1,6 +1,6 @@
 import { CircleAlert, Clock, FileDiff, GitMerge, ShieldCheck, Undo2 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { fixtureDetail } from "../board/fixtures.ts";
+import { detail } from "../board/daemon.ts";
 import { TOOL_LABEL, type Status, type Task, type TaskDetail } from "../board/task.ts";
 import { Ago } from "../design/components/Ago.tsx";
 import { Badge, type Tone } from "../design/components/Badge.tsx";
@@ -50,7 +50,7 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
   const rows = useMemo(() => {
     const out: Row[] = [];
     for (const t of tasks) {
-      const d = fixtureDetail(t, tasks, now);
+      const d = detail(t);
       if (d.review?.verdict === "rejected" && t.status === "in-progress") out.push({ t, d, stage: "rejected", at: d.review.at ?? t.statusSince });
       else if (t.status === "review") out.push({ t, d, stage: "reviewing", at: t.statusSince });
       else if (t.status === "accepted") out.push({ t, d, stage: "accepted", at: t.statusSince });

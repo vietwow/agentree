@@ -74,7 +74,7 @@ export type Session = {
   unknown?: string;
 };
 
-export type LogEntry = {
+type LogEntry = {
   at: Date;
   who: Tool | "daemon";
   text: string;

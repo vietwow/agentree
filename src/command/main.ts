@@ -303,9 +303,9 @@ const COMMANDS: Record<string, () => unknown> = {
     const daemon = startDaemon({ ...(values.port ? { port: Number(values.port) } : {}), ui: join(import.meta.dirname, "../../ui/dist") });
     say(`agentree serves ${projects().length} ${projects().length === 1 ? "project" : "projects"}. Open:\n  ${daemon.address}`);
   },
-  async demo() {
+  demo() {
     if (!rest[0]) throw new Refusal("name the directory the sample projects are made in");
-    const made = await demo(resolve(rest[0]), new Date());
+    const made = demo(resolve(rest[0]), process.env.AGENTREE_NOW ? new Date(process.env.AGENTREE_NOW) : new Date());
     say(`The sample projects are in ${resolve(rest[0])}: ${made.join(", ")}. Run "agentree serve" to see them.`);
   },
   lint() {

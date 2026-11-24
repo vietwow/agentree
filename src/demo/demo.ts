@@ -1,63 +1,34 @@
 /**
- * `agentree demo`: makes projects whose boards hold the sample content the
- * UI was built on, as real repositories: task files with their history,
+ * `agentree demo`: makes projects whose boards hold the sample content of
+ * `sample.ts`, as real repositories: task files with their history,
  * trees with their changes, claims, checks, reviews, sessions, memory and
  * documents. Every time is counted back from the moment it is made.
  */
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import type { Task as Row, TaskDetail, Tool } from "../../ui/src/board/task.ts";
+import type { Task as Row, Tool } from "../../ui/src/board/task.ts";
 import { CONFIG_FILE } from "../core/board/config.ts";
 import { init } from "../core/board/init.ts";
-import { renderFact, type FactKind, type FactState } from "../core/board/memory.ts";
+import { renderFact } from "../core/board/memory.ts";
 import { setReviewOwnTasks } from "../core/board/options.ts";
 import { TASK_BRANCH, treeOf, type Places } from "../core/board/places.ts";
 import { putSession } from "../core/board/sessions.ts";
 import { createReview, putChecks, putClaim, putSubmission, type CheckRun } from "../core/board/state.ts";
 import { Refusal } from "../core/errors.ts";
 import { git } from "../core/git.ts";
-import { editProject, register } from "../core/machine/projects.ts";
+import { editProject, machineHome, register } from "../core/machine/projects.ts";
 import { fileName, renderTask } from "../core/task/file.ts";
+import {
+  DOCS,
+  FILE_AREAS,
+  fixtureAgents,
+  fixtureDetail,
+  fixtureFacts,
+  fixtureSlots,
+  fixtureTasks,
+  type SampleDetail as TaskDetail,
+} from "./sample.ts";
 import { DAEMON, stamp, statusLine, type LogEntry, type Status, type Task } from "../core/task/model.ts";
-
-/** The sample content is the UI's own module, loaded when a demo is made: its values, typed here by what the demo reads of them. */
-const SAMPLE = "../../ui/src/board/fixtures.ts";
-
-type Sample = {
-  fixtureTasks: (now: Date) => Row[];
-  fixtureDetail: (row: Row, rows: readonly Row[], now: Date) => TaskDetail;
-  fixtureFacts: (
-    now: Date,
-  ) => { file: string; kind: FactKind; title: string; body: string; paths: string[]; task?: string; by: Tool; state: FactState; at: Date }[];
-  fixtureAgents: (now: Date) => {
-    sessions: {
-      id: string;
-      tool: Tool;
-      model: string;
-      started: "owner" | "headless";
-      by?: string;
-      since: Date;
-      beat: Date;
-      ended?: Date;
-      task?: string;
-      note?: string;
-      subagents: { kind: string; task: string; since: Date; ended?: Date }[];
-    }[];
-    tools: { tool: Tool; reviewsOwn: boolean }[];
-  };
-  DOCS: {
-    kind: string;
-    number: string;
-    title: string;
-    status: string;
-    date: string;
-    path: string;
-    supersedes?: string;
-    supersededBy?: string;
-    sections: { h: string; body: string[] }[];
-  }[];
-  FILE_AREAS: { path: string; name: string; files: number }[];
-};
 
 const MINUTE = 60_000;
 const DAY = 24 * 60 * MINUTE;
@@ -226,7 +197,7 @@ function stateOf(places: Places, row: Row, detail: TaskDetail, now: Date, sessio
 }
 
 /** The files of `main` on the sample project: its documents, its areas each with its count of files, and what the open tasks change. */
-function mainFiles({ DOCS, FILE_AREAS }: Sample, rows: Row[], details: Map<string, TaskDetail>): Record<string, string> {
+function mainFiles(rows: Row[], details: Map<string, TaskDetail>): Record<string, string> {
   const files: Record<string, string> = {
     "CHANGELOG.md": "# Changelog\n",
     [CONFIG_FILE]: `${JSON.stringify({ areas: FILE_AREAS.map(({ path, name }) => ({ path, name })) }, null, 2)}\n`,
@@ -256,11 +227,11 @@ function mainFiles({ DOCS, FILE_AREAS }: Sample, rows: Row[], details: Map<strin
 }
 
 /** The sample project: agentree's own board as the UI's pages were built on it. */
-function sample(from: Sample, directory: string, now: Date): Places {
-  const rows = from.fixtureTasks(now);
-  const details = new Map(rows.map((row) => [row.id, from.fixtureDetail(row, rows, now)]));
-  const places = repository(directory, mainFiles(from, rows, details));
-  const agents = from.fixtureAgents(now);
+function sample(directory: string, now: Date): Places {
+  const rows = fixtureTasks(now);
+  const details = new Map(rows.map((row) => [row.id, fixtureDetail(row, rows, now)]));
+  const places = repository(directory, mainFiles(rows, details));
+  const agents = fixtureAgents(now);
 
   for (const row of rows) {
     const task = taskOf(row, details.get(row.id)!, now);
@@ -280,7 +251,7 @@ function sample(from: Sample, directory: string, now: Date): Places {
     }));
     if (uses.length) write(places.board, `work/usage/${row.id}.jsonl`, `${uses.map((use) => JSON.stringify(use)).join("\n")}\n`);
   }
-  for (const fact of from.fixtureFacts(now)) {
+  for (const fact of fixtureFacts(now)) {
     write(places.board, `work/memory/${fact.file}.md`, renderFact({ ...fact, task: fact.task ?? "", by: workerOf(fact.by), at: stamp(fact.at) }));
   }
   git(places.board, "add", "--all");
@@ -372,12 +343,28 @@ function other(
   return places;
 }
 
+/** The machine's queue as the sample has it, where the machine has none yet: its bounds, the load of the last hour, and what it decided. */
+function sampleQueue(now: Date) {
+  const directory = join(machineHome(), "queue");
+  if (existsSync(directory)) return;
+  const slots = fixtureSlots(now);
+  const file = (name: string, value: unknown) => write(directory, name, `${JSON.stringify(value, null, 2)}\n`);
+  file("bounds.json", slots.bounds);
+  file(
+    "readings.json",
+    slots.load.map((reading) => ({ at: stamp(reading.at), host: reading.host, vm: reading.vm })),
+  );
+  file(
+    "decisions.json",
+    slots.decisions.map((decision) => ({ ...decision, at: stamp(decision.at) })),
+  );
+}
+
 /** Makes the sample projects under a directory and registers each on this machine; the ids they were given. */
-export async function demo(directory: string, now: Date): Promise<string[]> {
-  const from = (await import(SAMPLE)) as Sample;
+export function demo(directory: string, now: Date): string[] {
   const ago = (days: number) => new Date(now.getTime() - days * DAY);
   const made = [
-    register(sample(from, join(directory, "agentree"), now).root, ago(9), {
+    register(sample(join(directory, "agentree"), now).root, ago(9), {
       desc: "Runs coding agents on one board: tasks, trees, checks, review and landing.",
       color: "indigo",
       icon: "layers",
@@ -401,5 +388,6 @@ export async function demo(directory: string, now: Date): Promise<string[]> {
     }),
   ];
   editProject(made[2]!.id, { hold: true });
+  sampleQueue(now);
   return made.map((project) => project.id);
 }

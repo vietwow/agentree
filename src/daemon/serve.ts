@@ -2,11 +2,11 @@
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { randomBytes } from "node:crypto";
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { git } from "../core/git.ts";
-import { machineHome, placesOfProject, projects } from "../core/machine/projects.ts";
+import { machineHome, projects } from "../core/machine/projects.ts";
 import { createApp, createEvents, type Events } from "./app.ts";
+import { fingerprint } from "./fingerprint.ts";
 import { createQueue } from "./queue.ts";
 
 export const DEFAULT_PORT = 4517;
@@ -23,20 +23,6 @@ export function machineToken(): string {
     writeFileSync(file, `${randomBytes(24).toString("hex")}\n`, { mode: 0o600 });
   }
   return readFileSync(file, "utf8").trim();
-}
-
-/** What tells a project's board apart from a moment ago: its branch's commit and the times of the machine's state. */
-function fingerprint(id: string): string {
-  const places = placesOfProject(id);
-  const times = (directory: string): string =>
-    existsSync(directory)
-      ? readdirSync(directory, { withFileTypes: true })
-          .map((entry) =>
-            entry.isDirectory() ? times(join(directory, entry.name)) : `${entry.name}:${statSync(join(directory, entry.name)).mtimeMs}`,
-          )
-          .join(",")
-      : "";
-  return `${git(places.board, "rev-parse", "HEAD")} ${git(places.root, "rev-parse", "HEAD")} ${times(places.state)}`;
 }
 
 /** Tells the browser of each change the daemon did not make itself, by looking on a period: file events are not relied on. */
@@ -74,8 +60,9 @@ export function startDaemon(options: { port?: number; ui?: string } = {}) {
     app.use("*", serveStatic({ root }));
     app.get("*", serveStatic({ root, path: "index.html" }));
   }
-  queue.read();
-  const timers = [watch(events), setInterval(() => queue.read(), SAMPLE_MS)];
+  // A held clock holds the load too: no reading is taken, so the pages show the same at every run.
+  if (!fixed) queue.read();
+  const timers = [watch(events), ...(fixed ? [] : [setInterval(() => queue.read(), SAMPLE_MS)])];
   const server = serve({ fetch: app.fetch, hostname: "127.0.0.1", port });
   return {
     address: `http://127.0.0.1:${port}/?token=${token}`,

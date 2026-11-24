@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowUp, Plus, SearchX } from "lucide-react";
 import { useRef, type PointerEvent as ReactPointerEvent } from "react";
-import { PARENT_TITLES } from "../board/fixtures.ts";
+import { parentTitles } from "../board/daemon.ts";
 import { STATUS_LABEL, TOOL_LABEL, type Status, type Task } from "../board/task.ts";
 import { Button } from "../design/components/Button.tsx";
 import { Empty } from "../design/components/Empty.tsx";
@@ -175,7 +175,7 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
       case "parent":
         return (
           <td key={c} className={t.parent ? "cellbtn" : ""} onClick={t.parent ? () => onOpen(t.parent!) : undefined} data-opens-task>
-            {t.parent ? <span className="trunc">{PARENT_TITLES[t.parent] ?? t.parent}</span> : <span className="faint">—</span>}
+            {t.parent ? <span className="trunc">{parentTitles()[t.parent] ?? t.parent}</span> : <span className="faint">—</span>}
           </td>
         );
     }
@@ -212,7 +212,7 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
             {groups.map((g) => {
               const head =
                 v.group === "parent"
-                  ? { html: undefined, name: g.key === "none" ? "No parent" : (PARENT_TITLES[g.key] ?? g.key) }
+                  ? { html: undefined, name: g.key === "none" ? "No parent" : (parentTitles()[g.key] ?? g.key) }
                   : v.group === "none"
                     ? { html: undefined, name: "" }
                     : optLabel(v.group, g.key, `P${g.key}`);

@@ -1,7 +1,7 @@
 import { List, Plus, SquareKanban, Table2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { setDropHandlers } from "../board/drag.ts";
-import { fixtureDetail } from "../board/fixtures.ts";
+import { detail } from "../board/daemon.ts";
 import { stats, totals } from "../board/summary.ts";
 import type { Status, Task } from "../board/task.ts";
 import { Button } from "../design/components/Button.tsx";
@@ -46,7 +46,7 @@ export function TasksPage({ tasks, now, mode, selected, onOpen, onMove, order, o
 
   const sum = totals(tasks);
   const shown = useMemo(() => applyView(tasks, view, order, now), [tasks, view, order, now]);
-  const deps = useMemo(() => new Map(tasks.map((t) => [t.id, fixtureDetail(t, tasks, now).dependsOn.map((d) => d.id)])), [tasks, now]);
+  const deps = useMemo(() => new Map(tasks.map((t) => [t.id, detail(t).dependsOn.map((d) => d.id)])), [tasks]);
   const byOrder = (list: readonly Task[]) => [...list].sort((a, b) => order(a) - order(b));
 
   useEffect(() => {

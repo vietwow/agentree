@@ -1,6 +1,6 @@
 import { CalendarDays, ListTodo, Wrench } from "lucide-react";
 import { Fragment, useMemo, useState } from "react";
-import { fixtureDetail } from "../board/fixtures.ts";
+import { detail } from "../board/daemon.ts";
 import { TOOL_LABEL, type Session, type Task, type Tokens, type Tool } from "../board/task.ts";
 import { Page, PageHeader } from "../design/components/Page.tsx";
 import { ProgressBar } from "../design/components/ProgressBar.tsx";
@@ -55,7 +55,7 @@ type Props = { tasks: Task[]; now: Date; onOpenTask: (id: string) => void };
 /** The tokens and cost the tools report, summed over tools, tasks and days; never estimated. */
 export function NumbersPage({ tasks, now, onOpenTask }: Props) {
   const [by, setBy] = useState<By>("tool");
-  const sessions = useMemo(() => tasks.flatMap((t) => fixtureDetail(t, tasks, now).sessions.map((s) => ({ t, s }))), [tasks, now]);
+  const sessions = useMemo(() => tasks.flatMap((t) => detail(t).sessions.map((s) => ({ t, s }))), [tasks]);
 
   const total = zero();
   sessions.forEach(({ s }) => add(total, s));
