@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, test } from "node:test";
 import { claim, type Context } from "../core/board/actions.ts";
@@ -143,4 +144,33 @@ test("the board's tools are served as MCP at a project's address: a session clai
       ["s-2", undefined],
     ],
   );
+});
+
+test("a reading carried out of the page is written as a record in the tree of the task that measures, and nowhere else", async () => {
+  const reading = {
+    part: "shell",
+    state: "base",
+    source: "https://app.example.com/home?session=abc",
+    viewport: { width: 1440, height: 900 },
+    theme: "light",
+    elements: [{ id: "shell", tag: "div", role: "", name: "", text: "", style: { display: "flex" }, attrs: {} }],
+  };
+  await post("/api/projects/project/tasks", NEW);
+  const { claim: held } = claim(context, CODEX, "T-0001");
+  assert.match(
+    ((await (await post("/api/projects/project/records", { ...reading, task: "T-0001" })).json()) as { error: string }).error,
+    /has no "clone"/,
+  );
+  writeFileSync(
+    join(context.places.root, "agentree.config.json"),
+    JSON.stringify({ clone: { records: "parity", url: "http://127.0.0.1:5173", colours: "own", font: "own", parts: {} } }),
+  );
+  const written = await post("/api/projects/project/records", { ...reading, task: "T-0001" });
+  assert.deepEqual([written.status, await written.json()], [201, { part: "shell", state: "base", elements: 1 }]);
+  const record = JSON.parse(readFileSync(join(held.tree, "parity/shell/base.json"), "utf8")) as { source: string };
+  assert.equal(record.source, "https://app.example.com/home", "the address is kept without its query string");
+  assert.equal(existsSync(join(context.places.root, "parity")), false);
+  assert.equal((await post("/api/projects/project/records", { ...reading, task: "T-0001" })).status, 409, "a record is written once");
+  for (const task of [undefined, "T-0009", "../project"])
+    assert.equal((await post("/api/projects/project/records", { ...reading, state: "other", task })).status, 409);
 });

@@ -12,6 +12,10 @@ import { answer, create, move, promote, release, tick, type Actor, type Context,
 import { acceptFact, editFact, readMemory, remember, type NewFact } from "../core/board/memory.ts";
 import { readOptions, setReviewOwnTasks } from "../core/board/options.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
+import { existsSync } from "node:fs";
+import { CONFIG_FILE, configOf } from "../core/board/config.ts";
+import { treeOf } from "../core/board/places.ts";
+import { writeRecord, type Reading } from "../core/clone/records.ts";
 import { Refusal } from "../core/errors.ts";
 import { editProject, placesOfProject, projectOf, projects } from "../core/machine/projects.ts";
 import { newProject, projectsDirectory, setProjectsDirectory, STACK_QUESTIONS } from "../core/init/kickstart.ts";
@@ -198,6 +202,18 @@ export function createApp(daemon: Daemon) {
     const moved = promote(contextOf(request), OWNER);
     changed(request);
     return request.json({ moved });
+  });
+  // A reading of the reference, carried out of the page: written as a record in the tree of the task that measures.
+  app.post("/api/projects/:project/records", async (request) => {
+    const { task, ...reading } = (await request.req.json()) as Reading & { task?: string };
+    const at = contextOf(request);
+    const config = configOf(at.places).clone;
+    if (!config) throw new Refusal(`the project's part (${CONFIG_FILE}) has no "clone": this project reproduces no interface`);
+    const tree = treeOf(at.places, task ?? "");
+    if (!task || !/^T-\d+$/.test(task) || !existsSync(tree))
+      throw new Refusal("a record is written in the tree of the task that measures: name a task that is held");
+    const { record } = writeRecord(tree, config, reading, daemon.now());
+    return request.json({ part: record.part, state: record.state, elements: record.elements.length }, 201);
   });
   app.post("/api/projects/:project/memory", async (request) => {
     const fact = remember(contextOf(request), OWNER, (await request.req.json()) as NewFact);

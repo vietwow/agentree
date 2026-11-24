@@ -31,7 +31,10 @@ import { setUpTree } from "../core/board/setup.ts";
 import { claims, ownerToken, setupOf } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
 import { comparePart } from "../clone/compare.ts";
-import { CONFIG_FILE, configOf } from "../core/board/config.ts";
+import { CONFIG_FILE, configOf, type CloneConfig } from "../core/board/config.ts";
+import type { Element } from "../core/clone/record.ts";
+import { writeRecord } from "../core/clone/records.ts";
+import { partTasks } from "../core/clone/tasks.ts";
 import { prepareIconRun } from "../core/clone/icons.ts";
 import { git } from "../core/git.ts";
 import { Refusal } from "../core/errors.ts";
@@ -88,6 +91,11 @@ const USAGE = `Usage: agentree <subcommand> [options]
   hook <tool> <event>                   what a tool's hook tells the board; its JSON on standard input
   doctor                                what of this project's setup is there, and what is missing
   compare <part> [--state <state>]      read the project's page of a part in a browser and compare it with its record
+  part <part> --priority <n> [--parent T-NNNN] [--writes <paths>]
+                                        write the two tasks of a part of a cloned interface: its measure, and its build
+  reader                                the reader's source, to add to the page that is read
+  record <part> [--state <state>] [--base <state>] --source <address> --viewport <WxH> [--theme light|dark] [--not-measured "<id>: <reason>"]
+                                        write the reader's reading, its JSON on standard input, as the part's record in this checkout
   grab-icons --page <address> --where <steps> --set <name> [--range <words>] [--colour <words>] [--names <words>] [--committed]
                                         make the folder of a run that fetches a set of drawings, and its card; it fetches nothing
   agent [T-NNNN] [--role build|review] -- <a tool's headless command>
@@ -115,6 +123,11 @@ const { values, positionals } = parseArgs({
     tools: { type: "string" },
     goal: { type: "string" },
     state: { type: "string" },
+    base: { type: "string" },
+    source: { type: "string" },
+    viewport: { type: "string" },
+    theme: { type: "string" },
+    "not-measured": { type: "string", multiple: true },
     page: { type: "string" },
     where: { type: "string" },
     set: { type: "string" },
@@ -164,6 +177,13 @@ const list = (given: string[] | undefined) =>
 function stdin(what: string): string {
   if (process.stdin.isTTY) throw new Refusal(`give ${what} on standard input, as: agentree ${subcommand} ... < file.md`);
   return readFileSync(0, "utf8");
+}
+
+/** What the project says of the interface it reproduces. */
+function cloneOf(): CloneConfig {
+  const config = configOf(boardOf(process.cwd())).clone;
+  if (!config) throw new Refusal(`the project's part (${CONFIG_FILE}) has no "clone": this project reproduces no interface`);
+  return config;
 }
 
 function context(): Context {
@@ -431,14 +451,56 @@ const COMMANDS: Record<string, () => unknown> = {
   async compare() {
     const part = rest[0];
     if (!part) throw new Refusal("name the part to compare, as: agentree compare shell");
-    const places = boardOf(process.cwd());
-    const config = configOf(places).clone;
-    if (!config) throw new Refusal(`the project's part (${CONFIG_FILE}) has no "clone": this project reproduces no interface`);
+    const config = cloneOf();
     // The records and the page are those of where the command is run: a task's tree, or the main checkout.
     const root = git(process.cwd(), "rev-parse", "--show-toplevel");
     const { comparison, text } = await comparePart(root, config, part, values.state ?? "base");
     say(text);
     if (comparison.differences.length || comparison.missing.length) process.exitCode = 1;
+  },
+  part() {
+    const at = context();
+    const { measure, build } = partTasks(at, actor(at), {
+      part: rest[0] ?? "",
+      priority: Number(values.priority),
+      ...(values.parent ? { parent: values.parent } : {}),
+      writes: list(values.writes),
+    });
+    const blank = unwritten(build);
+    say(
+      `${measure.fields.id} measures the ${rest[0]}, and is ${measure.fields.status}; ${build.fields.id} builds it once that is done.${blank.length ? ` Write the ${blank.join(", ")} of ${build.fields.id} before it is claimed.` : ""}`,
+    );
+  },
+  reader() {
+    process.stdout.write(readFileSync(join(import.meta.dirname, "../clone/reader.js"), "utf8"));
+  },
+  record() {
+    const config = cloneOf();
+    const [width, height] = (values.viewport ?? "").split("x").map(Number);
+    const given = JSON.parse(stdin("the reader's reading")) as Element[] | { elements: Element[] };
+    const notMeasured = (values["not-measured"] ?? []).map((each) => {
+      const at = each.indexOf(": ");
+      if (at < 1) throw new Refusal('--not-measured names an element and why, as: --not-measured "shell/menu: it opens only for an administrator"');
+      return { id: each.slice(0, at), reason: each.slice(at + 2) };
+    });
+    const { file, record } = writeRecord(
+      git(process.cwd(), "rev-parse", "--show-toplevel"),
+      config,
+      {
+        part: rest[0] ?? "",
+        state: values.state ?? "base",
+        ...(values.base ? { base: values.base } : {}),
+        source: values.source ?? "",
+        viewport: { width: width!, height: height! },
+        theme: values.theme ?? "light",
+        elements: Array.isArray(given) ? given : given.elements,
+        notMeasured,
+      },
+      new Date(),
+    );
+    say(
+      `${file} holds ${record.elements.length} ${record.base ? `elements that differ from ${record.base}` : "elements"}${notMeasured.length ? `, and ${notMeasured.length} not measured` : ""}.`,
+    );
   },
   "grab-icons"() {
     const at = context();

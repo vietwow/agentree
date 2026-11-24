@@ -5,10 +5,11 @@
  * and marks an element with its record's id in `data-record`.
  */
 import { spawn, type ChildProcess } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { CloneConfig, CloneStep } from "../core/board/config.ts";
-import { compare, elementsOf, report, type Comparison, type Element, type PartRecord } from "../core/clone/record.ts";
+import { compare, report, type Comparison, type Element } from "../core/clone/record.ts";
+import { wholeOf } from "../core/clone/records.ts";
 import { Refusal } from "../core/errors.ts";
 
 const READER = join(import.meta.dirname, "reader.js");
@@ -57,13 +58,6 @@ export async function inPage<T>(reads: Reads, reading: string): Promise<T> {
   }
 }
 
-/** A record of a part's state as its file holds it. */
-export function recordOf(root: string, config: CloneConfig, part: string, state: string): PartRecord {
-  const file = join(root, config.records, part, `${state}.json`);
-  if (!existsSync(file)) throw new Refusal(`${file} is not there: the part ${part} has no record of the state ${state}`);
-  return JSON.parse(readFileSync(file, "utf8")) as PartRecord;
-}
-
 /** Starts the project's application when it does not answer, and waits for it; the process it started, to end after. */
 async function served(config: CloneConfig, cwd: string): Promise<ChildProcess | undefined> {
   const answers = () =>
@@ -92,11 +86,7 @@ export async function comparePart(
   const place = config.parts[part];
   if (!place)
     throw new Refusal(`the project's part names no part "${part}" under clone.parts; it names ${Object.keys(config.parts).join(", ") || "none"}`);
-  const record = recordOf(root, config, part, state);
-  // A difference names the state it differs from, which may be a difference itself: each is read on the one before it.
-  const whole = (each: PartRecord): Element[] =>
-    elementsOf(each, each.base === undefined ? undefined : whole(recordOf(root, config, part, each.base)));
-  const expected = whole(record);
+  const { record, elements: expected } = wholeOf(root, config, part, state);
   const steps = place.states?.[state];
   if (state !== "base" && !steps)
     throw new Refusal(`the project's part names no steps that show the state ${state} of ${part} (clone.parts.${part}.states)`);
