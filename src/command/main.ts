@@ -27,7 +27,7 @@ import { accept, check, commit, land, reject, review, scope, submit, waitingToLa
 import { setReleaseStale, setReviewOwnTasks } from "../core/board/options.ts";
 import { sweepTrees, trees } from "../core/board/trees.ts";
 import { boardOf } from "../core/board/places.ts";
-import { lintProblems, obstacles, unwritten } from "../core/board/rules.ts";
+import { formNotes, lintProblems, obstacles, unwritten } from "../core/board/rules.ts";
 import { setUpTree } from "../core/board/setup.ts";
 import { claims, ownerToken, setupOf } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
@@ -329,6 +329,7 @@ const COMMANDS: Record<string, () => unknown> = {
     });
     const blank = unwritten(task);
     say(`${task.fields.id} is ${task.fields.status}.${blank.length ? ` Write its ${blank.join(", ")} before it is claimed.` : ""}`);
+    for (const note of formNotes(task)) say(`  form: ${note}`);
   },
   async claim() {
     const at = context();
@@ -703,6 +704,10 @@ const COMMANDS: Record<string, () => unknown> = {
     for (const problem of problems) say(problem);
     if (problems.length) process.exitCode = 1;
     else say(`${board.tasks.length} tasks, nothing wrong`);
+    // The form of the cards no worker has started: said, and no failure of the board.
+    for (const { task } of board.tasks)
+      if (task.fields.status === "backlog" || task.fields.status === "ready")
+        for (const note of formNotes(task)) say(`form: ${task.fields.id}: ${note}`);
   },
 };
 

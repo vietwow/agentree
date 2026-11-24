@@ -398,6 +398,28 @@ command as `backlog` under one parent. The owner moves them to `ready`
 on the board, or all at once. The UI shows a parent with its parts and
 how many are done, and the tasks as a graph of what waits for what.
 
+**The form of a card.** A card is all a worker has, so the skill holds
+the form every part is written in, with one card written whole as its
+example:
+
+- a title that says what the change does, in one line of 3 words at
+  least and 90 letters at most, with no period;
+- a Context of two sentences at least: what is there now, what this
+  adds and the rule it must hold;
+- a Done when that is a list of two lines at least, each a thing a
+  reviewer can check, with what it holds for each kind of task;
+- an Out of scope that names what a worker might do and must not;
+- for a build or a fix, 2 to 6 subtasks in the order they are done, and
+  at least one check.
+
+A build or a fix that names no paths is a parent, and is held to its
+title and its Context alone. The form is checked where a card is
+written: `agentree new` and the MCP tool `new` answer with what the
+card lacks, each under `form:`, and `agentree lint` says the same of
+every card no worker has started. A card that lacks some of it is
+still written, and the lint does not fail by it: the form is the
+planner's to keep, and the owner's own short card is not refused.
+
 ## The memory of a project
 
 What a session learns is lost with it unless it is in the repository,

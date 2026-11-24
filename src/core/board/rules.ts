@@ -32,6 +32,37 @@ export function unwritten(task: Task): string[] {
   return sections.filter(([, text]) => text === "" || text === TO_BE_WRITTEN).map(([name]) => name);
 }
 
+/**
+ * What a card lacks of the board's form, each in words; empty when it has
+ * all of it. The form is what a worker with no other context can build
+ * from: a title that says what the change does, a Context that says what is
+ * there and what this adds, a Done when that can be checked line by line,
+ * what is out of scope, its steps as subtasks, and the checks that pass.
+ * A build or a fix that names no paths is a parent, counted by its parts:
+ * it is held to its title and its Context alone.
+ */
+export function formNotes(task: Task): string[] {
+  const notes: string[] = [];
+  const { title, kind, writes, checks } = task.fields;
+  const written = (text: string) => text !== "" && text !== TO_BE_WRITTEN;
+  const words = title.trim().split(/\s+/).length;
+  if (words < 3 || title.trim().length > 90) notes.push("its title says what the change does, in 3 words at least and 90 letters at most");
+  if (/[.!:]$/.test(title.trim())) notes.push("its title is a line, with no period at its end");
+  const sentences = task.context.split(/(?<=[.!?])\s+/).filter((sentence) => sentence.trim() !== "").length;
+  if (!written(task.context) || sentences < 2)
+    notes.push("its Context is two sentences at least: what is there now, and what this adds or must hold");
+  const built = kind === "build" || kind === "fix";
+  if (built && writes.length === 0) return notes;
+  const lines = task.doneWhen.split("\n").filter((line) => line.trim() !== "");
+  if (!written(task.doneWhen) || lines.length < 2 || lines.some((line) => !/^- \S/.test(line)))
+    notes.push('its "Done when" is a list of two lines at least, each one a thing a reviewer can check');
+  if (!written(task.outOfScope)) notes.push('its "Out of scope" names what a worker might do and must not, with where that belongs');
+  if (built && (task.subtasks.length < 2 || task.subtasks.length > 6))
+    notes.push("its steps are 2 to 6 subtasks, each a short line that begins with what is done");
+  if (built && checks.length === 0) notes.push("it names a check: a command that passes when it is done");
+  return notes;
+}
+
 /** What keeps a ready task from being claimed now, each in words; empty when nothing does. */
 export function obstacles(all: readonly Task[], task: Task): string[] {
   const found: string[] = [];

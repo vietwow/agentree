@@ -8,7 +8,7 @@ import { fromJsonSchema, McpServer } from "@modelcontextprotocol/server";
 import { ask, beat, claim, create, isStale, log, release, tick, type Actor, type Context } from "../core/board/actions.ts";
 import { accept, commit, land, reject, review, scope, submit, waitingToLand } from "../core/board/lifecycle.ts";
 import { acceptFact, FACT_KINDS, factsFor, recall, remember, type Fact, type FactKind } from "../core/board/memory.ts";
-import { obstacles } from "../core/board/rules.ts";
+import { formNotes, obstacles } from "../core/board/rules.ts";
 import { reportSession } from "../core/board/sessions.ts";
 import { claimOf, claims } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
@@ -242,7 +242,7 @@ export function boardServer(board: Board): McpServer {
     "Write a new task: ready when every task it depends on is done, backlog otherwise.",
     ...acting(
       {
-        title: text("What it is."),
+        title: text("What the change does, in a line: as `Refuse a write when the file changed since it was read`."),
         kind: { type: "string", enum: [...KINDS] },
         priority: { type: "integer", description: "1 is taken first." },
         parent: TASK,
@@ -252,10 +252,12 @@ export function boardServer(board: Board): McpServer {
         appends: list("The shared files it may add to."),
         needs: { type: "array", items: { type: "string", enum: [...NEEDS] } },
         checks: list("The commands that pass before it is submitted."),
-        context: text("Why it is needed, and what it has to know."),
-        doneWhen: text("What holds when it is done, as a list."),
-        outOfScope: text("What it does not do."),
-        subtasks: list("Its steps, a title each."),
+        context: text(
+          "Two sentences at least: what is there now, what this adds and the rule it must hold. A worker with no other context builds from it.",
+        ),
+        doneWhen: text("What holds when it is done: a list of two lines at least, each `- ` and a thing a reviewer can check."),
+        outOfScope: text("What a worker might do and must not, with where that belongs."),
+        subtasks: list("Its steps, 2 to 6 for a build or a fix, each a short line that begins with what is done."),
         backlog: { type: "boolean", description: "Written as backlog whatever it waits for, for the owner to make ready." },
       },
       ["title", "kind", "priority"],
@@ -268,7 +270,8 @@ export function boardServer(board: Board): McpServer {
         priority: Number(input.priority),
         needs: (input.needs ?? []) as Need[],
       } as Parameters<typeof create>[2]);
-      return `${task.fields.id} is ${task.fields.status}.`;
+      const notes = formNotes(task);
+      return `${task.fields.id} is ${task.fields.status}.${notes.length ? `\nIt lacks of the board's form:\n${notes.map((note) => `- ${note}`).join("\n")}` : ""}`;
     },
   );
 
