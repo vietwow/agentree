@@ -31,6 +31,8 @@ export type Ask = {
   cwd: string;
   heavy: boolean;
   boundMinutes: number;
+  /** Keep what the command said when it passes too: a worker's own run, whose words it asked for. */
+  keepOutput?: boolean;
 };
 export type Ran = { result: "passed" | "failed" | "timed-out"; tookMs: number; waitedMs: number; output: string };
 
@@ -70,6 +72,8 @@ export type SlotsView = {
 
 /** How much of what a command said is kept with its result. */
 const KEPT = 4000;
+/** How much of what a worker's own run said is given back to it. */
+const KEPT_OF_A_RUN = 400_000;
 /** How long a run is given to end after it is told to, before it is ended. */
 const GRACE_MS = 10_000;
 /** The samples of the load kept: one a minute over the last hour. */
@@ -149,7 +153,7 @@ export function createQueue(options: { home: string; now?: () => Date; machine?:
       });
       let output = "";
       let timedOut = false;
-      const keep = (chunk: Buffer) => (output = (output + chunk.toString()).slice(-KEPT));
+      const keep = (chunk: Buffer) => (output = (output + chunk.toString()).slice(ask.keepOutput ? -KEPT_OF_A_RUN : -KEPT));
       child.stdout.on("data", keep);
       child.stderr.on("data", keep);
       const signal = (name: NodeJS.Signals) => {
@@ -170,7 +174,7 @@ export function createQueue(options: { home: string; now?: () => Date; machine?:
         resolve({
           result: timedOut ? "timed-out" : code === 0 ? "passed" : "failed",
           tookMs: Date.now() - started,
-          output: timedOut || code !== 0 ? output.trim() : "",
+          output: timedOut || code !== 0 || ask.keepOutput ? output.trim() : "",
         });
       });
     });

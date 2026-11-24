@@ -4,10 +4,11 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { machineHome, projects } from "../core/machine/projects.ts";
+import { machineHome, placesOfProject, projects } from "../core/machine/projects.ts";
 import { createApp, createEvents, type Events } from "./app.ts";
 import { fingerprint } from "./fingerprint.ts";
-import { createQueue } from "./queue.ts";
+import { runWaitingChecks } from "./checks.ts";
+import { createQueue, type Queue } from "./queue.ts";
 
 export const DEFAULT_PORT = 4517;
 /** How often the daemon looks for a change it did not make: a command's write, or an edit by hand. */
@@ -26,16 +27,18 @@ export function machineToken(): string {
 }
 
 /** Tells the browser of each change the daemon did not make itself, by looking on a period: file events are not relied on. */
-function watch(events: Events) {
+function watch(events: Events, queue: Queue, now: () => Date) {
   const seen = new Map<string, string>();
   let listed = "";
   return setInterval(() => {
     const all = projects();
-    const now = all.map((project) => project.id).join(",");
-    if (now !== listed && listed !== "") events.emit({ what: "projects" });
-    listed = now;
+    const ids = all.map((project) => project.id).join(",");
+    if (ids !== listed && listed !== "") events.emit({ what: "projects" });
+    listed = ids;
     for (const { id } of all) {
       try {
+        // A task's checks run in the tree of its project, each heavy one in its turn of the machine's queue.
+        runWaitingChecks(id, { places: placesOfProject(id), now }, queue).catch((error: unknown) => console.error(error));
         const print = fingerprint(id);
         if (seen.has(id) && seen.get(id) !== print) events.emit({ project: id, what: "board" });
         seen.set(id, print);
@@ -62,7 +65,7 @@ export function startDaemon(options: { port?: number; ui?: string } = {}) {
   }
   // A held clock holds the load too: no reading is taken, so the pages show the same at every run.
   if (!fixed) queue.read();
-  const timers = [watch(events), ...(fixed ? [] : [setInterval(() => queue.read(), SAMPLE_MS)])];
+  const timers = [watch(events, queue, () => fixed ?? new Date()), ...(fixed ? [] : [setInterval(() => queue.read(), SAMPLE_MS)])];
   const server = serve({ fetch: app.fetch, hostname: "127.0.0.1", port });
   return {
     address: `http://127.0.0.1:${port}/?token=${token}`,

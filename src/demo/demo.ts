@@ -168,7 +168,8 @@ function stateOf(places: Places, row: Row, detail: TaskDetail, now: Date, sessio
         waitedMs: run.waitedMs,
         output: "",
       }));
-    putChecks(places, id, { commit: "", state: row.checks.state, runs });
+    // Checks that wait are the daemon's to run, and the sample's are names, not commands: they are written as running.
+    putChecks(places, id, { commit: "", state: row.checks.state === "queued" ? "running" : row.checks.state, runs });
   }
   if (!row.holder || !row.parent || row.status === "done") return;
   const by = workerOf(row.holder.tool, row.holder.model);

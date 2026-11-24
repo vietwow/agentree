@@ -52,10 +52,10 @@ test("a request without the token, from another origin, or by another host's nam
   assert.equal((await app.request("/api/projects", { headers })).status, 200);
 });
 
-test("the address the daemon prints sets the token as a cookie only the daemon's own pages send", async () => {
+test("the address the daemon prints sets the token as a cookie the browser keeps for the daemon's address", async () => {
   const opened = await app.request(`/?token=${TOKEN}`, { headers: { host: "127.0.0.1:4517" } });
   assert.equal(opened.status, 302);
-  assert.match(opened.headers.get("set-cookie")!, /^agentree=t0ken; Path=\/; HttpOnly; SameSite=Strict$/);
+  assert.match(opened.headers.get("set-cookie")!, /^agentree=t0ken; Path=\/; HttpOnly; SameSite=Lax$/);
   assert.equal((await app.request("/api/projects", { headers: { host: "127.0.0.1:4517", cookie: "agentree=t0ken" } })).status, 200);
 });
 

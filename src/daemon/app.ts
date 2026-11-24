@@ -8,6 +8,7 @@ import { Hono, type Context as Request } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { streamSSE } from "hono/streaming";
 import { answer, create, move, promote, release, tick, type Actor, type Context, type NewTask } from "../core/board/actions.ts";
+import { configOf, isHeavy } from "../core/board/config.ts";
 import { acceptFact, editFact, readMemory, remember, type NewFact } from "../core/board/memory.ts";
 import { readOptions, setReviewOwnTasks } from "../core/board/options.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
@@ -69,7 +70,7 @@ export function createApp(daemon: Daemon) {
       return request.json({ error: "the daemon answers on the loopback address only" }, 403);
     const given = request.req.query("token");
     if (given === daemon.token && request.req.method === "GET" && !request.req.path.startsWith("/api/")) {
-      setCookie(request, COOKIE, daemon.token, { httpOnly: true, sameSite: "Strict", path: "/" });
+      setCookie(request, COOKIE, daemon.token, { httpOnly: true, sameSite: "Lax", path: "/" });
       return request.redirect(request.req.path);
     }
     const bearer = request.req.header("authorization")?.replace(/^Bearer /, "");
@@ -199,6 +200,27 @@ export function createApp(daemon: Daemon) {
     });
     daemon.events.emit({ project: project.id, what: "projects" });
     return request.json(project);
+  });
+  // A worker's own command, run as a check is: a heavy one waits for its turn, and the answer comes when it ended.
+  app.post("/api/projects/:project/run", async (request) => {
+    const body = (await request.req.json()) as { command: string; cwd: string; task?: string; by?: string };
+    const { places } = contextOf(request);
+    if (typeof body.command !== "string" || body.command.trim() === "") throw new Refusal("a run names its command");
+    if (body.cwd !== places.root && !body.cwd.startsWith(`${places.trees}/`))
+      throw new Refusal(`${body.cwd} is no tree of this project: a command runs in the main checkout or in a task's tree`);
+    const config = configOf(places);
+    const ran = await daemon.queue.run({
+      project: request.req.param("project"),
+      task: body.task ?? "",
+      by: body.by ?? "person/owner",
+      what: "command",
+      command: body.command,
+      cwd: body.cwd,
+      heavy: isHeavy(config, body.command),
+      boundMinutes: config.boundMinutes,
+      keepOutput: true,
+    });
+    return request.json(ran);
   });
   app.post("/api/slots/bounds", async (request) => {
     daemon.queue.setBounds((await request.req.json()) as Partial<Bounds>);

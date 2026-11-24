@@ -511,7 +511,8 @@ is slow or misses, and is never the source.
 
 As built: `agentree serve` listens on `127.0.0.1:4517`. It prints an
 address that carries the machine's token once; opening it sets the token
-as a cookie that is `HttpOnly` and `SameSite=Strict`, and a tool sends
+as a cookie that is `HttpOnly` and `SameSite=Lax` (so that the address
+opens from a link in another application too), and a tool sends
 it as a bearer. A request whose `Host` is not the loopback address is
 refused too. The daemon looks at each project's board branch, its main
 checkout's commit and the times of its machine state every 1.5 seconds,
@@ -545,6 +546,18 @@ card dragged between Backlog and Ready and a subtask marked are
 requests to the daemon. The daemon holds a snapshot while the board's
 fingerprint stands, for five seconds at most. With no token, no daemon
 or no project, the page says which and what to run.
+
+The checks of a submit run in the daemon: on each look it starts the
+checks of every task that is `checking` and whose checks wait, each
+command through the queue, and settles the task. `agentree submit`
+waits for them unless `--no-wait`, and runs them itself when no daemon
+answers. `agentree run [T-NNNN] -- <command>` asks the daemon to run a
+command in the main checkout or a task's tree and prints what it said;
+`agentree load` says the load, the runs, what is free and how many more
+workers to start now; `agentree wait T-NNNN` returns when the owner
+answered. The command finds the daemon at `127.0.0.1:4517` (or
+`AGENTREE_PORT`) with the machine's token. The other subcommands still
+write the board themselves, under its lock.
 
 ### How it looks
 

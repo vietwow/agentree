@@ -3,7 +3,21 @@
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { answer, ask, beat, claim, create, isStale, log, move, promote, release, tick, type Actor, type Context } from "../core/board/actions.ts";
+import {
+  answer,
+  ask as askOwner,
+  beat,
+  claim,
+  create,
+  isStale,
+  log,
+  move,
+  promote,
+  release,
+  tick,
+  type Actor,
+  type Context,
+} from "../core/board/actions.ts";
 import { init } from "../core/board/init.ts";
 import { accept, check, commit, land, reject, review, scope, submit, waitingToLand } from "../core/board/lifecycle.ts";
 import { setReviewOwnTasks } from "../core/board/options.ts";
@@ -13,8 +27,10 @@ import { claims, ownerToken } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
 import { Refusal } from "../core/errors.ts";
 import { projects, register } from "../core/machine/projects.ts";
+import type { SlotsView } from "../daemon/queue.ts";
 import { startDaemon } from "../daemon/serve.ts";
 import { demo } from "../demo/demo.ts";
+import { ask, projectIdOf } from "./daemon.ts";
 import { renderTask } from "../core/task/file.ts";
 import { KINDS, STATUSES, type Kind, type Need, type Tool } from "../core/task/model.ts";
 
@@ -36,7 +52,10 @@ const USAGE = `Usage: agentree <subcommand> [options]
   tick T-NNNN <n> [--undo]              mark subtask n done
   scope T-NNNN                          the files its tree changed, by whose they are
   commit T-NNNN -m <message>            commit its tree on its branch, for a session that cannot
-  submit T-NNNN                         the scope check, then its checks; review when they pass
+  submit T-NNNN [--no-wait]             the scope check, then its checks in the daemon's queue; review when they pass
+  run [T-NNNN] -- <command>             run a command as a check runs: a heavy one waits for its turn
+  load                                  the machine's load, its heavy runs, and how many more it takes now
+  wait T-NNNN                           wait for the owner's answer to the task's question
   release T-NNNN [--blocked] < why.md   give it back without finishing
   review T-NNNN [--drop]                mark it as under review by you
   accept T-NNNN < review.md             reviewed; it waits for its turn to land
@@ -66,6 +85,7 @@ const { values, positionals } = parseArgs({
     blocked: { type: "boolean" },
     undo: { type: "boolean" },
     drop: { type: "boolean" },
+    "no-wait": { type: "boolean" },
     message: { type: "string", short: "m" },
     name: { type: "string" },
     desc: { type: "string" },
@@ -93,6 +113,11 @@ const { values, positionals } = parseArgs({
 
 const [subcommand, ...rest] = positionals;
 const say = (text: string) => process.stdout.write(`${text}\n`);
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+/** How often a command that waits looks at the board again. */
+const POLL_MS = 1000;
+/** The processors a worker with its tool is counted to take, when an agent asks how many more the machine takes. */
+const WORKER_PROCESSORS = 2;
 
 /** A list option given several times, or once with commas. */
 const list = (given: string[] | undefined) =>
@@ -210,7 +235,7 @@ const COMMANDS: Record<string, () => unknown> = {
   },
   ask() {
     const at = context();
-    ask(at, actor(at), id(), stdin("the question"), values.choice ?? []);
+    askOwner(at, actor(at), id(), stdin("the question"), values.choice ?? []);
     say(`${id()}: the question waits for the owner on its card; the task stays yours`);
   },
   answer() {
@@ -240,13 +265,73 @@ const COMMANDS: Record<string, () => unknown> = {
     const at = context();
     say(`${id()}: committed as ${commit(at, actor(at), id(), values.message ?? "").slice(0, 12)}`);
   },
-  submit() {
+  async submit() {
     const at = context();
     const { submission } = submit(at, actor(at), id());
-    say(`${id()}: submitted at ${submission.commit.slice(0, 12)}; its checks run in ${submission.tree}`);
-    const task = check(at, id());
+    say(`${id()}: submitted at ${submission.commit.slice(0, 12)}`);
+    const project = projectIdOf(at.places.root);
+    const daemon = project && (await ask(`/api/slots`));
+    if (!daemon) {
+      say(`No daemon answers for this project: its checks run here, in ${submission.tree}`);
+      check(at, id());
+    } else if (values["no-wait"]) {
+      return say("Its checks run in the daemon's queue; take your next task.");
+    } else {
+      say("Its checks run in the daemon's queue...");
+      while (taskOf(readBoard(at.places), id()).task.fields.status === "checking") await sleep(POLL_MS);
+    }
+    const { task } = taskOf(readBoard(at.places), id());
     say(task.log.at(-1)!.text);
     if (task.fields.status !== "review") process.exitCode = 1;
+  },
+  async run() {
+    const at = context();
+    const dashes = process.argv.indexOf("--");
+    const command = dashes < 0 ? "" : process.argv.slice(dashes + 1).join(" ");
+    if (command.trim() === "") throw new Refusal("name the command after --, as: agentree run T-0042 -- pnpm test");
+    const project = projectIdOf(at.places.root);
+    const task = rest[0] && /^T-\d{4}$/.test(rest[0]) ? rest[0] : "";
+    const body = { command, cwd: process.cwd(), task, by: process.env.AGENTREE_WORKER ?? "person/owner" };
+    const ran = project
+      ? await ask<{ result: string; tookMs: number; waitedMs: number; output: string }>(`/api/projects/${project}/run`, body)
+      : undefined;
+    if (!ran) throw new Refusal("no daemon answers for this project: a run goes through its queue. Start it with: agentree serve");
+    if (ran.output) process.stdout.write(`${ran.output}\n`);
+    if (ran.waitedMs) process.stderr.write(`agentree: waited ${Math.round(ran.waitedMs / 1000)} s for its turn\n`);
+    if (ran.result !== "passed") {
+      process.stderr.write(`agentree: the command ${ran.result === "timed-out" ? "ran into its bound and was ended" : "failed"}\n`);
+      process.exitCode = 1;
+    }
+  },
+  async load() {
+    const slots = await ask<SlotsView>("/api/slots");
+    if (!slots) throw new Refusal("no daemon answers on this machine: start it with: agentree serve");
+    const last = slots.load.at(-1);
+    const share = (value?: number) => (value === undefined ? "not read" : `${Math.round(value * 100)}%`);
+    say(
+      `Load: host ${share(last?.host)}, Docker's machine ${share(last?.vm)} of ${slots.cores} processors; no run is added over ${share(slots.mark)}.`,
+    );
+    say(
+      `Heavy runs: ${slots.runs.length} running, ${slots.queue.length} waiting; between ${slots.bounds.lowest} and ${slots.bounds.highest} at once.`,
+    );
+    say(`Free now, with the margin kept: ${Math.max(0, slots.free.cpu)} processors, ${Math.max(0, slots.free.memory)} GB.`);
+    const over = last === undefined || Math.max(last.host ?? 1, last.vm) > slots.mark;
+    const more =
+      slots.queue.length > 0 || over
+        ? 0
+        : Math.max(0, Math.min(slots.bounds.highest - slots.runs.length, Math.floor(slots.free.cpu / WORKER_PROCESSORS)));
+    say(
+      `Start no more than ${more} more ${more === 1 ? "worker" : "workers"} now${slots.queue.length ? ": heavy runs wait" : over ? ": the machine is past its mark, or its load is not read" : ""}. Ask again before the next.`,
+    );
+  },
+  async wait() {
+    const at = context();
+    const open = () => taskOf(readBoard(at.places), id()).task.questions.filter((question) => !question.answeredAt).length;
+    const asked = open();
+    if (!asked) throw new Refusal(`${id()} has no question that waits for an answer`);
+    while (open() >= asked) await sleep(POLL_MS);
+    const answered = taskOf(readBoard(at.places), id()).task.questions.findLast((question) => question.answeredAt)!;
+    say(`The owner answered on ${answered.answeredAt}:\n\n${answered.answer}`);
   },
   review() {
     const at = context();
