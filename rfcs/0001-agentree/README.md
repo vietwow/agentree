@@ -524,9 +524,20 @@ the slots); the review and the landing have none. A project's part is
 `agentree.config.json`: which commands are heavy, and the bound of a
 check. A heavy run is told its seat, its ports and its number of
 workers in `AGENTREE_SEAT`, `AGENTREE_PORT`, `AGENTREE_DEBUG_PORT` and
-`AGENTREE_WORKERS`. The runs are processes of the daemon's system and
-are not yet containers, so what a run took is not measured: a command's
-cost is the heaviest known, or a quarter of the machine.
+`AGENTREE_WORKERS`. A project whose part names an `image` has each of
+its commands run in a container of it (`docker run --rm`), with the
+directory that holds the repository and its trees mounted at the same
+path, held to its command's cost by `--cpus` and `--memory`, and ended
+at its bound by `docker kill`. When the command ends, the container
+reads its own `memory.peak` and the `usage_usec` of its `cpu.stat`; the
+peak of memory and the processors it used on average over its run are
+kept as that command's cost, the most seen, and a command not yet seen
+is given the heaviest's, or a quarter of the machine. A project with no
+image runs its commands as processes of the daemon's own system, where
+nothing is measured. Tried on 2026-11-24 with Docker 29.9.3 and
+`alpine:3`: the limit read back in `cpu.max`, the measure, and the end
+at the bound. A tree's dependencies in a volume, and its install at
+the claim, are not built.
 
 `agentree demo <directory>` makes four projects there and registers
 them: the sample board the UI was built on, as a real repository (its

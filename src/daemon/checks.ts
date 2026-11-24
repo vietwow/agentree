@@ -4,10 +4,10 @@
  * machine's queue, a heavy one in its turn, and is settled on the results.
  */
 import type { Context } from "../core/board/actions.ts";
-import { configOf, isHeavy } from "../core/board/config.ts";
 import { checksToRun, settleChecks } from "../core/board/lifecycle.ts";
 import { checksOf, submissionOf, type CheckRun } from "../core/board/state.ts";
 import { readBoard } from "../core/board/store.ts";
+import { askFor } from "./asks.ts";
 import type { Queue } from "./queue.ts";
 
 /** The tasks whose checks run now, by project and id: a task's checks run once however often the daemon looks. */
@@ -29,20 +29,10 @@ export function runWaitingChecks(project: string, context: Context, queue: Queue
       running.add(key);
       try {
         const { task, tree } = checksToRun(context, fields.id);
-        const config = configOf(context.places);
         const by = submissionOf(context.places, fields.id)?.by ?? "";
         const runs: CheckRun[] = [];
         for (const command of task.fields.checks) {
-          const ran = await queue.run({
-            project,
-            task: fields.id,
-            by,
-            what: "check",
-            command,
-            cwd: tree,
-            heavy: isHeavy(config, command),
-            boundMinutes: config.boundMinutes,
-          });
+          const ran = await queue.run(askFor(context.places, { project, task: fields.id, by, what: "check", command, cwd: tree }));
           runs.push({ command, result: ran.result, tookMs: ran.tookMs, waitedMs: ran.waitedMs, output: ran.output });
         }
         settleChecks(context, fields.id, runs);

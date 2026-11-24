@@ -9,7 +9,6 @@ import { Hono, type Context as Request } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { streamSSE } from "hono/streaming";
 import { answer, create, move, promote, release, tick, type Actor, type Context, type NewTask } from "../core/board/actions.ts";
-import { configOf, isHeavy } from "../core/board/config.ts";
 import { acceptFact, editFact, readMemory, remember, type NewFact } from "../core/board/memory.ts";
 import { readOptions, setReviewOwnTasks } from "../core/board/options.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
@@ -23,6 +22,7 @@ import { agentsView, milestonesView, projectView } from "../core/views/project.t
 import { activityView, taskDetailView, taskView } from "../core/views/tasks.ts";
 import { toolsView } from "../core/views/tools.ts";
 import { boardServer } from "../mcp/tools.ts";
+import { askFor } from "./asks.ts";
 import { fingerprint } from "./fingerprint.ts";
 import { loadInWords } from "./load.ts";
 import type { Queue } from "./queue.ts";
@@ -211,18 +211,17 @@ export function createApp(daemon: Daemon) {
     if (typeof body.command !== "string" || body.command.trim() === "") throw new Refusal("a run names its command");
     if (body.cwd !== places.root && !body.cwd.startsWith(`${places.trees}/`))
       throw new Refusal(`${body.cwd} is no tree of this project: a command runs in the main checkout or in a task's tree`);
-    const config = configOf(places);
-    const ran = await daemon.queue.run({
-      project: request.req.param("project"),
-      task: body.task ?? "",
-      by: body.by ?? "person/owner",
-      what: "command",
-      command: body.command,
-      cwd: body.cwd,
-      heavy: isHeavy(config, body.command),
-      boundMinutes: config.boundMinutes,
-      keepOutput: true,
-    });
+    const ran = await daemon.queue.run(
+      askFor(places, {
+        project: request.req.param("project"),
+        task: body.task ?? "",
+        by: body.by ?? "person/owner",
+        what: "command",
+        command: body.command,
+        cwd: body.cwd,
+        keepOutput: true,
+      }),
+    );
     return request.json(ran);
   });
   app.post("/api/slots/queue/:n/first", (request) => {
@@ -239,24 +238,13 @@ export function createApp(daemon: Daemon) {
   app.all("/mcp/:project", (request) => {
     const project = request.req.param("project");
     const context = contextOf(request);
-    const config = configOf(context.places);
     const handler =
       servers.get(project) ??
       createMcpHandler(() =>
         boardServer({
           context,
           run: (command, cwd, task, by) =>
-            daemon.queue.run({
-              project,
-              task,
-              by,
-              what: "command",
-              command,
-              cwd,
-              heavy: isHeavy(config, command),
-              boundMinutes: config.boundMinutes,
-              keepOutput: true,
-            }),
+            daemon.queue.run(askFor(context.places, { project, task, by, what: "command", command, cwd, keepOutput: true })),
           load: () => Promise.resolve(loadInWords(daemon.queue.view())),
         }),
       );

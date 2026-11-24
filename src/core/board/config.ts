@@ -9,6 +9,8 @@ export const CONFIG_FILE = "agentree.config.json";
 export type ProjectConfig = {
   /** A command is heavy, and waits for a slot of the machine, when one of these matches it; each is a regular expression. */
   heavy: string[];
+  /** The image with the project's toolchain: its commands run in a container of it, each held to what it is given. None named, they run on the daemon's own system. */
+  image: string;
   /** No check runs longer than this many minutes. */
   boundMinutes: number;
   /** The checks a new build or fix task is given when it names none. */
@@ -17,7 +19,13 @@ export type ProjectConfig = {
   areas: { path: string; name: string }[];
 };
 
-export const DEFAULT_CONFIG: ProjectConfig = { heavy: ["\\b(test|e2e|vitest|jest|playwright|build)\\b"], boundMinutes: 90, checks: [], areas: [] };
+export const DEFAULT_CONFIG: ProjectConfig = {
+  heavy: ["\\b(test|e2e|vitest|jest|playwright|build)\\b"],
+  image: "",
+  boundMinutes: 90,
+  checks: [],
+  areas: [],
+};
 
 export function configOf(places: Places): ProjectConfig {
   const file = join(places.root, CONFIG_FILE);

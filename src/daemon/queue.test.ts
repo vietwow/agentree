@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -99,3 +100,34 @@ test("the owner moves a waiting run before the others that wait", async () => {
   assert.deepEqual(order, ["T-0001", "T-0003", "T-0002"]);
   rmSync(at, { recursive: true });
 });
+
+const docker = spawnSync("docker", ["image", "inspect", "alpine:3"], { stdio: "ignore" }).status === 0;
+
+test(
+  "a run in the project's container is held to what it is given, and what it took is kept as its command's cost",
+  { skip: docker ? false : "Docker, or its image alpine:3, is not there" },
+  async () => {
+    const at = home();
+    const tree = mkdtempSync(join(tmpdir(), "agentree-tree-"));
+    writeFileSync(join(tree, "seen.txt"), "seen in the container\n");
+    const queue = createQueue({ home: at, machine: { cores: 4, memory: 8 }, loadAverage: () => 0.4 });
+    const container = { image: "alpine:3", mount: tree };
+    const command = 'cat seen.txt; echo "$CI $(cat /sys/fs/cgroup/cpu.max)"; i=0; while [ $i -lt 200000 ]; do i=$((i+1)); done';
+    const ran = await queue.run(ask("T-0001", command, { heavy: false, cwd: tree, container, keepOutput: true }));
+    assert.deepEqual(
+      [ran.result, ran.output],
+      ["passed", "seen in the container\ntrue 100000 100000"],
+      "the first run of a command is given the quarter of the machine: one of four processors",
+    );
+    assert.ok(ran.took && ran.took.cpu > 0 && ran.took.memory > 0 && ran.took.memory < 0.1, `it took ${JSON.stringify(ran.took)}`);
+    const failed = await queue.run(ask("T-0001", "echo broken; exit 3", { heavy: false, cwd: tree, container }));
+    assert.deepEqual([failed.result, failed.output], ["failed", "broken"], "the line of the measure is no word of the command");
+    const ended = await queue.run(ask("T-0001", "sleep 60", { heavy: false, cwd: tree, container, boundMinutes: 0.02 }));
+    assert.equal(ended.result, "timed-out");
+    assert.ok(ended.tookMs < 20_000, `the container was ended at its bound: ${ended.tookMs} ms`);
+    const costs = JSON.parse(readFileSync(join(at, "queue/costs.json"), "utf8")) as Record<string, { runs: number }>;
+    assert.equal(costs[command]!.runs, 1);
+    rmSync(at, { recursive: true });
+    rmSync(tree, { recursive: true });
+  },
+);

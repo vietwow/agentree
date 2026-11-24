@@ -14,7 +14,9 @@ import {
   DEFAULT_BOUNDS,
   freeOf,
   MARK,
+  withMeasure,
   type Bounds,
+  type Cost,
   type Costs,
   type Machine,
   type Reading,
@@ -33,8 +35,10 @@ export type Ask = {
   boundMinutes: number;
   /** Keep what the command said when it passes too: a worker's own run, whose words it asked for. */
   keepOutput?: boolean;
+  /** The project's image, and the directory mounted into its container at the same path: the one that holds the repository and its trees. */
+  container?: { image: string; mount: string };
 };
-export type Ran = { result: "passed" | "failed" | "timed-out"; tookMs: number; waitedMs: number; output: string };
+export type Ran = { result: "passed" | "failed" | "timed-out"; tookMs: number; waitedMs: number; output: string; took?: Cost };
 
 type Decided = { at: string; kind: "start" | "hold" | "stop" | "add" | "mark"; text: string; task?: string };
 
@@ -74,6 +78,10 @@ export type SlotsView = {
 
 /** How much of what a command said is kept with its result. */
 const KEPT = 4000;
+/** The line a run in a container ends with: its peak of memory in bytes and the time of the processors it used, in microseconds. */
+const MEASURE = "__agentree_measure";
+/** The least memory Docker gives a container. */
+const MIN_MEMORY_MB = 64;
 /** How much of what a worker's own run said is given back to it. */
 const KEPT_OF_A_RUN = 400_000;
 /** How long a run is given to end after it is told to, before it is ended. */
@@ -143,26 +151,58 @@ export function createQueue(options: { home: string; now?: () => Date; machine?:
     options.onChange?.();
   }
 
-  /** Runs a command in a process group of its own, as CI runs it, and ends it at its bound. */
-  function execute(ask: Ask, environment: Record<string, string>): Promise<Omit<Ran, "waitedMs">> {
+  /**
+   * Runs a command as CI runs it and ends it at its bound: in a container
+   * of the project's image when the project names one, held to what it is
+   * given and measured by the system; in a process group of the daemon's
+   * own system otherwise, where what it takes is not measured.
+   */
+  function execute(ask: Ask, environment: Record<string, string>, given: Cost): Promise<Omit<Ran, "waitedMs">> {
     return new Promise((resolve, reject) => {
       const started = Date.now();
-      const child = spawn("sh", ["-c", ask.command], {
-        cwd: ask.cwd,
-        env: { ...process.env, CI: "true", ...environment },
-        stdio: ["ignore", "pipe", "pipe"],
-        detached: true,
-      });
+      const variables = { CI: "true", ...environment };
+      const name = `agentree-run-${process.pid}-${started}-${Math.round(Math.random() * 1e6)}`;
+      const child = ask.container
+        ? spawn(
+            "docker",
+            [
+              "run",
+              "--rm",
+              "--name",
+              name,
+              "--cpus",
+              String(given.cpu),
+              "--memory",
+              `${Math.max(MIN_MEMORY_MB, Math.round(given.memory * 1024))}m`,
+              "--volume",
+              `${ask.container.mount}:${ask.container.mount}`,
+              "--workdir",
+              ask.cwd,
+              ...Object.entries(variables).flatMap(([key, value]) => ["--env", `${key}=${value}`]),
+              ask.container.image,
+              "sh",
+              "-c",
+              `${ask.command}\ncode=$?\necho "${MEASURE} $(cat /sys/fs/cgroup/memory.peak) $(grep usage_usec /sys/fs/cgroup/cpu.stat | cut -d' ' -f2)" >&2\nexit $code`,
+            ],
+            { stdio: ["ignore", "pipe", "pipe"] },
+          )
+        : spawn("sh", ["-c", ask.command], {
+            cwd: ask.cwd,
+            env: { ...process.env, ...variables },
+            stdio: ["ignore", "pipe", "pipe"],
+            detached: true,
+          });
       let output = "";
       let timedOut = false;
       const keep = (chunk: Buffer) => (output = (output + chunk.toString()).slice(ask.keepOutput ? -KEPT_OF_A_RUN : -KEPT));
       child.stdout.on("data", keep);
       child.stderr.on("data", keep);
-      const signal = (name: NodeJS.Signals) => {
+      const signal = (how: NodeJS.Signals) => {
         try {
-          process.kill(-child.pid!, name);
+          if (ask.container) spawn("docker", ["kill", "--signal", how, name], { stdio: "ignore" });
+          else process.kill(-child.pid!, how);
         } catch {
-          // The group ended by itself between the bound and the signal.
+          // The run ended by itself between the bound and the signal.
         }
       };
       const bound = setTimeout(() => {
@@ -173,20 +213,36 @@ export function createQueue(options: { home: string; now?: () => Date; machine?:
       child.on("error", reject);
       child.on("close", (code) => {
         clearTimeout(bound);
+        const tookMs = Date.now() - started;
+        const measured = new RegExp(`^${MEASURE} (\\d+) (\\d+)$`, "m").exec(output);
+        const said = output.replace(new RegExp(`^${MEASURE} .*\\n?`, "m"), "").trim();
         resolve({
           result: timedOut ? "timed-out" : code === 0 ? "passed" : "failed",
-          tookMs: Date.now() - started,
-          output: timedOut || code !== 0 || ask.keepOutput ? output.trim() : "",
+          tookMs,
+          output: timedOut || code !== 0 || ask.keepOutput ? said : "",
+          // The processors it used on average over its run, and its peak of memory.
+          ...(measured ? { took: { cpu: Number(measured[2]) / 1000 / Math.max(tookMs, 1), memory: Number(measured[1]) / 2 ** 30 } } : {}),
         });
       });
     });
+  }
+
+  /** Keeps what a run took as its command's cost. */
+  function measured(ask: Ask, ran: Omit<Ran, "waitedMs">) {
+    if (!ran.took) return;
+    Object.assign(costs, withMeasure(costs, ask.command, ran.took));
+    save("costs.json", costs);
   }
 
   return {
     machine,
     /** Runs a command: a light one at once, a heavy one when the queue admits it. */
     run(ask: Ask): Promise<Ran> {
-      if (!ask.heavy) return execute(ask, {}).then((ran) => ({ ...ran, waitedMs: 0 }));
+      if (!ask.heavy)
+        return execute(ask, {}, costOf(costs, ask.command, machine)).then((ran) => {
+          measured(ask, ran);
+          return { ...ran, waitedMs: 0 };
+        });
       return new Promise((resolve, reject) => {
         const n = next++;
         const asked = Date.now();
@@ -205,13 +261,15 @@ export function createQueue(options: { home: string; now?: () => Date; machine?:
           const [port, debug] = portsOf(seat);
           Object.assign(ticket, { startedAt: stamp(), seat });
           const waited = Date.now() - asked;
-          execute(ask, {
-            AGENTREE_SEAT: String(seat),
-            AGENTREE_WORKERS: String(workers),
-            AGENTREE_PORT: String(port),
-            AGENTREE_DEBUG_PORT: String(debug),
-          })
-            .then((ran) => resolve({ ...ran, waitedMs: waited > 500 ? waited : 0 }), reject)
+          execute(
+            ask,
+            { AGENTREE_SEAT: String(seat), AGENTREE_WORKERS: String(workers), AGENTREE_PORT: String(port), AGENTREE_DEBUG_PORT: String(debug) },
+            ticket.cost,
+          )
+            .then((ran) => {
+              measured(ask, ran);
+              resolve({ ...ran, waitedMs: waited > 500 ? waited : 0 });
+            }, reject)
             .finally(() => {
               tickets.delete(ticket.n);
               turn();
