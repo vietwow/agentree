@@ -1,6 +1,6 @@
 /*
- * Tier 1: the raw colours. Nothing outside `design/tokens/theme.css` reads
- * these; a rule asks for what a colour is for (`--ink-2`, `--good`), never
+ * Tier 1: the raw colours. Nothing but a theme (`design/tokens/theme.css`,
+ * a page theme in `themes/`) reads these; a rule asks for what a colour is for (`--ink-2`, `--good`), never
  * which colour it is. Stone is the light theme's warm grey, zinc the dark
  * theme's cool one; each hue has a deep step for light backgrounds and a
  * pale one for dark backgrounds.
@@ -22,9 +22,12 @@
   --stone-900: #1d1c1a;
 
   --zinc-50: #f4f4f5;
+  --zinc-250: #c4c4ca;
   --zinc-300: #b8b8be;
+  --zinc-350: #a1a1a7;
   --zinc-400: #93939a;
   --zinc-450: #8f8b84;
+  --zinc-475: #85858c;
   --zinc-500: #6e6e75;
   --zinc-650: #44444b;
   --zinc-700: #333339;
@@ -34,6 +37,7 @@
   --zinc-800: #1a1a1d;
   --zinc-850: #161618;
   --zinc-875: #131315;
+  --zinc-890: #111113;
   --zinc-900: #0f0f11;
   --zinc-925: #0b0b0c;
   --zinc-950: #09090a;
@@ -72,6 +76,24 @@
   --brick-300: #e07d65;
   --olive-500: #9a8f3c;
   --olive-300: #bdb260;
+
+  /* The Live page's paper, its live green and its hard-link ochre. */
+  --paper-25: #fbfaf7;
+  --paper-75: #f6f4ef;
+  --paper-200: #e2ded4;
+  --paper-250: #d6d1c5;
+  --paper-300: #cfc8ba;
+  --paper-500: #8a857a;
+  --paper-600: #6b665b;
+  --paper-700: #4a463e;
+  --paper-900: #1b1a17;
+  --jade-300: #6fc89c;
+  --jade-400: #4fc38a;
+  --jade-500: #3daa6e;
+  --jade-700: #2f6b4f;
+  --ochre-300: #f2b84b;
+  --ochre-400: #c9a24a;
+  --ochre-700: #8a6a1e;
 
   /* The dark theme's primary action: a muted gold. */
   --gold-200: #dab781;

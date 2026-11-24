@@ -1,0 +1,53 @@
+/*
+ * The Live page's theme: pequalnp's paper palette. It sets the semantic
+ * tokens inside `.page.live`, so the page's own parts and the shared
+ * components on it take the same colours; `--live-*` are the parts only
+ * this page has.
+ */
+.page.live {
+  --surface: var(--stone-0);
+  --surface-2: var(--paper-75);
+  --sunken: var(--paper-25);
+  --line: var(--paper-200);
+  --line-strong: var(--paper-250);
+  --ink: var(--paper-900);
+  --ink-2: var(--paper-700);
+  --ink-3: var(--paper-600);
+  --ink-4: var(--paper-500);
+  --ink-inv: var(--paper-75);
+  --good: var(--jade-500);
+  --warn: var(--ochre-700);
+  --shadow-card: 0 1px 2px rgb(27 26 23 / 0.04), 0 6px 18px rgb(27 26 23 / 0.05);
+  --shadow-pop: 0 14px 44px rgb(27 26 23 / 0.16);
+
+  --live-organism: var(--paper-25);
+  --live-site: var(--paper-300);
+  --live-good-ink: var(--jade-700);
+  --live-halo: color-mix(in srgb, var(--good) 50%, transparent);
+  --live-glow: color-mix(in srgb, var(--ochre-300) 95%, transparent);
+  --live-wash-in: 24%;
+  --live-wash-mid: 8%;
+}
+.dark .page.live {
+  --surface: var(--zinc-800);
+  --surface-2: var(--zinc-850);
+  --sunken: var(--zinc-890);
+  --line: var(--zinc-700);
+  --line-strong: var(--zinc-650);
+  --ink: var(--zinc-50);
+  --ink-2: var(--zinc-250);
+  --ink-3: var(--zinc-350);
+  --ink-4: var(--zinc-475);
+  --ink-inv: var(--zinc-925);
+  --good: var(--jade-400);
+  --warn: var(--ochre-400);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 18px rgb(0 0 0 / 0.35);
+  --shadow-pop: 0 14px 44px rgb(0 0 0 / 0.55);
+
+  --live-organism: var(--zinc-850);
+  --live-site: var(--zinc-650);
+  --live-good-ink: var(--jade-300);
+  --live-halo: color-mix(in srgb, var(--good) 45%, transparent);
+  --live-wash-in: 20%;
+  --live-wash-mid: 6%;
+}
