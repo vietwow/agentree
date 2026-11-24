@@ -10,7 +10,7 @@ import { dirname, join } from "node:path";
 import { CONFIG_FILE, DEFAULT_CONFIG } from "../board/config.ts";
 import { Refusal } from "../errors.ts";
 import { TOOLS, type Tool } from "../task/model.ts";
-import { agentDefinition, RULES_END, RULES_START, skillFile, SKILLS, TAKING_WORK } from "./templates.ts";
+import { agentDefinition, DOCUMENT_TEMPLATES, RULES_END, RULES_START, skillFile, SKILLS, TAKING_WORK } from "./templates.ts";
 
 /** The tools a project is set up for: every one but a person. */
 export const AGENT_TOOLS = TOOLS.filter((tool): tool is Exclude<Tool, "person"> => tool !== "person");
@@ -188,6 +188,8 @@ export function setUp(root: string, tools: readonly Tool[]): Report {
     copyFileSync(join(STANDARD, name), join(root, path));
     report.did.push(`${path}: the engineering standard a project starts with`);
   }
+  for (const [path, text] of Object.entries(DOCUMENT_TEMPLATES))
+    if (files.read(path) === undefined) files.write(path, text, "a template the project's own documents start from");
   for (const tool of chosen) SETUP[tool](files, report);
   return report;
 }

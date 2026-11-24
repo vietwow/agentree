@@ -7,6 +7,8 @@ import { configOf } from "../board/config.ts";
 import { onHook } from "../board/hooks.ts";
 import { claimOf } from "../board/state.ts";
 import { CODEX, OWNER, project, type Project } from "../board/testing.ts";
+import { git } from "../git.ts";
+import { documentsView } from "../views/documents.ts";
 import { agentsView } from "../views/project.ts";
 import { toolsView } from "../views/tools.ts";
 import { doctor } from "./doctor.ts";
@@ -54,6 +56,11 @@ test("init writes the rules, each tool's MCP entry and hooks, the skills and the
     /^---\nname: agentree-reviewer\ndescription: .+\ndisallowedTools: Edit, Write, MultiEdit, NotebookEdit\n---\n/,
   );
   assert.ok(existsSync(join(root, "docs/engineering/code-standards.md")));
+  assert.match(read("docs/adr/TEMPLATE.md"), /^---\nstatus: draft\n[\s\S]+## Options weighed/);
+  assert.ok(existsSync(join(root, "rfcs/TEMPLATE.md")) && existsSync(join(root, "docs/engineering/system-conventions.md")));
+  git(root, "add", "--all");
+  git(root, "commit", "--quiet", "-m", "Set up");
+  assert.deepEqual(documentsView(context.places), [], "a template is no document of the project");
   assert.deepEqual(configOf(context.places).checks, ["pnpm lint", "pnpm test"]);
   assert.ok(report.byHand.some((line) => line.startsWith("Codex: trust the project")));
   assert.deepEqual(setUp(root, AGENT_TOOLS).did, [], "a second run finds everything as it would write it");

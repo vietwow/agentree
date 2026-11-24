@@ -164,3 +164,88 @@ export function skillFile(skill: Skill): string {
   const marks = skill.byModel ? "" : "disable-model-invocation: true\n";
   return `---\nname: ${skill.name}\ndescription: ${skill.description}\n${marks}---\n\n${skill.body}`;
 }
+
+/** What a project's own documents start from: the files `init` writes beside its RFCs and its ADRs, under names the Documents page does not list. */
+export const DOCUMENT_TEMPLATES: Record<string, string> = {
+  "docs/adr/TEMPLATE.md": `---
+status: draft
+date: YYYY-MM-DD
+---
+
+# ADR NNNN: The decision in a line
+
+Copy this file to \`docs/adr/NNNN-short-name.md\` with the next number.
+\`status\` is \`draft\`, \`accepted\` or \`superseded\`; an ADR that replaces
+another names it in \`supersedes: adr-NNNN\`, and the one replaced names
+its successor in \`superseded-by\`.
+
+## Context
+
+What forces the decision: the need, the constraints, what was measured.
+
+## Decision
+
+What is chosen, in the present tense.
+
+## Options weighed
+
+Each option that was looked at, and why it was not taken.
+
+## Consequences
+
+What becomes easier, what becomes harder, and what has to be watched.
+
+## Verified
+
+Each fact about a tool, a library or an API, with where it was read.
+What was not verified is said plainly.
+`,
+  "rfcs/TEMPLATE.md": `---
+status: draft
+date: YYYY-MM-DD
+---
+
+# RFC NNNN: What is proposed
+
+Copy this file to \`rfcs/NNNN-short-name/README.md\` with the next number.
+A task that builds a part of it names the number in its \`rfc\` field.
+
+## The problem
+
+What is wrong or missing today, with what it costs.
+
+## What is proposed
+
+The design, a part a section. What it does not do.
+
+## The steps in order
+
+Each becomes a task once the RFC is accepted.
+
+## Proving it
+
+What is true when the design is done, each line checkable.
+
+## Questions for the owner
+
+What only the owner decides; each answered one moves to the design.
+
+## Verified
+
+Each claim about a tool, a library or an API, with where it was read.
+
+## Not verified
+
+What was assumed and not checked.
+`,
+  "docs/engineering/system-conventions.md": `# System conventions
+
+The one way this project does each thing it needs: a line here when the
+project chooses it, with the ADR that decided it. A need that is not
+here has no convention yet: decide it in an ADR before the second place
+that needs it is written.
+
+| Need | The one way | Decided in |
+| ---- | ----------- | ---------- |
+`,
+};
