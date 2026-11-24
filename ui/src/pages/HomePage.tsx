@@ -7,11 +7,13 @@ import { fileAreas, forecast, markCounts, numbers, toolsLive, type FileArea, typ
 import { STATUS_LABEL, TOOL_LABEL, type Task } from "../board/task.ts";
 import { ic } from "../design/components/icon.tsx";
 import { Page } from "../design/components/Page.tsx";
+import { count } from "../design/format/text.ts";
 import { duration } from "../design/format/time.ts";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { style } from "./parts.tsx";
 
 type Props = {
+  project: string;
   tasks: readonly Task[];
   activity: readonly ActivityEntry[];
   now: Date;
@@ -289,7 +291,7 @@ function Chart({ f, onTip }: { f: Forecast; onTip: (tip?: Tip) => void }) {
   );
 }
 
-export function HomePage({ tasks, activity, now, onOpenTask, onAgents }: Props) {
+export function HomePage({ project, tasks, activity, now, onOpenTask, onAgents }: Props) {
   const [span, setSpan] = useState<12 | 24>(12);
   const [tip, setTip] = useState<Tip>();
   useEffect(() => {
@@ -319,15 +321,16 @@ export function HomePage({ tasks, activity, now, onOpenTask, onAgents }: Props) 
         <div className="home-col">
           <header className="home-head">
             <div>
-              <h1>Command center</h1>
+              <h1>{project}</h1>
               <p>
-                {now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} · {clock(now)} · Live from the daemon, updated
-                1 min ago
+                {now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} · {clock(now)} ·{" "}
+                {count(tasks.filter((t) => t.status !== "done").length, "open task")} · {count(live, "session")} working ·{" "}
+                {count(counts.held, "file")} held
               </p>
             </div>
-            <span className="home-badge green">
+            <span className="home-badge amber">
               <i />
-              Daemon live
+              Sample data
             </span>
           </header>
           <Panel className="home-kpis">
@@ -376,7 +379,7 @@ export function HomePage({ tasks, activity, now, onOpenTask, onAgents }: Props) 
           <Panel>
             <div className="home-ph">
               <div>
-                <h2>Live file board</h2>
+                <h2>Files and their claims</h2>
                 <p>Every file of the repository, by area. Violet files are held by a task's claim.</p>
               </div>
               <ul className="home-legend">

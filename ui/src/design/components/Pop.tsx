@@ -16,6 +16,9 @@ type Props = {
 const GAP = 4;
 const EDGE = 8;
 
+/** The open pops, oldest first; a pop opened from inside another sits above it. */
+const open: HTMLDivElement[] = [];
+
 /** A menu or picker anchored on the control that opened it; Escape, a press outside, or an item's key closes it. */
 export function Pop({ anchor, onClose, width, role = "menu", label, className = "", style, children }: Props) {
   const box = useRef<HTMLDivElement>(null);
@@ -42,7 +45,15 @@ export function Pop({ anchor, onClose, width, role = "menu", label, className = 
   });
 
   useLayoutEffect(() => {
+    const el = box.current!;
+    open.push(el);
+    return () => void open.splice(open.indexOf(el), 1);
+  }, []);
+
+  useLayoutEffect(() => {
+    const el = box.current!;
     const onKey = (event: KeyboardEvent) => {
+      if (open.at(-1) !== el) return;
       const typing = (event.target as Element).matches?.("input, textarea, [contenteditable='true']");
       const shortcut = event.key.length === 1 && !typing && !event.metaKey && !event.ctrlKey && !event.altKey;
       const item = shortcut && box.current?.querySelector<HTMLElement>(`.mi[data-keys="${CSS.escape(event.key.toUpperCase())}"]:not(:disabled)`);
@@ -69,7 +80,8 @@ export function Pop({ anchor, onClose, width, role = "menu", label, className = 
     };
     const onPointer = (event: PointerEvent) => {
       const target = event.target as Node;
-      if (box.current?.contains(target) || anchor.contains(target)) return;
+      if (el.contains(target) || anchor.contains(target)) return;
+      if (open.slice(open.indexOf(el) + 1).some((above) => above.contains(target))) return;
       onClose();
     };
     addEventListener("keydown", onKey, true);
@@ -88,7 +100,8 @@ export function Pop({ anchor, onClose, width, role = "menu", label, className = 
       className={`pop floating enter ${className}`}
       style={{ ...style, ...place, width }}
       onClick={(event) => {
-        if ((event.target as Element).closest(".mi:not([data-keep])")) onClose();
+        const target = event.target as Element;
+        if (event.currentTarget.contains(target) && target.closest(".mi:not([data-keep])")) onClose();
       }}
     >
       {children}

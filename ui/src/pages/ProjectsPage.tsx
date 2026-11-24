@@ -27,6 +27,7 @@ import { Panel } from "../design/components/Panel.tsx";
 import { Pop, usePop } from "../design/components/Pop.tsx";
 import { ProgressBar } from "../design/components/ProgressBar.tsx";
 import { Segmented } from "../design/components/Segmented.tsx";
+import { Select } from "../design/components/Select.tsx";
 import { copy, toast } from "../design/components/toast.ts";
 import { shortDate } from "../design/format/time.ts";
 import { ToolStack } from "../ui/ToolMark.tsx";
@@ -40,11 +41,15 @@ const VIEWS: [View, string, typeof List][] = [
   ["list", "List", List],
   ["table", "Table", Table2],
 ];
-const SORTS: [Sort, string][] = [
-  ["recent", "Recently active"],
-  ["name", "Name"],
-  ["created", "Created"],
-  ["progress", "Progress"],
+const SORT_OPTIONS: [Sort, string][] = [
+  ["recent", "Sort: Recently active"],
+  ["name", "Sort: Name"],
+  ["created", "Sort: Created"],
+  ["progress", "Sort: Progress"],
+];
+const STATUS_OPTIONS: ["all" | ProjectStatus, string][] = [
+  ["all", "All statuses"],
+  ...(Object.entries(PROJECT_STATUS) as [ProjectStatus, { name: string }][]).map(([k, v]): [ProjectStatus, string] => [k, v.name]),
 ];
 
 const tone = (p: Project) => (p.status === "complete" ? "good" : p.status === "risk" ? "bad" : undefined);
@@ -149,17 +154,31 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
   else
     body = (
       <Panel className="overflow-x-auto">
-        <table className="perm-t min-w-215">
+        <table className="tbl w-full min-w-240" aria-label="Projects">
           <thead>
             <tr>
-              <th className="pl-3.5">Project</th>
-              <th className="text-left">Status</th>
-              <th className="text-left">Workers</th>
-              <th className="w-[16%] text-left">Progress</th>
-              <th>Tasks</th>
-              <th className="text-left">Created</th>
-              <th className="text-left">Last activity</th>
-              <th />
+              <th scope="col">Project</th>
+              <th scope="col" className="w-34">
+                Status
+              </th>
+              <th scope="col" className="w-30">
+                Workers
+              </th>
+              <th scope="col" className="w-50">
+                Progress
+              </th>
+              <th scope="col" className="w-20 text-right">
+                Tasks
+              </th>
+              <th scope="col" className="w-28">
+                Created
+              </th>
+              <th scope="col" className="w-32">
+                Last activity
+              </th>
+              <th scope="col" className="w-12">
+                <span className="sr">Options</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -167,30 +186,30 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
               const pr = progressOf(p);
               return (
                 <tr className="cursor-pointer" key={p.id} onClick={() => onOpen(p.id)}>
-                  <td className="pl-3.5">
+                  <td>
                     <span className="flex items-center gap-2">
                       <PIcon project={p} size={14} />
-                      <span className="font-medium">{p.name}</span>
+                      <span className="trunc font-medium">{p.name}</span>
                     </span>
                   </td>
-                  <td className="text-left">
+                  <td>
                     <PStatus status={p.status} />
                   </td>
-                  <td className="text-left">
+                  <td>
                     <ToolStack tools={p.tools.slice(0, 4)} />
                   </td>
                   <td>
                     <span className="flex items-center gap-2">
                       <ProgressBar value={pr} />
-                      <span className="num faint text-(length:--text-xs)">{pr}%</span>
+                      <span className="num faint w-9 shrink-0 text-right text-(length:--text-xs)">{pr}%</span>
                     </span>
                   </td>
-                  <td className="num">{p.total}</td>
-                  <td className="num muted text-left">{shortDate(p.createdAt, now)}</td>
-                  <td className="muted text-left">
+                  <td className="num text-right">{p.total}</td>
+                  <td className="num muted">{shortDate(p.createdAt, now)}</td>
+                  <td className="muted">
                     <Ago at={p.lastAt} now={now} />
                   </td>
-                  <td>{more(p)}</td>
+                  <td className="text-center">{more(p)}</td>
                 </tr>
               );
             })}
@@ -226,33 +245,8 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
             aria-label="Search projects"
           />
         </div>
-        <select
-          className="select h-6.5 w-auto text-(length:--text-xs)"
-
-          value={status}
-          onChange={(e) => setStatus(e.target.value as "all" | ProjectStatus)}
-          aria-label="Filter by status"
-        >
-          <option value="all">All statuses</option>
-          {Object.entries(PROJECT_STATUS).map(([k, v]) => (
-            <option key={k} value={k}>
-              {v.name}
-            </option>
-          ))}
-        </select>
-        <select
-          className="select h-6.5 w-auto text-(length:--text-xs)"
-
-          value={sort}
-          onChange={(e) => setSort(e.target.value as Sort)}
-          aria-label="Sort"
-        >
-          {SORTS.map(([k, n]) => (
-            <option key={k} value={k}>
-              Sort: {n}
-            </option>
-          ))}
-        </select>
+        <Select value={status} options={STATUS_OPTIONS} onChange={setStatus} label="Filter by status" size="sm" />
+        <Select value={sort} options={SORT_OPTIONS} onChange={setSort} label="Sort" size="sm" />
         <span className="flex-1" />
         <Segmented label="Layout" value={view} onChange={setView} collapse options={VIEWS.map(([value, label, icon]) => ({ value, label, icon }))} />
       </div>

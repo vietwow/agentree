@@ -30,6 +30,7 @@ import { ic } from "../design/components/icon.tsx";
 import { MenuItem, MenuLabel, MenuSeparator } from "../design/components/Menu.tsx";
 import { Pop, usePop } from "../design/components/Pop.tsx";
 import { Segmented } from "../design/components/Segmented.tsx";
+import { Select } from "../design/components/Select.tsx";
 import { style } from "../pages/parts.tsx";
 import { KIND_COLOR } from "../ui/colors.ts";
 import { PriorityIcon } from "../ui/PriorityIcon.tsx";
@@ -47,6 +48,11 @@ const FIELD_ICON: Record<Field, LucideIcon> = {
   updated: History,
 };
 
+const FIELD_OPTIONS = (Object.keys(FIELD_NAME) as Field[]).map((k): [Field, string] => [k, FIELD_NAME[k]]);
+const OPS: ["is" | "not", string][] = [
+  ["is", "is"],
+  ["not", "is not"],
+];
 const SORTS: [SortKey, string][] = [
   ["manual", "Manual"],
   ["priority", "Priority"],
@@ -240,22 +246,8 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
                   <div key={i}>
                     <div className="frow">
                       <span className="conj">{i ? "and" : "Where"}</span>
-                      <select className="select" value={f.f} onChange={(e) => setFilter(i, { f: e.target.value as Field, v: [] })} aria-label="Field">
-                        {(Object.keys(FIELD_NAME) as Field[]).map((k) => (
-                          <option key={k} value={k}>
-                            {FIELD_NAME[k]}
-                          </option>
-                        ))}
-                      </select>
-                      <select
-                        className="select"
-                        value={f.op}
-                        onChange={(e) => setFilter(i, { op: e.target.value as "is" | "not" })}
-                        aria-label="Operator"
-                      >
-                        <option value="is">is</option>
-                        <option value="not">is not</option>
-                      </select>
+                      <Select value={f.f} options={FIELD_OPTIONS} onChange={(field) => setFilter(i, { f: field, v: [] })} label="Field" />
+                      <Select value={f.op} options={OPS} onChange={(op) => setFilter(i, { op })} label="Operator" />
                       <button type="button" className="valbtn" onClick={() => setEdit(edit === i ? undefined : i)} aria-expanded={edit === i}>
                         <span className="trunc flex-1 min-w-0">{n.length ? n.join(", ") : <span className="faint">Select…</span>}</span>
                         {ic(ChevronDown, 12)}

@@ -62,6 +62,17 @@ for (const theme of THEMES) {
     });
   }
 
+  test(`Projects Table ${theme}`, async ({ page }) => {
+    await open(page, theme, "Projects");
+    await page.locator(".seg button", { hasText: "Table" }).click();
+    await page.waitForTimeout(800);
+    for (const w of WIDTHS) {
+      await page.setViewportSize({ width: w.width, height: w.height });
+      await page.waitForTimeout(300);
+      await expect.soft(page).toHaveScreenshot(`ProjectsTable-${theme}-${w.name}.png`);
+    }
+  });
+
   test(`Task drawer ${theme}`, async ({ page }) => {
     await open(page, theme, "Tasks");
     await page.getByText("T-0002", { exact: true }).first().click();
