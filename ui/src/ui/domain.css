@@ -1,0 +1,81 @@
+/*
+ * agentree's own colours, in both themes: a status, a priority, a kind of
+ * task and a tool each have one. They are tier-2 tokens of the board, kept
+ * out of design/ so that design/ carries to another project as it is.
+ */
+:root {
+  --status-backlog: var(--ink-4);
+  --status-ready: var(--violet-500);
+  --status-in-progress: var(--orange-500);
+  --status-checking: var(--warn);
+  --status-review: var(--info);
+  --status-accepted: var(--teal);
+  --status-done: var(--good);
+  --status-blocked: var(--bad);
+  --status-dropped: var(--ink-4);
+
+  --priority-1: var(--orange-500);
+  --priority-2: var(--warn);
+  --priority-3: var(--info);
+
+  --kind-build: var(--info);
+  --kind-fix: var(--bad);
+  --kind-measure: var(--warn);
+  --kind-research: var(--violet);
+  --kind-review: var(--teal);
+  --kind-decision: var(--gray);
+  --kind-assets: var(--rose);
+
+  --tool-claude-code: var(--saffron-500);
+  --tool-codex: var(--steel-500);
+  --tool-cursor: var(--sage-500);
+  --tool-claude-desktop: var(--plum-500);
+  --tool-antigravity: var(--brick-500);
+  --tool-person: var(--olive-500);
+}
+.dark {
+  --status-ready: var(--violet-400);
+  --status-in-progress: var(--orange-400);
+  --priority-1: var(--orange-400);
+
+  --tool-claude-code: var(--saffron-300);
+  --tool-codex: var(--steel-300);
+  --tool-cursor: var(--sage-300);
+  --tool-claude-desktop: var(--plum-300);
+  --tool-antigravity: var(--brick-300);
+  --tool-person: var(--olive-300);
+}
+
+/* Anything that belongs to a tool carries data-tool and reads its hue as --tool. */
+[data-tool="claude-code"] {
+  --tool: var(--tool-claude-code);
+}
+[data-tool="codex"] {
+  --tool: var(--tool-codex);
+}
+[data-tool="cursor"] {
+  --tool: var(--tool-cursor);
+}
+[data-tool="claude-desktop"] {
+  --tool: var(--tool-claude-desktop);
+}
+[data-tool="antigravity"] {
+  --tool: var(--tool-antigravity);
+}
+[data-tool="person"] {
+  --tool: var(--tool-person);
+}
+
+@layer components {
+  /* A tool's mark: its letter in its hue, on a wash of the same hue. */
+  .tool-mark {
+    background: color-mix(in srgb, var(--tool) 16%, var(--surface));
+    color: color-mix(in srgb, var(--tool) 52%, var(--ink));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--tool) 18%, transparent);
+  }
+  .dark .tool-mark {
+    background: color-mix(in srgb, var(--tool) 20%, var(--surface));
+    color: var(--tool);
+    box-shadow: 0 0 0 1px var(--line-strong);
+  }
+}

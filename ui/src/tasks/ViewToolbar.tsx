@@ -26,7 +26,7 @@ import {
 import { useState, type ReactNode } from "react";
 import { KIND_LABEL, STATUS_LABEL, TOOL_LABEL, type Kind, type Status, type Task, type Tool } from "../board/task.ts";
 import { ic } from "../ui/ic.tsx";
-import { KIND_COLOR } from "../ui/KindMark.tsx";
+import { KIND_COLOR } from "../ui/colors.ts";
 import { Pop, usePop } from "../ui/Pop.tsx";
 import { PriorityIcon } from "../ui/PriorityIcon.tsx";
 import { StatusIcon } from "../ui/StatusIcon.tsx";

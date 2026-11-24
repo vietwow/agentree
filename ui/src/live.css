@@ -50,44 +50,6 @@
     --l-pop-shadow: 0 14px 44px rgb(0 0 0 / 0.55);
   }
 
-  /* each tool's hue: pequalnp's program marks, lifted in the dark so a line stays seen on the near-black ground */
-  .page.live [data-tool="claude-code"] {
-    --pc: #e0a43a;
-  }
-  .page.live [data-tool="codex"] {
-    --pc: #5f86aa;
-  }
-  .page.live [data-tool="cursor"] {
-    --pc: #4e9a8a;
-  }
-  .page.live [data-tool="claude-desktop"] {
-    --pc: #8b6bb0;
-  }
-  .page.live [data-tool="antigravity"] {
-    --pc: #c25a44;
-  }
-  .page.live [data-tool="person"] {
-    --pc: #9a8f3c;
-  }
-  .dark .page.live [data-tool="claude-code"] {
-    --pc: #ebb453;
-  }
-  .dark .page.live [data-tool="codex"] {
-    --pc: #82a8cc;
-  }
-  .dark .page.live [data-tool="cursor"] {
-    --pc: #6cbcaa;
-  }
-  .dark .page.live [data-tool="claude-desktop"] {
-    --pc: #ab8fd2;
-  }
-  .dark .page.live [data-tool="antigravity"] {
-    --pc: #e07d65;
-  }
-  .dark .page.live [data-tool="person"] {
-    --pc: #bdb260;
-  }
-
   .live-proj {
     margin-bottom: 14px;
   }
@@ -197,17 +159,17 @@
     pointer-events: none;
   }
   .org .org-lines line {
-    stroke: var(--pc);
+    stroke: var(--tool);
     stroke-linecap: round;
     transition: opacity 0.15s;
   }
   .org .org-lines .flow {
-    fill: var(--pc);
+    fill: var(--tool);
     transition: opacity 0.15s;
   }
   .org .org-lines .pulse {
     fill: none;
-    stroke: var(--pc);
+    stroke: var(--tool);
     stroke-width: 2.5;
     stroke-linecap: round;
     transition: opacity 0.15s;
@@ -217,12 +179,12 @@
     stroke-dasharray: 1, 5;
   }
   .org .org-lines .run {
-    fill: var(--pc);
+    fill: var(--tool);
     filter: drop-shadow(0 0 5px var(--l-glow));
     transition: opacity 0.15s;
   }
   .org .org-lines .burst {
-    fill: var(--pc);
+    fill: var(--tool);
     filter: drop-shadow(0 0 5px var(--l-glow));
   }
   .org .org-lines .burst.trail {
@@ -260,8 +222,8 @@
     pointer-events: none;
     background: radial-gradient(
       closest-side,
-      color-mix(in srgb, var(--pc) var(--l-wash-in), transparent),
-      color-mix(in srgb, var(--pc) var(--l-wash-mid), transparent) 55%,
+      color-mix(in srgb, var(--tool) var(--l-wash-in), transparent),
+      color-mix(in srgb, var(--tool) var(--l-wash-mid), transparent) 55%,
       transparent
     );
   }
@@ -275,7 +237,7 @@
     font: 600 11px/1.3 var(--font-sans);
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: color-mix(in srgb, var(--pc) 72%, var(--l-ink));
+    color: color-mix(in srgb, var(--tool) 72%, var(--l-ink));
   }
   .org-region.below .org-label {
     padding: 4px 2px 0;
@@ -307,7 +269,7 @@
   }
   .org .seat-card:hover,
   .org .seat-card[aria-expanded="true"] {
-    border-color: color-mix(in srgb, var(--pc) 60%, var(--l-rule));
+    border-color: color-mix(in srgb, var(--tool) 60%, var(--l-rule));
   }
   .org .seat-card .id {
     display: flex;
@@ -325,12 +287,12 @@
     height: 8px;
     margin-right: 8px;
     border-radius: 50%;
-    background: var(--pc);
+    background: var(--tool);
   }
   .org .seat-card.speaking .id::before {
     box-shadow:
-      0 0 0 4px color-mix(in srgb, var(--pc) 28%, transparent),
-      0 0 10px var(--pc);
+      0 0 0 4px color-mix(in srgb, var(--tool) 28%, transparent),
+      0 0 10px var(--tool);
   }
   .org .seat-card.idle .id::before {
     opacity: 0.35;
@@ -464,7 +426,7 @@
     height: 10px;
     margin-right: 10px;
     border-radius: 50%;
-    background: var(--pc);
+    background: var(--tool);
   }
   .org-pop .pop-tool {
     color: var(--l-muted);

@@ -56,6 +56,22 @@
   --rose-300: #e68aab;
   --orange-600: #c0612b;
   --orange-400: #e3925f;
+  --violet-500: #8b6cd9;
+  --orange-500: #e07b39;
+
+  /* Marks: mid hues that read on both grounds, a step paler for the dark one. */
+  --saffron-500: #e0a43a;
+  --saffron-300: #ebb453;
+  --steel-500: #5f86aa;
+  --steel-300: #82a8cc;
+  --sage-500: #4e9a8a;
+  --sage-300: #6cbcaa;
+  --plum-500: #8b6bb0;
+  --plum-300: #ab8fd2;
+  --brick-500: #c25a44;
+  --brick-300: #e07d65;
+  --olive-500: #9a8f3c;
+  --olive-300: #bdb260;
 
   /* The dark theme's primary action: a muted gold. */
   --gold-200: #dab781;

@@ -1,24 +1,6 @@
 import type { CSSProperties } from "react";
 import { STATUS_LABEL, type Status } from "../board/task.ts";
-
-/**
- * A status as a ring that fills as the task moves on: dashed while in the
- * backlog, empty when ready, a share filled while it is worked, checked
- * and reviewed, and full with a tick once accepted or done. It draws
- * itself in when it appears.
- */
-/** Each status's colour, for whatever else draws a status. */
-export const STATUS_COLOR: Record<Status, string> = {
-  backlog: "var(--ink-4)",
-  ready: "#8b6cd9",
-  "in-progress": "#e07b39",
-  checking: "var(--warn)",
-  review: "var(--info)",
-  accepted: "var(--teal)",
-  done: "var(--good)",
-  blocked: "var(--bad)",
-  dropped: "var(--ink-4)",
-};
+import { STATUS_COLOR } from "./colors.ts";
 
 const LOOK: Record<Status, { share: number; dashed?: boolean; tick?: boolean }> = {
   backlog: { share: 0, dashed: true },
@@ -32,6 +14,12 @@ const LOOK: Record<Status, { share: number; dashed?: boolean; tick?: boolean }> 
   dropped: { share: 0, dashed: true },
 };
 
+/**
+ * A status as a ring that fills as the task moves on: dashed while in the
+ * backlog, empty when ready, a share filled while it is worked, checked
+ * and reviewed, and full with a tick once accepted or done. It draws
+ * itself in when it appears.
+ */
 export function StatusIcon({ status, size = 14 }: { status: Status; size?: 12 | 14 }) {
   const look = LOOK[status];
   const r = 3.5;

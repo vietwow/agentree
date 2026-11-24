@@ -1,8 +1,8 @@
 /** A priority as signal bars: P1 fills three, P2 two, P3 and below one. */
 const LOOK = [
-  { bars: 3, color: "text-[#e07b39]" },
-  { bars: 2, color: "text-warn" },
-  { bars: 1, color: "text-info" },
+  { bars: 3, color: "text-(--priority-1)" },
+  { bars: 2, color: "text-(--priority-2)" },
+  { bars: 1, color: "text-(--priority-3)" },
 ];
 
 export function PriorityIcon({ priority }: { priority: number }) {

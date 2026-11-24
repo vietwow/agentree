@@ -1,14 +1,14 @@
 import { User } from "lucide-react";
 import { TOOL_LABEL, type Tool } from "../board/task.ts";
 
-/** agentree's own marks of the tools: a letter on a colour, never a tool's logo. */
-const MARKS: Record<Tool, { letter: string; className: string }> = {
-  "claude-code": { letter: "CC", className: "bg-[#f6e3d3] text-[#8a4a1f] dark:bg-[#3a2a1f] dark:text-[#e8b48c]" },
-  "claude-desktop": { letter: "CD", className: "bg-[#f1e4d2] text-[#7a4b25] dark:bg-[#362a20] dark:text-[#dfb48e]" },
-  cursor: { letter: "Cu", className: "bg-[#e6e6e3] text-[#2b2b29] dark:bg-[#30302e] dark:text-[#dcdcd8]" },
-  codex: { letter: "Cx", className: "bg-[#d8f0e8] text-[#1d6650] dark:bg-[#1c3029] dark:text-[#8fd3bb]" },
-  antigravity: { letter: "Ag", className: "bg-[#dfe7fb] text-[#2f4fa0] dark:bg-[#1f2840] dark:text-[#9fb6ef]" },
-  person: { letter: "", className: "bg-[#fbe7c6] text-[#8a5a12] dark:bg-[#3a2d17] dark:text-[#e0b26a]" },
+/** agentree's own marks of the tools: a letter in the tool's hue, never a tool's logo. */
+const LETTER: Record<Tool, string> = {
+  "claude-code": "CC",
+  "claude-desktop": "CD",
+  cursor: "Cu",
+  codex: "Cx",
+  antigravity: "Ag",
+  person: "",
 };
 
 const SIZES = {
@@ -27,15 +27,15 @@ export function ToolMark({ tool, size = 32 }: { tool?: Tool; size?: 20 | 24 | 32
       />
     );
   }
-  const mark = MARKS[tool];
   return (
     <span
       role="img"
       aria-label={TOOL_LABEL[tool]}
       title={TOOL_LABEL[tool]}
-      className={`inline-flex shrink-0 items-center justify-center rounded-full leading-none font-semibold ring-1 ring-black/5 dark:rounded-sm dark:ring-line-strong ${SIZES[size]} ${mark.className}`}
+      data-tool={tool}
+      className={`tool-mark inline-flex shrink-0 items-center justify-center rounded-full leading-none font-semibold dark:rounded-sm ${SIZES[size]}`}
     >
-      {tool === "person" ? <User size={size === 32 ? 16 : 12} aria-hidden /> : mark.letter}
+      {tool === "person" ? <User size={size === 32 ? 16 : 12} aria-hidden /> : LETTER[tool]}
     </span>
   );
 }

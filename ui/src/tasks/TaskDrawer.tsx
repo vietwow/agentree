@@ -27,7 +27,7 @@ import { KIND_LABEL, STATUS_LABEL, TOOL_LABEL, type Status, type Task, type Task
 import { timeAgo } from "../design/format/time.ts";
 import { ProgBar, style } from "../pages/parts.tsx";
 import { ic } from "../ui/ic.tsx";
-import { KIND_COLOR } from "../ui/KindMark.tsx";
+import { KIND_COLOR } from "../ui/colors.ts";
 import { Pop, usePop } from "../ui/Pop.tsx";
 import { PriorityIcon } from "../ui/PriorityIcon.tsx";
 import { StatusIcon } from "../ui/StatusIcon.tsx";

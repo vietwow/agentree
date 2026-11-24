@@ -1,9 +1,10 @@
 import { CircleCheck, CircleX, Clock, FolderTree, GitBranch, GitCommitHorizontal, LoaderCircle, Server } from "lucide-react";
 import type { ReactNode } from "react";
-import { STATUS_LABEL, TOOL_LABEL, type CheckRun, type Session, type Status, type Task, type TaskDetail } from "../board/task.ts";
+import { STATUS_LABEL, TOOL_LABEL, type CheckRun, type Session, type Task, type TaskDetail } from "../board/task.ts";
 import { compact, money } from "../design/format/number.ts";
 import { ago, duration, fullTime, timeAgo } from "../design/format/time.ts";
 import { Badge } from "../ui/Badge.tsx";
+import { STATUS_COLOR } from "../ui/colors.ts";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { ChecksBar } from "./ChecksBar.tsx";
 
@@ -84,18 +85,6 @@ export function TreeBox({ task, detail }: { task: Task; detail: TaskDetail }) {
   );
 }
 
-const STATUS_FILL: Record<Status, string> = {
-  backlog: "bg-ink-faint",
-  ready: "bg-[#8b6cd9]",
-  "in-progress": "bg-[#e07b39]",
-  checking: "bg-warn",
-  review: "bg-info",
-  accepted: "bg-teal",
-  done: "bg-good",
-  blocked: "bg-bad",
-  dropped: "bg-ink-faint",
-};
-
 export function TimeBox({ timeIn }: { timeIn: TaskDetail["timeIn"] }) {
   const total = timeIn.reduce((n, t) => n + t.ms, 0);
   return (
@@ -105,15 +94,15 @@ export function TimeBox({ timeIn }: { timeIn: TaskDetail["timeIn"] }) {
           {timeIn.map((t) => (
             <span
               key={t.status}
-              className={`origin-left animate-[grow-x_0.8s_0.12s_var(--ease)_both] ${STATUS_FILL[t.status]}`}
-              style={{ flexGrow: Math.max(t.ms, total / 100) }}
+              className="origin-left animate-[grow-x_0.8s_0.12s_var(--ease)_both]"
+              style={{ flexGrow: Math.max(t.ms, total / 100), background: STATUS_COLOR[t.status] }}
             />
           ))}
         </div>
         <ul className="grid grid-cols-2 gap-x-3 gap-y-1">
           {timeIn.map((t) => (
             <li key={t.status} className="flex items-center gap-2 text-xs leading-5">
-              <span className={`size-2 shrink-0 rounded-full ${STATUS_FILL[t.status]}`} aria-hidden />
+              <span className="size-2 shrink-0 rounded-full" style={{ background: STATUS_COLOR[t.status] }} aria-hidden />
               <span className="flex-1 truncate text-ink-2">{STATUS_LABEL[t.status]}</span>
               <span className="text-ink tabular-nums">{duration(t.ms)}</span>
             </li>
