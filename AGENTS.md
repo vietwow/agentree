@@ -4,11 +4,12 @@ Rules for every AI agent and person working here, whatever the tool.
 
 ## Now
 
-The project is at its first design. Start from
-[`rfcs/0001-agentree/README.md`](./rfcs/0001-agentree/README.md): it is a
-starting draft, not a decision. Complete it, verify every claim it makes,
-and bring the owner its open questions. Build nothing before the owner
-accepts the RFC.
+The backend is being built from
+[`rfcs/0001-agentree/README.md`](./rfcs/0001-agentree/README.md), in the
+order of its steps, while it stays a draft (the owner's answer of
+2026-11-24): the RFC follows the code, in the same change. What is built
+is listed in [`README.md`](./README.md). Verify every claim the RFC
+makes, and bring the owner its open questions.
 
 The origin of the design is a sibling checkout, `../aep`. Read it; never
 change it from here. What to read there is in

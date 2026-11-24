@@ -167,6 +167,15 @@ task's tree and neither of them `main`:
 An agent in its tree has no file of the board to read: it reads its task
 through the command or MCP, which is also the only way it writes one.
 
+As built: the board's checkout is `<repository>-trees/board`, beside the
+main checkout, and a task's tree is `<repository>-trees/T-NNNN`. The
+machine's state holds `claims/T-NNNN.json` and `reviews/T-NNNN.json`
+(the worker, its session, since when, its last beat, and for a claim the
+tree, the branch and the base), the lock of a board write, and the
+owner's token. The board's git reads neither the user's nor the
+system's configuration, so that a person's signing, hooks path or ignore
+file changes nothing of it.
+
 ## A task
 
 The origin's task file ([`schema.json`](../../seed/aep/work/schema.json))
@@ -178,6 +187,15 @@ with these changes:
   the file keeps `status` and, in the Log, who did what and when.
 - `worker` names every tool: `claude-code`, `claude-desktop`, `cursor`,
   `codex`, `antigravity`, `person`.
+- `created`, the time it was written. The time in each status is read
+  from the Log: a change of status writes an entry whose first line is
+  `Status: <from> -> <to>.`, and a Log heading holds its time to the
+  second (`### YYYY-MM-DD HH:MM:SS, <worker>`, UTC).
+- Two sections more, before the Log: `## Subtasks`, a checklist, and
+  `## Questions`, each question under a heading as a Log entry's, its
+  choices in a list under `Choices:`, and the owner's answer under
+  `#### Answered YYYY-MM-DD HH:MM:SS`.
+- The kinds `review` and `assets` beside the origin's.
 - Two statuses more:
 
 ```
@@ -1246,7 +1264,7 @@ Given on 2026-11-22, in the owner's chat.
 | The Tasks page's views                | List, Board and Table as gr8r-studio's, one toolbar over the three (search, filter, sort, group, columns); the Board holds agentree's columns and cards. Given on 2026-11-23. |
 | The Progress page                     | gr8r-studio's Timeline, under a row of the numbers [Progress](#the-ui-and-the-daemon) names: a bar a task from its claim to its landing, as gr8r-studio's runs from a task's start to its due date, so a task never claimed has none; an arrow from what a task waits for to it; and a row of milestones, each an RFC or ADR accepted or an epic done (its last task landed). Given on 2026-11-23. |
 | A project open in the side bar        | Its Board, Tasks, Progress and Documents; the Board is a project's only, not a page of the workspace. Given on 2026-11-23. |
-| The levels of the work                | Three, as Jira's: an epic, its tasks, a task's subtasks. A subtask is shown as gr8r-studio's: a title with a done mark, counted done of all on its task's card, row and drawer; an epic's card counts its tasks the same way. A subtask's title opens its page in the drawer, as gr8r-studio's. On the sample board its mark is set by a click and written nowhere; who may set it waits on [What a subtask is on disk](#questions-for-the-owner). Given on 2026-11-23. |
+| The levels of the work                | Three, as Jira's: an epic, its tasks, a task's subtasks. A subtask is shown as gr8r-studio's: a title with a done mark, counted done of all on its task's card, row and drawer; an epic's card counts its tasks the same way. A subtask's title opens its page in the drawer, as gr8r-studio's. Its mark is set by its task's worker or by the owner (below, "What a subtask is on disk"). Given on 2026-11-23. |
 | The Review and Numbers pages          | Kept in the side bar; built as the other pages are, on sample data, to show what each holds. Given on 2026-11-23. |
 | Who reviews                           | An agent: it accepts a task, or rejects it with findings. The Review page shows each verdict and where an accepted task is on its way to `main`, with no button to accept, reject or land. Given on 2026-11-23. |
 | Who lands                             | The lander, by itself: each accepted task in turn, as it is accepted, with no word of the owner. Given on 2026-11-23. |
@@ -1256,18 +1274,16 @@ Given on 2026-11-22, in the owner's chat.
 | The Documents page                    | Built as the other pages are, on sample data: the RFCs and ADRs of main, by kind, with each one's state, what it supersedes or is superseded by, and the tasks that name it; the page reads them and changes none. Given on 2026-11-23. |
 | The Home page                        | The side bar's first page, in the look of the owner's picture of a command center (both themes), on sample data: five numbers of the board with their last fourteen days; every file of the repository by area, marked held (a claim's writes), in checks, landed this week or wanted by a ready task, with each area's share free to claim; the open tasks of the next 12 or 24 hours with and without the agents, each held task landing after an estimate from its status; and each tool's sessions. A file of the board and an hour of the chart show what they are when the pointer is on them, and a file held by a task opens it. The dark theme's panels are grey, of the ground's hue. Given on 2026-11-24. |
 | Favorites                             | A star on a project or a task, kept by the browser of the machine. Given on 2026-11-23. |
+| Building before the RFC is accepted   | The backend is built while the RFC stays a draft, and the RFC follows the code. Given on 2026-11-24. |
+| What a subtask is on disk             | A line of its task's file, under `## Subtasks`, as a checklist item (`- [ ]`, `- [x]`); the task's worker or the owner marks it done (`agentree tick`). It has no file, claim or landing of its own. Given on 2026-11-24. |
+| The backend and the UI's sample data  | The daemon serves everything the UI's pages show, in the shapes they read, and `agentree demo` makes a project whose board holds the sample content the UI was built on. What the UI has beyond this RFC is the backend's too: the status `blocked` and the kinds `review` and `assets`, a project's state (planning, in progress, at risk, on hold, completed), the Live page's seats and what they say to each other, the Home page's files by area and its forecast, Activity, and the milestones of Progress. Given on 2026-11-24. |
 | The owner's menu                      | gr8r-studio's items, View profile and Sign out included, which do nothing: agentree has no sign-in. Given on 2026-11-23. |
 
 ## Questions for the owner
 
 Each answered question is in
 [The owner's answers](#the-owners-answers); a new one is added here as
-it comes up.
-
-- **What a subtask is on disk.** A task file of its own under its task,
-  claimed and landed as a task is, or a line of its task's file that the
-  task's worker marks done. The UI shows both the same way; the core,
-  the command and [The breakdown](#the-breakdown) differ.
+it comes up. None is open.
 
 ## The steps in order
 

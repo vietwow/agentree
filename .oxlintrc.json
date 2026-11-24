@@ -1,0 +1,29 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "unicorn", "oxc", "import", "node"],
+  "categories": {
+    "correctness": "error"
+  },
+  "overrides": [
+    {
+      "files": ["src/core/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "regex": "^(\\.\\./)+(command|daemon|mcp)([/.]|$)",
+                "message": "The core knows no command, daemon or MCP server: they call it."
+              },
+              {
+                "regex": "^([^.n]|n[^o]|no[^d]|nod[^e]|node[^:])",
+                "message": "The core takes no library: Node's own modules only."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
