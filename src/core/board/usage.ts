@@ -39,7 +39,7 @@ export function sessionsOf(places: Places, id: string): SessionUse[] {
 }
 
 /** Writes what a session reports of itself, in place of what it reported before, as a commit of the board. */
-export function reportSession(places: Places, id: string, use: SessionUse) {
+export function reportUse(places: Places, id: string, use: SessionUse) {
   const sessions = sessionsOf(places, id);
   const at = sessions.findIndex((each) => each.session === use.session && each.role === use.role);
   const next = at < 0 ? [...sessions, use] : sessions.with(at, { ...sessions[at], ...use });

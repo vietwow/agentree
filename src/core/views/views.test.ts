@@ -9,7 +9,7 @@ import { accept, check, commit, land, review, submit } from "../board/lifecycle.
 import { acceptFact, editFact, factsFor, readMemory, recall, remember } from "../board/memory.ts";
 import { readBoard, taskOf } from "../board/store.ts";
 import { CODEX, CURSOR, OWNER, project, type Project } from "../board/testing.ts";
-import { reportSession } from "../board/usage.ts";
+import { reportUse } from "../board/usage.ts";
 import { documentsView } from "./documents.ts";
 import { activityView, taskDetailView, taskView, timeIn } from "./tasks.ts";
 
@@ -73,7 +73,7 @@ test("a task's row holds who holds it, its checks, its questions and its subtask
 test("a card opened holds its sections as lists, its tree's diff, its checks, its review, its sessions and its time in each status", () => {
   const hold = inProgress();
   log(context, CODEX, "T-0002", "Did: a.");
-  reportSession(context.places, "T-0002", {
+  reportUse(context.places, "T-0002", {
     session: "s-codex",
     worker: "codex/gpt-5",
     role: "build",
