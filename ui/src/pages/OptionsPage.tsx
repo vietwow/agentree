@@ -6,6 +6,14 @@ import { Page, PageHeader } from "../design/components/Page.tsx";
 import { Panel, PanelBody } from "../design/components/Panel.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
 
+/** What the browser says of its notifications, in words. */
+const NOTICES = {
+  granted: "The browser shows them.",
+  denied: "The browser refuses them: its settings for this address allow them again.",
+  default: "The browser does not show them yet.",
+  none: "This browser has no notifications.",
+};
+
 /** What the owner sets: each tool's switch for its own tasks, on the open project; the bounds of the queue and the directory of projects, on this machine. */
 export function OptionsPage() {
   const { tools, project } = board();
@@ -14,6 +22,7 @@ export function OptionsPage() {
   const [lowest, setLowest] = useState(String(bounds.lowest));
   const [highest, setHighest] = useState(String(bounds.highest));
   const [margin, setMargin] = useState(String(Math.round(bounds.margin * 100)));
+  const [allowed, setAllowed] = useState<keyof typeof NOTICES>(typeof Notification === "undefined" ? "none" : Notification.permission);
   useEffect(() => void machine().then(setAsked), []);
   const changed = Number(lowest) !== bounds.lowest || Number(highest) !== bounds.highest || Number(margin) !== Math.round(bounds.margin * 100);
 
@@ -84,6 +93,22 @@ export function OptionsPage() {
                 >
                   Save the bounds
                 </Button>
+              </div>
+            </PanelBody>
+          </Panel>
+          <Panel title="Notices" note="this browser's">
+            <PanelBody className="flex flex-col gap-2 text-sm">
+              <p className="muted">
+                A question asked, a check that failed and a task that waits for a review are shown in this page as they happen. The browser can show
+                them too, while this page is open in a tab.
+              </p>
+              <div className="flex items-center justify-between gap-2">
+                <span>{NOTICES[allowed]}</span>
+                {allowed === "default" && (
+                  <Button size="sm" onClick={() => void Notification.requestPermission().then(setAllowed)}>
+                    Allow the browser's notifications
+                  </Button>
+                )}
               </div>
             </PanelBody>
           </Panel>

@@ -23,6 +23,7 @@ import { AGENT_TOOLS } from "../core/init/tools.ts";
 import type { Bounds } from "../core/machine/queue.ts";
 import type { Tool } from "../core/task/model.ts";
 import { documentsView } from "../core/views/documents.ts";
+import type { Notice } from "../core/views/notices.ts";
 import { numbersView } from "../core/views/numbers.ts";
 import { filesView } from "../core/views/files.ts";
 import { agentsView, milestonesView, projectView } from "../core/views/project.ts";
@@ -35,7 +36,8 @@ import { loadInWords } from "./load.ts";
 import type { Queue } from "./queue.ts";
 
 /** What changed, for the browser to read again: a project's board, or the machine's queue. */
-export type Change = { project?: string; what: "board" | "slots" | "projects" };
+/** What the browser is told: a change to read again, or a notice to show. */
+export type Change = { project?: string; what: "board" | "slots" | "projects" } | { project: string; what: "notice"; notice: Notice };
 
 export type Events = { emit: (change: Change) => void; listen: (listener: (change: Change) => void) => () => void };
 
@@ -66,7 +68,8 @@ export function createApp(daemon: Daemon) {
   const app = new Hono();
   const snapshots = new Map<string, { key: string; snapshot: unknown }>();
   const contextOf = (request: Request): Context => ({ places: placesOfProject(request.req.param("project")!), now: daemon.now });
-  const changed = (request: Request, what: Change["what"] = "board") => daemon.events.emit({ project: request.req.param("project")!, what });
+  const changed = (request: Request, what: "board" | "slots" | "projects" = "board") =>
+    daemon.events.emit({ project: request.req.param("project")!, what });
 
   app.onError((error, request) => {
     if (error instanceof Refusal) return request.json({ error: error.message }, 409);

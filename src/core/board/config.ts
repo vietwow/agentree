@@ -19,6 +19,8 @@ export type ProjectConfig = {
   boundMinutes: number;
   /** The checks a new build or fix task is given when it names none. */
   checks: string[];
+  /** The command that tells the owner of a notice outside the browser (a question, a failed check, a review that waits); the notice is in its environment. None named, none runs. */
+  notify: string;
   /** The interface the project reproduces, when it clones one: where its records are and how its pages are compared with them. */
   clone?: CloneConfig;
   /** The areas of the repository the Home page draws, each a directory; none named, they are its top directories. */
@@ -57,6 +59,7 @@ export const DEFAULT_CONFIG: ProjectConfig = {
   volumes: [],
   boundMinutes: 90,
   checks: [],
+  notify: "",
   areas: [],
 };
 

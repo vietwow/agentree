@@ -4,11 +4,15 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
+import { configOf } from "../core/board/config.ts";
+import { readBoard } from "../core/board/store.ts";
 import { machineHome, placesOfProject, projects } from "../core/machine/projects.ts";
+import { lookAt, noticesBetween, type Look } from "../core/views/notices.ts";
 import { createApp, createEvents, type Events } from "./app.ts";
 import { fingerprint } from "./fingerprint.ts";
 import { runWaitingChecks } from "./checks.ts";
 import { runWaitingLandings } from "./landings.ts";
+import { tellBy } from "./notices.ts";
 import { createQueue, type Queue } from "./queue.ts";
 import { removeLeftVolumes, runWaitingSetups } from "./setup.ts";
 
@@ -31,6 +35,7 @@ export function machineToken(): string {
 /** Tells the browser of each change the daemon did not make itself, by looking on a period: file events are not relied on. */
 function watch(events: Events, queue: Queue, now: () => Date) {
   const seen = new Map<string, string>();
+  const looks = new Map<string, Look>();
   let listed = "";
   return setInterval(() => {
     const all = projects();
@@ -47,6 +52,17 @@ function watch(events: Events, queue: Queue, now: () => Date) {
         if (seen.has(id) && seen.get(id) !== print) {
           events.emit({ project: id, what: "board" });
           removeLeftVolumes(id, { places: placesOfProject(id), now });
+        }
+        if (seen.get(id) !== print) {
+          // What the owner is told of: the difference of this look from the last. The first look tells nothing.
+          const places = placesOfProject(id);
+          const look = lookAt(readBoard(places));
+          const { notify } = configOf(places);
+          for (const notice of looks.has(id) ? noticesBetween(looks.get(id)!, look) : []) {
+            events.emit({ project: id, what: "notice", notice });
+            if (notify) void tellBy(notify, places.root, id, notice);
+          }
+          looks.set(id, look);
         }
         seen.set(id, print);
       } catch {

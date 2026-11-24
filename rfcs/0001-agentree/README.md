@@ -1477,8 +1477,18 @@ Proposed beyond what was asked, in the order of what they buy:
 2. **Numbers.** From the Logs and the queue: the time a task spends in
    each status, the share rejected, the wait for a slot, the checks that
    fail most; and the tokens of a session where its tool reports them.
+   The wait and the failing checks are those of each task's last
+   submission: an earlier submission's checks are not kept.
 3. **Notices.** A question, a failed check, a review that waits: in the
    browser, and through a command the project names.
+   The daemon tells of each as the difference of two looks at the
+   board, once: to the open page, which shows it and, when the owner
+   allowed the browser's notifications on the Options page, has the
+   browser show it; and to the command under `notify` in the project's
+   part, run in the main checkout with the notice in its environment
+   (`AGENTREE_NOTICE_KIND`, `_TASK`, `_TITLE`, `_TEXT`, `_PROJECT`) and
+   never in its text. A browser's notification shows only while a tab
+   of the UI is open: the page makes it, not a service worker.
 4. **Landing in batches.** Several accepted changes checked together and
    landed together, split when the batch fails. After the single landing
    has run.

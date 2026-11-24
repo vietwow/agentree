@@ -96,6 +96,19 @@ function slotsOf(sent: Sent): Slots {
   } as Slots;
 }
 
+/** What the owner is told of as it happens: a question asked, a check that failed, a task that waits for a review. */
+type Notice = { kind: "question" | "check-failed" | "review"; task: string; title: string; text: string };
+
+const NOTICE: Record<Notice["kind"], string> = { question: "asks you", "check-failed": "failed its checks", review: "waits for a review" };
+
+/** Shows a notice in the page, and as a notification of the browser once the owner allowed those. */
+function tell(notice: Notice) {
+  const head = `${notice.task} ${NOTICE[notice.kind]}`;
+  toast(`${head}: ${notice.kind === "review" ? notice.title : notice.text}`, { kind: notice.kind === "check-failed" ? "err" : "info", ms: 8000 });
+  if (typeof Notification !== "undefined" && Notification.permission === "granted")
+    new Notification(head, { body: `${notice.title}\n${notice.text}`, tag: `${notice.task}-${notice.kind}` });
+}
+
 /** Why there is nothing to show: the daemon is not there, the page carries no token of it, or the machine has no project. */
 export type Trouble = "down" | "no-token" | "empty";
 
@@ -189,7 +202,11 @@ export function useDaemon(project: string | undefined): Daemon {
     };
     void load();
     const events = new EventSource("/api/events");
-    events.addEventListener("change", soon);
+    events.addEventListener("change", (event) => {
+      const change = read<{ what: string; notice?: Notice }>((event as MessageEvent<string>).data);
+      if (change.what === "notice" && change.notice) tell(change.notice);
+      else soon();
+    });
     return () => {
       live = false;
       clearTimeout(timer);
