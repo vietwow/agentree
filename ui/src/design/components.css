@@ -1078,6 +1078,10 @@
   .toast .i.bad {
     color: var(--bad);
   }
+  .toast .tclose {
+    color: inherit;
+    opacity: 0.6;
+  }
   .toast .ta {
     color: var(--ink-inv);
     font-weight: 600;

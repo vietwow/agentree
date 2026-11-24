@@ -63,9 +63,8 @@ export function toast(message: string, options: Options = {}) {
     el.append(ring);
   }
   const close = document.createElement("button");
-  close.className = "ibtn ibtn-xs";
+  close.className = "ibtn ibtn-xs tclose";
   close.setAttribute("aria-label", "Dismiss");
-  close.style.cssText = "color:inherit;opacity:.6";
   close.innerHTML = CLOSE;
   close.onclick = kill;
   el.append(close);
