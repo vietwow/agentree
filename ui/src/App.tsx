@@ -1,5 +1,5 @@
 import { ArrowLeftRight, CircleCheck, FolderPlus, Keyboard, LogOut, Moon, PanelLeft, Plus, Search, Sun } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { fixtureActivity } from "./board/activity.ts";
 import { fixtureDetail, fixtureNow, fixtureTasks } from "./board/fixtures.ts";
 import { fixtureProjects } from "./board/projects.ts";
@@ -22,7 +22,7 @@ import { ProgressPage } from "./pages/ProgressPage.tsx";
 import { ProjectsPage } from "./pages/ProjectsPage.tsx";
 import { ReviewPage } from "./pages/ReviewPage.tsx";
 import { SlotsPage } from "./pages/SlotsPage.tsx";
-import { BUILT, PAGE_INFO, PAGES, PROJECT_PAGES, type Page } from "./shell/pages.ts";
+import { GO, NAV_PAGES, PAGE_INFO, PROJECT_PAGES, type Page } from "./shell/pages.ts";
 import { Palette, type PaletteItem } from "./shell/Palette.tsx";
 import { Shortcuts } from "./shell/Shortcuts.tsx";
 import { Sidebar } from "./shell/Sidebar.tsx";
@@ -34,17 +34,6 @@ import { StatusIcon } from "./ui/StatusIcon.tsx";
 
 const SIDE_KEY = "agentree.sidebar";
 const ORDER_KEY = "agentree.projectOrder";
-/** Keys pressed after G, and the page each opens. */
-const GO: Record<string, Page> = {
-  h: "home",
-  p: "projects",
-  i: "inbox",
-  t: "tasks",
-  b: "board",
-  a: "activity",
-  f: "favorites",
-  s: "options",
-};
 
 const notBuilt = (what: string) => toast(`${what} is not built yet`, { kind: "info", ms: 2200 });
 
@@ -250,7 +239,7 @@ export function App() {
       ]
     : [{ label: PAGE_INFO[page].label }];
 
-  const goItems: PaletteItem[] = PAGES.map((key) => {
+  const goItems: PaletteItem[] = NAV_PAGES.map((key) => {
     const { label, icon } = PAGE_INFO[key];
     const kbd = Object.entries(GO).find(([, p]) => p === key)?.[0];
     return { key: `go-${key}`, icon: ic(icon, 15), name: `Go to ${label}`, kbd: kbd ? `G ${kbd.toUpperCase()}` : undefined, run: () => go(key) };
@@ -334,57 +323,48 @@ export function App() {
   const body = () => {
     if (isProjectPage && !fixtureProject)
       return <NotBuilt page={page} note={`The sample data holds only agentree's board, not ${current.name}'s.`} />;
-    if (!BUILT.has(page)) return <NotBuilt page={page} />;
-    switch (page) {
-      case "home":
-        return <HomePage tasks={tasks} activity={activity} now={now} onOpenTask={openTask} onAgents={() => go("agents")} />;
-      case "projects":
-        return <ProjectsPage projects={projects} now={now} onOpen={(id) => openProject(id, "board")} />;
-      case "favorites":
-        return (
-          <FavoritesPage
-            projects={projects}
-            tasks={tasks}
-            now={now}
-            onOpenProject={(id) => openProject(id, "board")}
-            onOpenTask={openTask}
-            onBrowse={() => go("projects")}
-          />
-        );
-      case "activity":
-        return <ActivityPage entries={activity} tasks={tasks} now={now} onOpenTask={openTask} />;
-      case "progress":
-        return <ProgressPage tasks={tasks} now={now} onOpenTask={openTask} selected={selected} />;
-      case "review":
-        return <ReviewPage tasks={tasks} now={now} selected={selected} onOpenTask={openTask} />;
-      case "agents":
-        return <AgentsPage tasks={tasks} now={now} onOpenTask={openTask} onNotBuilt={notBuilt} />;
-      case "live":
-        return <LivePage tasks={tasks} activity={activity} now={now} projects={projects} onOpenTask={openTask} />;
-      case "documents":
-        return <DocumentsPage tasks={tasks} onOpenTask={openTask} />;
-      case "slots":
-        return <SlotsPage tasks={tasks} now={now} onOpenTask={openTask} onNotBuilt={notBuilt} />;
-      case "memory":
-        return <MemoryPage now={now} onOpenTask={openTask} onNotBuilt={notBuilt} />;
-      case "numbers":
-        return <NumbersPage tasks={tasks} now={now} onOpenTask={openTask} />;
-      default:
-        return (
-          <TasksPage
-            key={page}
-            tasks={tasks}
-            now={now}
-            mode={page === "board" ? "board" : undefined}
-            selected={selected}
-            onOpen={openTask}
-            onMove={move}
-            order={taskOrder}
-            onOrder={(id, n) => setOrders((now) => ({ ...now, [id]: n }))}
-            onNotBuilt={notBuilt}
-          />
-        );
-    }
+    const render = views[page];
+    return render ? render() : <NotBuilt page={page} />;
+  };
+  const tasksPage = () => (
+    <TasksPage
+      key={page}
+      tasks={tasks}
+      now={now}
+      mode={page === "board" ? "board" : undefined}
+      selected={selected}
+      onOpen={openTask}
+      onMove={move}
+      order={taskOrder}
+      onOrder={(id, n) => setOrders((now) => ({ ...now, [id]: n }))}
+      onNotBuilt={notBuilt}
+    />
+  );
+  /** The pages built so far; any other shows that it is not built yet. */
+  const views: Partial<Record<Page, () => ReactNode>> = {
+    home: () => <HomePage tasks={tasks} activity={activity} now={now} onOpenTask={openTask} onAgents={() => go("agents")} />,
+    projects: () => <ProjectsPage projects={projects} now={now} onOpen={(id) => openProject(id, "board")} />,
+    favorites: () => (
+      <FavoritesPage
+        projects={projects}
+        tasks={tasks}
+        now={now}
+        onOpenProject={(id) => openProject(id, "board")}
+        onOpenTask={openTask}
+        onBrowse={() => go("projects")}
+      />
+    ),
+    activity: () => <ActivityPage entries={activity} tasks={tasks} now={now} onOpenTask={openTask} />,
+    progress: () => <ProgressPage tasks={tasks} now={now} onOpenTask={openTask} selected={selected} />,
+    review: () => <ReviewPage tasks={tasks} now={now} selected={selected} onOpenTask={openTask} />,
+    agents: () => <AgentsPage tasks={tasks} now={now} onOpenTask={openTask} onNotBuilt={notBuilt} />,
+    live: () => <LivePage tasks={tasks} activity={activity} now={now} projects={projects} onOpenTask={openTask} />,
+    documents: () => <DocumentsPage tasks={tasks} onOpenTask={openTask} />,
+    slots: () => <SlotsPage tasks={tasks} now={now} onOpenTask={openTask} onNotBuilt={notBuilt} />,
+    memory: () => <MemoryPage now={now} onOpenTask={openTask} onNotBuilt={notBuilt} />,
+    numbers: () => <NumbersPage tasks={tasks} now={now} onOpenTask={openTask} />,
+    tasks: tasksPage,
+    board: tasksPage,
   };
 
   return (

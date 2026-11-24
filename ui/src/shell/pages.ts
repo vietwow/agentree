@@ -54,23 +54,20 @@ export const PAGE_INFO: Record<Page, { label: string; icon: LucideIcon }> = {
   numbers: { label: "Numbers", icon: ChartColumn },
 };
 
-/** The pages built so far; the others show that they are not built yet. */
-export const BUILT: ReadonlySet<Page> = new Set([
-  "home",
-  "board",
-  "tasks",
-  "projects",
-  "favorites",
-  "activity",
-  "progress",
-  "slots",
-  "review",
-  "memory",
-  "documents",
-  "agents",
-  "live",
-  "numbers",
-]);
+/** Every page the side bar opens outside a project, in its order there. */
+export const NAV_PAGES: readonly Page[] = [...HEAD_PAGES, ...PAGES, "options"];
+
+/** Keys pressed after G, and the page each opens. */
+export const GO: Record<string, Page> = {
+  h: "home",
+  p: "projects",
+  i: "inbox",
+  t: "tasks",
+  b: "board",
+  a: "activity",
+  f: "favorites",
+  s: "options",
+};
 
 /** The pages a project opened in the side bar lists, with their icons there. */
 export const PROJECT_PAGES = [

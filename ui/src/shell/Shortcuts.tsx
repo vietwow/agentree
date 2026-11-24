@@ -1,4 +1,5 @@
 import { Modal } from "../design/components/Modal.tsx";
+import { GO, PAGE_INFO } from "./pages.ts";
 
 const MOD = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl";
 
@@ -21,19 +22,7 @@ const SHORTCUTS: [string, [string, string[]][]][] = [
       ["New project", ["P"]],
     ],
   ],
-  [
-    "Navigate",
-    [
-      ["Go to Home", ["G", "H"]],
-      ["Go to Projects", ["G", "P"]],
-      ["Go to Inbox", ["G", "I"]],
-      ["Go to Tasks", ["G", "T"]],
-      ["Go to Board", ["G", "B"]],
-      ["Go to Activity", ["G", "A"]],
-      ["Go to Favorites", ["G", "F"]],
-      ["Go to Options", ["G", "S"]],
-    ],
-  ],
+  ["Navigate", [...Object.entries(GO).map(([key, page]): [string, string[]] => [`Go to ${PAGE_INFO[page].label}`, ["G", key.toUpperCase()]])]],
   [
     "Command menu",
     [
