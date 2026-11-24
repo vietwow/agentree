@@ -22,8 +22,9 @@ machine's state under the git common directory, a task's whole way from
 `new` to `land`, the memory, what each session used, the documents, the
 machine's list of projects, the sessions of the tools, the queue of
 heavy runs, and the daemon with its API and its events. Not built yet:
-the project's container and what a run is measured to take, and the
-kickstart of each tool.
+the project's container and what a run is measured to take, the
+host's script, and what the RFC lists after its first version beyond
+these.
 
 ```sh
 pnpm install
@@ -31,6 +32,7 @@ pnpm test        # node:test, on real repositories in a temporary directory
 pnpm typecheck
 pnpm lint        # oxlint; the core imports Node's own modules only
 node src/command/main.ts --help
+pnpm link --global   # puts `agentree` on the path, as the hooks and MCP entries of a project run it
 ```
 
 Node.js 26.13.1 runs the TypeScript files as they are; nothing is built.

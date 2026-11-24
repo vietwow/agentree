@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /** `agentree <subcommand>`: the core on the command line. It holds no rule: each line below is one call of the core. */
 import { readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { spawn } from "node:child_process";
+import { randomBytes } from "node:crypto";
+import { basename, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import {
@@ -19,6 +21,7 @@ import {
   type Actor,
   type Context,
 } from "../core/board/actions.ts";
+import { reportedBy, TOOL_OF_COMMAND } from "../core/board/headless.ts";
 import { onHook } from "../core/board/hooks.ts";
 import { init } from "../core/board/init.ts";
 import { accept, check, commit, land, reject, review, scope, submit, waitingToLand } from "../core/board/lifecycle.ts";
@@ -36,8 +39,11 @@ import { demo } from "../demo/demo.ts";
 import { boardServer } from "../mcp/tools.ts";
 import { ask, projectIdOf } from "./daemon.ts";
 import { renderTask } from "../core/task/file.ts";
+import { endSession, reportSession } from "../core/board/sessions.ts";
+import { reportUse } from "../core/board/usage.ts";
+import { doctor } from "../core/init/doctor.ts";
 import { AGENT_TOOLS, setUp } from "../core/init/tools.ts";
-import { KINDS, STATUSES, TOOLS, type Kind, type Need, type Tool } from "../core/task/model.ts";
+import { KINDS, stamp, STATUSES, TOOLS, type Kind, type Need, type Tool } from "../core/task/model.ts";
 
 const USAGE = `Usage: agentree <subcommand> [options]
 
@@ -75,6 +81,9 @@ const USAGE = `Usage: agentree <subcommand> [options]
   serve [--port <n>]                    the daemon: the UI and its API, on 127.0.0.1 only
   mcp                                   the board's MCP server on standard input and output, for this repository
   hook <tool> <event>                   what a tool's hook tells the board; its JSON on standard input
+  doctor                                what of this project's setup is there, and what is missing
+  agent [T-NNNN] [--role build|review] -- <a tool's headless command>
+                                        start a session of a tool, when the machine takes one more; its use is recorded
   demo <directory>                      make the sample projects there, and register them
 
 Name yourself in AGENTREE_WORKER as <tool>/<model>; a session is told by
@@ -96,6 +105,8 @@ const { values, positionals } = parseArgs({
     message: { type: "string", short: "m" },
     name: { type: "string" },
     tools: { type: "string" },
+    role: { type: "string" },
+    anyway: { type: "boolean" },
     desc: { type: "string" },
     port: { type: "string" },
     title: { type: "string" },
@@ -386,6 +397,74 @@ const COMMANDS: Record<string, () => unknown> = {
   serve() {
     const daemon = startDaemon({ ...(values.port ? { port: Number(values.port) } : {}), ui: join(import.meta.dirname, "../../ui/dist") });
     say(`agentree serves ${projects().length} ${projects().length === 1 ? "project" : "projects"}. Open:\n  ${daemon.address}`);
+  },
+  async doctor() {
+    const at = context();
+    const found = doctor(at.places);
+    const daemon = await ask("/api/slots").catch(() => undefined);
+    found.push({
+      ok: daemon !== undefined,
+      what: daemon
+        ? "the daemon answers"
+        : 'no daemon answers: "agentree serve" starts it; without it a submit runs its checks itself and `run` and `load` are refused',
+    });
+    found.push({
+      ok: projectIdOf(at.places.root) !== undefined,
+      what: projectIdOf(at.places.root)
+        ? `registered on this machine as "${projectIdOf(at.places.root)}"`
+        : 'not registered on this machine: run "agentree register"',
+    });
+    for (const each of found) say(`${each.ok ? "ok  " : "MISS"}  ${each.what}`);
+    if (found.some((each) => !each.ok)) process.exitCode = 1;
+  },
+  async agent() {
+    const at = context();
+    const dashes = process.argv.indexOf("--");
+    const [program, ...args] = dashes < 0 ? [] : process.argv.slice(dashes + 1);
+    const tool = program === undefined ? undefined : TOOL_OF_COMMAND[basename(program)];
+    if (!program || !tool)
+      throw new Refusal(
+        `name a tool's headless command after --: one of ${Object.keys(TOOL_OF_COMMAND).join(", ")}, as: agentree agent T-0042 -- claude -p "..." --output-format json`,
+      );
+    const task = rest[0] && /^T-\d{4}$/.test(rest[0]) ? rest[0] : undefined;
+    if (task) taskOf(readBoard(at.places), task);
+    const role = values.role === "review" ? "review" : "build";
+    const slots = await ask<SlotsView>("/api/slots").catch(() => undefined);
+    if (!slots) process.stderr.write("agentree: no daemon answers, so the machine's load is not asked\n");
+    else if (/no more than 0 more/.test(loadInWords(slots)) && !values.anyway) throw new Refusal(`no session is started now.\n${loadInWords(slots)}`);
+    const session = `h-${randomBytes(4).toString("hex")}`;
+    const started = stamp(new Date());
+    reportSession(
+      at.places,
+      { id: session, worker: `${tool}/unknown`, started: "headless", ...(process.env.AGENTREE_SESSION ? { by: process.env.AGENTREE_SESSION } : {}) },
+      started,
+    );
+    const child = spawn(program, args, { stdio: ["inherit", "pipe", "inherit"], env: { ...process.env, AGENTREE_SESSION: session } });
+    let output = "";
+    child.stdout.on("data", (chunk: Buffer) => {
+      output += chunk.toString();
+      process.stdout.write(chunk);
+    });
+    const code = await new Promise<number>((done, failed) => {
+      child.on("error", failed);
+      child.on("close", (status) => done(status ?? 1));
+    });
+    const reported = reportedBy(tool, output);
+    const worker = `${tool}/${(reported.models[0] ?? "unknown").replace(/[^A-Za-z0-9._-]+/g, "-")}`;
+    const ended = stamp(new Date());
+    if (task) {
+      const use = { session, worker, role, models: reported.models, startedAt: started, endedAt: ended } as const;
+      reportUse(at.places, task, {
+        ...use,
+        ...(reported.tokens ? { tokens: reported.tokens } : {}),
+        ...(reported.costUsd === undefined ? {} : { costUsd: reported.costUsd }),
+        ...(reported.unknown ? { unknown: reported.unknown } : {}),
+      });
+    }
+    reportSession(at.places, { id: session, worker }, ended);
+    endSession(at.places, session, ended);
+    process.stderr.write(`agentree: session ${session} of ${tool} ended${reported.unknown ? `; ${reported.unknown}` : ""}\n`);
+    process.exitCode = code;
   },
   hook() {
     const [tool, event] = rest;

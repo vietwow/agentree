@@ -9,6 +9,7 @@ import { claimOf } from "../board/state.ts";
 import { CODEX, OWNER, project, type Project } from "../board/testing.ts";
 import { agentsView } from "../views/project.ts";
 import { toolsView } from "../views/tools.ts";
+import { doctor } from "./doctor.ts";
 import { AGENT_TOOLS, setUp } from "./tools.ts";
 
 let at: Project;
@@ -208,4 +209,29 @@ test("a tool's hooks follow its session, beat its claim, and refuse an edit outs
     { exit: 0 },
     "a directory with no board is let through",
   );
+});
+
+test("the doctor says what of a project's setup is there and what is missing", () => {
+  const onPath = (finding: { what: string }) => finding.what.includes("on the path");
+  const before = doctor(context.places).filter((finding) => !onPath(finding));
+  assert.deepEqual(
+    before.filter((finding) => !finding.ok).map((finding) => finding.what.split(":")[0]),
+    [
+      'AGENTS.md has no section "Taking work"',
+      "the skill agentree-coordinate is missing in one of .agents/skills and .claude/skills, or the two differ",
+      "the skill agentree-plan is missing in one of .agents/skills and .claude/skills, or the two differ",
+      "claude-code",
+      "claude-desktop",
+      "cursor",
+      "codex",
+      "antigravity",
+    ],
+  );
+  setUp(root, AGENT_TOOLS);
+  assert.deepEqual(
+    doctor(context.places).filter((finding) => !finding.ok && !onPath(finding)),
+    [],
+  );
+  writeFileSync(join(root, ".claude/skills/agentree-plan/SKILL.md"), "changed by hand\n");
+  assert.deepEqual(doctor(context.places).filter((finding) => !finding.ok && !onPath(finding)).length, 1);
 });

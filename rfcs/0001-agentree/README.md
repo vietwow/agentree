@@ -963,6 +963,25 @@ Antigravity. A hook in a directory with no board lets everything
 through. The formats were read on 2026-11-24 on each tool's own page
 of MCP and of hooks; none was tried in its tool.
 
+`agentree doctor` says, a line each: git's version, whether `agentree`
+is on the path (every hook and MCP entry runs it by that name; until
+the host's script is written, `pnpm link --global` in agentree's
+repository puts it there), the board, "Taking work", `CLAUDE.md`, each
+skill in its two places, each tool's MCP entry, hooks and definitions,
+whether the daemon answers and whether the project is registered; it
+exits with 1 when one is missing.
+
+`agentree agent [T-NNNN] [--role build|review] -- <a tool's headless
+command>` asks the daemon's load and refuses while it says to start no
+more (`--anyway` starts it still), records the session as started
+headless by the session that ran it, runs the command with
+`AGENTREE_SESSION` set to that session and passes its output on, and
+reads from that output what the tool reports: Claude Code's result
+(`session_id`, `total_cost_usd`, `usage`, the models of `modelUsage`),
+Codex's `turn.completed` events (their `usage`, summed; no cost),
+Antigravity's `usage` (no cost); Cursor's tokens are not known. With a
+task named, that is written as the session's use on it.
+
 ### The engineering standard a project starts with
 
 The origin is built as an enterprise application, and its rules say so
