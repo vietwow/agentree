@@ -9,6 +9,7 @@ import { PriorityIcon } from "../ui/PriorityIcon.tsx";
 import { StatusIcon } from "../ui/StatusIcon.tsx";
 import { ToolMark, ToolStack } from "../ui/ToolMark.tsx";
 import { PERSON_MOVES } from "./TaskDrawer.tsx";
+import { reducedMotion } from "../design/motion.ts";
 
 const COLUMNS = ["backlog", "ready", "in-progress", "checking", "review", "accepted", "done"] as const satisfies readonly Status[];
 
@@ -122,7 +123,7 @@ function Column({
 
 /** A click settles the card and lifts it again, as gr8r's board does when it renders the card anew. */
 function relift(card: HTMLElement) {
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (reducedMotion()) return;
   card.animate([{ translate: "0 0", boxShadow: "var(--shadow-lift)", borderColor: "var(--line)" }, {}], {
     duration: 180,
     easing: "cubic-bezier(0.2, 0, 0, 1)",
@@ -169,7 +170,7 @@ function Card({ task, parts, now, delay, open, landing, onLanded, onOpen }: Card
       aria-current={open ? "true" : undefined}
       aria-label={task.title}
       style={landing ? undefined : { animationDelay: `${delay}ms` }}
-      className={`flex w-full shrink-0 cursor-pointer flex-col gap-1.5 rounded-lg border bg-float bg-lift px-3 py-2.5 text-left border-line shadow-lift transition-[border-color,box-shadow,translate] duration-180 ease-(--ease) hover:-translate-y-px hover:border-line-strong hover:shadow-lift-hover ${landing ? "fx-moved" : "motion-safe:animate-appear"}`}
+      className={`flex w-full shrink-0 cursor-pointer flex-col gap-1.5 rounded-lg border bg-float bg-lift px-3 py-2.5 text-left border-line shadow-lift transition-[border-color,box-shadow,translate] duration-180 ease-(--ease) hover:-translate-y-px hover:border-line-strong hover:shadow-lift-hover ${landing ? "fx-moved" : "animate-appear"}`}
     >
       <span className="flex h-5 w-full items-center gap-2">
         <PriorityIcon priority={task.priority} />

@@ -1,0 +1,76 @@
+/*
+ * The motion every part shares. An entrance names one of these keyframes
+ * with its own duration; reduced motion is handled once, in base.css.
+ */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+/* Rises into place; `--rise-y` is how far below it starts. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise-y, 8px));
+  }
+}
+/* A menu, modal or toast settling in; `--float-y` and `--float-scale` are where it starts. */
+@keyframes float-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--float-y, 8px)) scale(var(--float-scale, 0.97));
+  }
+}
+/* A bar growing along its axis from its transform origin. */
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+/* A stroke drawn along its length; the path sets `stroke-dasharray: 1` with `pathLength="1"`. */
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes drawer-in {
+  from {
+    opacity: 0;
+    transform: translateX(48px);
+  }
+}
+@keyframes drawer-out {
+  to {
+    opacity: 0;
+    transform: translateX(48px);
+  }
+}
+
+/* A list's items rising in one after another; each sets `--d`, its delay. */
+@layer components {
+  .fx-stagger {
+    animation: rise-in 0.36s var(--ease) both;
+    animation-delay: var(--d, 0ms);
+  }
+}

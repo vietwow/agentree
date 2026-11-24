@@ -13,6 +13,7 @@ import { DocumentsPage } from "./pages/DocumentsPage.tsx";
 import { HomePage } from "./pages/HomePage.tsx";
 import { MemoryPage } from "./pages/MemoryPage.tsx";
 import { useTicks, withTicks } from "./board/ticks.ts";
+import { countUp, reducedMotion } from "./design/motion.ts";
 import { NumbersPage } from "./pages/NumbersPage.tsx";
 import { SlotsPage } from "./pages/SlotsPage.tsx";
 import { ProgressPage } from "./pages/ProgressPage.tsx";
@@ -43,29 +44,6 @@ const GO: Record<string, Page> = {
   f: "favorites",
   s: "options",
 };
-
-/** gr8r-studio's headline numbers, counting up once when a page is entered. */
-function countUp() {
-  for (const el of document.querySelectorAll<HTMLElement>(".fx-route .stat .v, .fx-route [data-count]")) {
-    const text = el.childNodes.length === 1 ? el.firstChild : null;
-    const m = text?.nodeValue?.match(/^(\d+)(%?)$/);
-    if (!text || !m) continue;
-    const to = Number(m[1]);
-    const suf = m[2] ?? "";
-    if (to < 2) continue;
-    const t0 = performance.now();
-    let shown = "0" + suf;
-    const step = (now: number) => {
-      if (!el.isConnected || text.nodeValue !== shown) return;
-      const k = Math.min(1, (now - t0) / 520);
-      shown = Math.round(to * (1 - Math.pow(1 - k, 3))) + suf;
-      text.nodeValue = shown;
-      if (k < 1) requestAnimationFrame(step);
-    };
-    text.nodeValue = shown;
-    requestAnimationFrame(step);
-  }
-}
 
 const notBuilt = (what: string) => toast(`${what} is not built yet`, { kind: "info", ms: 2200 });
 
@@ -166,7 +144,7 @@ export function App() {
   );
 
   const closePanel = useCallback(() => {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (reducedMotion()) {
       setShownId(undefined);
       setClosing(false);
       setFull(false);
@@ -362,7 +340,7 @@ export function App() {
     setFxRoute(true);
   }
   useEffect(() => {
-    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) countUp();
+    countUp(document.querySelector(".fx-route") ?? undefined);
     const t = setTimeout(() => setFxRoute(false), 1000);
     return () => clearTimeout(t);
   }, [routeKey]);

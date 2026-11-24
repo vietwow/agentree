@@ -70,7 +70,9 @@ export function SummaryCards({ cards }: { cards: Card[] }) {
           <div className="flex flex-col gap-2 rounded-lg border border-line bg-float bg-lift px-3.5 pt-3 pb-3.5 shadow-lift">
             <h2 className="truncate text-2xs leading-4 font-semibold tracking-[0.06em] text-ink-2 uppercase">{card.label}</h2>
             <p className="flex items-baseline gap-1.5">
-              <span className="text-[28px] leading-8 font-semibold tracking-tight tabular-nums">{card.value}</span>
+              <span className="text-[28px] leading-8 font-semibold tracking-tight tabular-nums" data-count>
+                {card.value}
+              </span>
               {card.trend === "up" && <ArrowUpRight size={16} aria-label="Up" className="self-start text-good" />}
               {card.trend === "down" && <ArrowDownRight size={16} aria-label="Down" className="self-start text-bad" />}
               {card.unit && <span className="text-xs leading-4 text-ink-4">{card.unit}</span>}

@@ -445,7 +445,7 @@
     box-shadow: var(--l-pop-shadow);
     font-size: 14px;
     color: var(--l-ink-2);
-    animation: tipIn 0.16s var(--ease) both;
+    animation: fade-in 0.16s var(--ease) both;
   }
   .org-pop p,
   .org-pop ol {
@@ -583,14 +583,6 @@
     }
     .live-stats b {
       font-size: 14px;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .live-pulse::before,
-    .live-dot.on,
-    .org .judge-card.flash,
-    .org-pop {
-      animation: none;
     }
   }
 }

@@ -53,7 +53,7 @@ export function toast(message: string, options: Options = {}) {
     ring.setAttribute("aria-hidden", "true");
     ring.style.setProperty("--tcount-ms", `${ms}ms`);
     ring.innerHTML =
-      '<svg width="22" height="22" viewBox="0 0 22 22"><circle class="track" cx="11" cy="11" r="9"/><circle class="left" cx="11" cy="11" r="9"/></svg>';
+      '<svg width="22" height="22" viewBox="0 0 22 22"><circle class="track" cx="11" cy="11" r="9"/><circle class="left motion-essential" cx="11" cy="11" r="9"/></svg>';
     const count = document.createElement("b");
     const end = Date.now() + ms;
     const show = () => (count.textContent = String(Math.max(1, Math.ceil((end - Date.now()) / 1000))));

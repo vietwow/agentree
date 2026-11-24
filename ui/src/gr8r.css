@@ -188,11 +188,6 @@
     opacity: 0.4;
     pointer-events: none;
   }
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
 
   /* tooltip */
   [data-tip] {
@@ -215,7 +210,7 @@
     white-space: nowrap;
     z-index: 200;
     pointer-events: none;
-    animation: tipIn 0.12s 0.35s both;
+    animation: fade-in 0.12s 0.35s both;
   }
   [data-tip-pos="right"]:hover::after,
   [data-tip-pos="right"]:focus-visible::after {
@@ -226,14 +221,6 @@
   [data-tip-pos="top"]:hover::after {
     top: auto;
     bottom: calc(100% + 6px);
-  }
-  @keyframes tipIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
   }
 
   /* INPUTS */
@@ -475,14 +462,14 @@
     background: var(--ink);
   }
   .fx-tabs .tab.on::after {
-    animation: tabIn 0.26s var(--ease);
+    animation: tab-in 0.26s var(--ease);
   }
   .tab .cnt {
     font-size: var(--text-2xs);
     color: var(--ink-3);
     font-weight: 500;
   }
-  @keyframes tabIn {
+  @keyframes tab-in {
     from {
       transform: scaleX(0.4);
       opacity: 0;
@@ -1393,7 +1380,7 @@
     font-size: var(--text-sm);
   }
   .bulkbar.enter {
-    animation: popUp 0.28s var(--spring);
+    animation: pop-up 0.28s var(--spring);
   }
   .bulkbar .btn {
     color: var(--ink-inv);
@@ -1409,7 +1396,7 @@
     background: color-mix(in srgb, var(--ink-inv) 20%, transparent);
     margin: 0 4px;
   }
-  @keyframes popUp {
+  @keyframes pop-up {
     from {
       opacity: 0;
       transform: translate(-50%, 8px);
@@ -2061,7 +2048,7 @@
     z-index: 60;
   }
   .scrim.enter {
-    animation: fade 0.18s ease both;
+    animation: fade-in 0.18s ease both;
   }
   .modal-wrap {
     position: fixed;
@@ -2084,7 +2071,7 @@
     max-height: 80vh;
   }
   .modal.enter {
-    animation: modalIn 0.26s var(--ease) both;
+    animation: float-in 0.26s var(--ease) both;
   }
   .modal.sm {
     max-width: 420px;
@@ -2123,24 +2110,6 @@
   .modal-f .sp {
     flex: 1;
   }
-  @keyframes modalIn {
-    from {
-      opacity: 0;
-      transform: translateY(8px) scale(0.97);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-  @keyframes fade {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
   .drawer {
     position: fixed;
     top: 0;
@@ -2159,10 +2128,10 @@
     box-shadow: -24px 0 48px -16px rgba(0, 0, 0, 0.7);
   }
   .drawer.enter {
-    animation: drawerIn 0.34s var(--ease-drawer) both;
+    animation: drawer-in 0.34s var(--ease-drawer) both;
   }
   .drawer.enter .drawer-b > * {
-    animation: riseIn 0.38s var(--ease) both;
+    animation: rise-in 0.38s var(--ease) both;
   }
   .drawer.enter .drawer-b > *:nth-child(2) {
     animation-delay: 0.04s;
@@ -2183,7 +2152,7 @@
     border: 1px solid var(--line);
   }
   .drawer.full.enter {
-    animation: modalIn 0.26s var(--ease) both;
+    animation: float-in 0.26s var(--ease) both;
   }
   .drawer-scrim {
     position: fixed;
@@ -2195,17 +2164,7 @@
     background: var(--overlay);
   }
   .drawer-scrim.full.enter {
-    animation: fade 0.18s both;
-  }
-  @keyframes drawerIn {
-    from {
-      transform: translateX(48px);
-      opacity: 0;
-    }
-    to {
-      transform: none;
-      opacity: 1;
-    }
+    animation: fade-in 0.18s both;
   }
   .drawer-h {
     display: flex;
@@ -2417,18 +2376,9 @@
     overflow-y: auto;
     font-size: var(--text-base);
   }
-  @keyframes popIn {
-    from {
-      opacity: 0;
-      transform: translateY(-4px) scale(0.97);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
   .pop.enter {
-    animation: popIn 0.16s var(--ease) both;
+    --float-y: -4px;
+    animation: float-in 0.16s var(--ease) both;
   }
   .pop .pin {
     padding: 4px 4px 6px;
@@ -2733,11 +2683,13 @@
     color: var(--ink-inv);
     font-size: var(--text-sm);
     box-shadow: var(--shadow-pop);
-    animation: toastIn 0.2s var(--ease) both;
+    --float-y: 14px;
+    --float-scale: 0.96;
+    animation: float-in 0.2s var(--ease) both;
     max-width: 400px;
   }
   .toast.out {
-    animation: toastOut 0.16s ease both;
+    animation: toast-out 0.16s ease both;
   }
   .toast .i.ok {
     color: var(--good);
@@ -2777,29 +2729,19 @@
     stroke: var(--ink-inv);
     stroke-linecap: round;
     stroke-dasharray: 56.55;
-    animation: toastCount var(--tcount-ms) linear forwards;
+    animation: toast-count var(--tcount-ms) linear forwards;
   }
   .toast .tcount b {
     font-size: 11px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
   }
-  @keyframes toastCount {
+  @keyframes toast-count {
     to {
       stroke-dashoffset: 56.55;
     }
   }
-  @keyframes toastIn {
-    from {
-      opacity: 0;
-      transform: translateY(14px) scale(0.96);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-  @keyframes toastOut {
+  @keyframes toast-out {
     to {
       opacity: 0;
       transform: translateY(4px);
@@ -2888,22 +2830,7 @@
   }
 
   /* MOTION: one-shot flow animations (gated to the render they belong to) */
-  @keyframes riseIn {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-  @keyframes growX {
-    from {
-      transform: scaleX(0);
-    }
-  }
-  @keyframes popCheck {
+  @keyframes pop-check {
     0% {
       transform: scale(0.55);
     }
@@ -2919,7 +2846,7 @@
       background-size: 100% 1.5px;
     }
   }
-  @keyframes doneWash {
+  @keyframes done-wash {
     from {
       background: var(--good-soft);
     }
@@ -2939,7 +2866,7 @@
   }
   /* route change: content rises in, lightly staggered */
   .fx-route > .page > * {
-    animation: riseIn 0.36s var(--ease) both;
+    animation: rise-in 0.36s var(--ease) both;
   }
   .fx-route > .page > *:nth-child(2) {
     animation-delay: 0.035s;
@@ -2952,21 +2879,21 @@
   }
   .fx-route .grid2 > * > *:nth-child(2),
   .fx-route .grid2 > *:nth-child(2) > *:first-child {
-    animation: riseIn 0.4s 0.09s var(--ease) both;
+    animation: rise-in 0.4s 0.09s var(--ease) both;
   }
   .fx-route .prog > i {
-    animation: growX 0.8s 0.12s var(--ease) both;
+    animation: grow-x 0.8s 0.12s var(--ease) both;
   }
   .fx-route .bar {
-    animation: riseIn 0.4s var(--ease) both;
+    animation: rise-in 0.4s var(--ease) both;
   }
   /* task completed */
   .trow.fx-done,
   .mini.fx-done {
-    animation: doneWash 1s var(--ease) both;
+    animation: done-wash 1s var(--ease) both;
   }
   .fx-done .check {
-    animation: popCheck 0.42s var(--spring) both;
+    animation: pop-check 0.42s var(--spring) both;
   }
   .fx-done .tt,
   .fx-done .title {
@@ -3002,24 +2929,9 @@
     font-variant-numeric: tabular-nums;
   }
   @media (prefers-reduced-motion: reduce) {
-    .fx-route > .page > *,
-    .fx-route .grid2 > * > *,
-    .fx-route .bar,
-    .drawer.enter .drawer-b > *,
-    .fx-done .check {
-      animation: fadeOnly 0.12s both !important;
-    }
-    .fx-route .prog > i {
-      animation: none !important;
-    }
-    .fx-done .tt,
-    .fx-done .title {
-      animation: none;
-      background: none;
-      text-decoration: line-through !important;
-    }
     .pcard:hover,
-    .check:active {
+    .check:active,
+    .btn:active:not(:disabled) {
       transform: none;
     }
   }
@@ -3066,7 +2978,7 @@
       inset: 0;
       background: var(--overlay);
       z-index: 69;
-      animation: fade 0.14s both;
+      animation: fade-in 0.14s both;
     }
     .page {
       padding: 20px var(--gutter) 96px;
@@ -3225,34 +3137,6 @@
     }
     .palette {
       top: 8px;
-    }
-  }
-  @keyframes fadeOnly {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .modal,
-    .drawer,
-    .pop,
-    .toast,
-    .bulkbar,
-    .tab.on::after {
-      animation-name: fadeOnly !important;
-      animation-duration: 0.12s !important;
-    }
-    .btn:active:not(:disabled) {
-      transform: none;
-    }
-    .prog > i,
-    .toggle::after,
-    .sitem .chev,
-    .skip {
-      transition: none;
     }
   }
 }

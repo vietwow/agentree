@@ -5,26 +5,16 @@
 @import "./design/tokens/palette.css";
 @import "./design/tokens/theme.css";
 @import "./design/tokens/scale.css";
+@import "./design/base.css";
+@import "./design/motion.css";
 @import "./live.css";
 @import "./gr8r.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-}
-
 /* An item's first appearance, as `animate-appear`; a list staggers it with an inline animation-delay. */
 @theme {
-  --animate-appear: appear 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  @keyframes appear {
-    from {
-      opacity: 0;
-      transform: translateY(6px);
-    }
-  }
+  --animate-appear: rise-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /*
@@ -78,27 +68,22 @@
   animation: ring-spin 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .ring-pop {
-  animation: ring-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: pop-in 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 .tick-draw {
   stroke-dasharray: 1;
-  animation: tick-draw 320ms ease-out 300ms both;
+  animation: draw 320ms ease-out 300ms both;
 }
 .log-node {
-  animation: ring-pop 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: pop-in 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 .log-rail {
   transform-origin: top;
-  animation: rail-grow 220ms ease-in-out both;
-}
-@keyframes rail-grow {
-  from {
-    transform: scaleY(0);
-  }
+  animation: grow-y 220ms ease-in-out both;
 }
 .bar-grow {
   transform-origin: bottom;
-  animation: bar-grow 460ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: grow-y 460ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 @keyframes ring-fill {
   from {
@@ -111,68 +96,9 @@
     opacity: 0;
   }
 }
-@keyframes ring-pop {
-  from {
-    transform: scale(0.4);
-    opacity: 0;
-  }
-}
-@keyframes tick-draw {
-  from {
-    stroke-dashoffset: 1;
-  }
-}
-@keyframes bar-grow {
-  from {
-    transform: scaleY(0);
-  }
-}
 
 @utility bg-lift {
   background-image: linear-gradient(to bottom, var(--lift-top), var(--lift-bottom));
-}
-
-html,
-body,
-#root {
-  height: 100%;
-}
-
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
-  line-height: 1.45;
-  -webkit-font-smoothing: antialiased;
-}
-
-@layer base {
-  :focus {
-    outline: none;
-  }
-  :focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 1px;
-    border-radius: var(--radius-xs);
-  }
-}
-
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--line-strong);
-  border-radius: 10px;
-  border: 3px solid transparent;
-  background-clip: padding-box;
-}
-::-webkit-scrollbar-thumb:hover {
-  background-color: var(--ink-4);
-}
-::-webkit-scrollbar-track {
-  background: transparent;
 }
 
 /* The side bar's current item: gr8r's .sitem.on, drawn once and slid to the item. */
@@ -240,11 +166,7 @@ body {
     color: var(--ink-3);
   }
   .drawer-b .dsec-h .prog > i {
-    animation: growX 0.8s 0.12s var(--ease) both;
-  }
-  .fx-stagger {
-    animation: riseIn 0.36s var(--ease) both;
-    animation-delay: var(--d, 0ms);
+    animation: grow-x 0.8s 0.12s var(--ease) both;
   }
   .doc-side {
     position: sticky;
@@ -336,21 +258,14 @@ body {
     font-weight: 500;
   }
   .fx-reveal {
-    animation: revealX 0.9s 0.12s var(--ease) both;
+    animation: reveal-x 0.9s 0.12s var(--ease) both;
   }
-  @keyframes revealX {
+  @keyframes reveal-x {
     from {
       clip-path: inset(-8px 100% -8px 0);
     }
     to {
       clip-path: inset(-8px -8px -8px 0);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .drawer-b .dsec-h .prog > i,
-    .fx-stagger,
-    .fx-reveal {
-      animation: none;
     }
   }
 }
@@ -374,28 +289,7 @@ body {
 }
 .drawer.full.leaving,
 .drawer-scrim.full.leaving {
-  animation: drawer-fade-out 0.16s ease both;
-}
-@keyframes drawer-out {
-  to {
-    transform: translateX(48px);
-    opacity: 0;
-  }
-}
-@keyframes drawer-fade-out {
-  to {
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0s !important;
-    animation-duration: 0s !important;
-    animation-delay: 0s !important;
-  }
+  animation: fade-out 0.16s ease both;
 }
 
 /* The Home page: a command center of the board, in its own palette for each theme. */
@@ -611,7 +505,7 @@ body {
     border-radius: 1px;
     background: var(--h-spark);
     transform-origin: bottom;
-    animation: h-rise 0.5s var(--ease) both;
+    animation: grow-y 0.5s var(--ease) both;
     animation-delay: var(--d);
   }
   .h-spark i.violet {
@@ -824,7 +718,7 @@ body {
   .h-bar {
     transform-box: fill-box;
     transform-origin: bottom;
-    animation: h-rise 0.6s var(--ease) both;
+    animation: grow-y 0.6s var(--ease) both;
     animation-delay: var(--d);
   }
   .h-line {
@@ -833,7 +727,7 @@ body {
     stroke-width: 1.5;
     stroke-linejoin: round;
     stroke-dasharray: 1;
-    animation: h-draw 0.9s 0.35s var(--ease) both;
+    animation: draw 0.9s 0.35s var(--ease) both;
   }
   .h-hollow {
     fill: var(--h-panel);
@@ -855,7 +749,7 @@ body {
   .h-now {
     transform-box: fill-box;
     transform-origin: center;
-    animation: h-pop 0.35s var(--ease) both;
+    animation: pop-in 0.35s var(--ease) both;
     animation-delay: var(--d);
   }
   .h-pill {
@@ -1006,26 +900,6 @@ body {
     font-variant-numeric: tabular-nums;
   }
 
-  @keyframes h-rise {
-    from {
-      transform: scaleY(0);
-    }
-  }
-  @keyframes h-draw {
-    from {
-      stroke-dashoffset: 1;
-    }
-    to {
-      stroke-dashoffset: 0;
-    }
-  }
-  @keyframes h-pop {
-    from {
-      opacity: 0;
-      transform: scale(0.4);
-    }
-  }
-
   @media (max-width: 1280px) {
     .h-grid {
       grid-template-columns: minmax(0, 1fr);
@@ -1053,17 +927,6 @@ body {
       flex-direction: column;
     }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .h-spark i,
-    .h-bar,
-    .h-line,
-    .h-hollow,
-    .h-dot,
-    .h-now,
-    .h-pill {
-      animation: none;
-    }
-  }
 }
 
 /* The Home page's hover card, drawn in the body above the square or hour it tells of. */
@@ -1083,7 +946,7 @@ body {
   box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
   transform: translate(-50%, calc(-100% - 8px));
   pointer-events: none;
-  animation: tipIn 0.12s var(--ease) both;
+  animation: fade-in 0.12s var(--ease) both;
 }
 .h-tip::after {
   content: "";

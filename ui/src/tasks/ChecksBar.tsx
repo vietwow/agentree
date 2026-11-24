@@ -39,7 +39,7 @@ export function ChecksBar({ checks }: { checks: Checks }) {
         className="h-1.5 w-16 shrink-0 overflow-hidden rounded-full bg-surface-3"
       >
         <span
-          className={`block h-full origin-left rounded-full motion-safe:animate-[growX_0.8s_0.12s_var(--ease)_both] ${tone.bar}`}
+          className={`block h-full origin-left rounded-full animate-[grow-x_0.8s_0.12s_var(--ease)_both] ${tone.bar}`}
           style={{ width: `${(done / checks.total) * 100}%` }}
         />
       </div>

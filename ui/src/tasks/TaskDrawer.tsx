@@ -17,6 +17,7 @@ import {
   User,
   X,
 } from "lucide-react";
+import { reducedMotion } from "../design/motion.ts";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { toggleStar, useStars } from "../board/favorites.ts";
 import { useTicks } from "../board/ticks.ts";
@@ -93,7 +94,7 @@ export function TaskDrawer(props: Props) {
     // The tabs stay in sight: a long section scrolls only until its tabs reach the top.
     box.scrollBy({
       top: Math.min(below, part.top - view.top - 8),
-      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      behavior: reducedMotion() ? "auto" : "smooth",
     });
   }, [shown]);
 

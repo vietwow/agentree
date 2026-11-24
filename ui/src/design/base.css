@@ -1,0 +1,62 @@
+/* The document: its ground, ink and type, focus, scroll bars, and reduced motion. */
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus {
+    outline: none;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-radius: var(--radius-xs);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+    border-radius: 10px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--ink-4);
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /*
+   * Reduced motion, for every part at once: each animation and transition
+   * takes no time, so an entrance or exit shows only its last frame and still
+   * ends (`animationend` fires).
+   * An important declaration in the first layer wins over every later one.
+   * `.motion-essential` keeps a motion that tells something, as a countdown.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *:not(.motion-essential),
+    *:not(.motion-essential)::before,
+    *:not(.motion-essential)::after {
+      animation-duration: 0s !important;
+      animation-delay: 0ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0s !important;
+      transition-delay: 0ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

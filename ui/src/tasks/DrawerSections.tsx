@@ -104,7 +104,7 @@ export function TimeBox({ timeIn }: { timeIn: TaskDetail["timeIn"] }) {
           {timeIn.map((t) => (
             <span
               key={t.status}
-              className={`origin-left motion-safe:animate-[growX_0.8s_0.12s_var(--ease)_both] ${STATUS_FILL[t.status]}`}
+              className={`origin-left animate-[grow-x_0.8s_0.12s_var(--ease)_both] ${STATUS_FILL[t.status]}`}
               style={{ flexGrow: Math.max(t.ms, total / 100) }}
             />
           ))}
@@ -310,7 +310,7 @@ export function LogSection({ detail, now }: { detail: TaskDetail; now: Date }) {
               <ToolMark tool={entry.who} size={20} />
             )}
           </span>
-          <span className="flex min-w-0 flex-col motion-safe:animate-appear" style={{ animationDelay: `${i * LOG_STEP_MS + 80}ms` }}>
+          <span className="flex min-w-0 flex-col animate-appear" style={{ animationDelay: `${i * LOG_STEP_MS + 80}ms` }}>
             <span className="text-[13px] leading-5 text-ink">{entry.text}</span>
             <time dateTime={entry.at.toISOString()} title={fullTime(entry.at)} className="text-xs leading-4 text-ink-4">
               {entry.who === "daemon" ? "The daemon" : TOOL_LABEL[entry.who]} · {timeAgo(entry.at, now)}

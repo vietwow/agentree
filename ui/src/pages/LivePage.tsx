@@ -4,6 +4,7 @@ import { fixtureAgents } from "../board/fixtures.ts";
 import { liveBoard, saidBy, type Region, type Seat } from "../board/live.ts";
 import type { Task } from "../board/task.ts";
 import { timeAgo } from "../format/time.ts";
+import { reducedMotion } from "../design/motion.ts";
 
 const CW = 200;
 const PITCH = 67;
@@ -16,8 +17,6 @@ const OLD = [0.6, 0.4, 0.25, 0.15];
 
 type Point = { x: number; y: number };
 type Burst = { key: number; seat: string };
-
-const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function layout(regions: Region[], w: number) {
   const placed = regions
@@ -120,7 +119,7 @@ export function LivePage({
   const [flash, setFlash] = useState(0);
   useEffect(() => {
     const busy = seats.filter((s) => !s.idle);
-    if (!busy.length || still()) return;
+    if (!busy.length || reducedMotion()) return;
     let key = 0;
     let t: ReturnType<typeof setTimeout>;
     const fire = () => {
@@ -208,7 +207,7 @@ export function LivePage({
                   strokeOpacity={0.35 + s.weight * 0.25}
                   data-seat={s.id}
                 />
-                {!still() &&
+                {!reducedMotion() &&
                   Array.from({ length: n }, (_, i) => (
                     <circle
                       key={i}
@@ -243,7 +242,7 @@ export function LivePage({
                   strokeOpacity={i ? OLD[i - 1] : 0.9}
                   data-seat={`${p.from} ${p.to}`}
                 />
-                {i === 0 && !still() && (
+                {i === 0 && !reducedMotion() && (
                   <circle className={`run ${on([p.from, p.to]) ?? ""}`} r={4.5} data-seat={`${p.from} ${p.to}`}>
                     <animateMotion dur="2.6s" repeatCount="indefinite" path={d} />
                   </circle>
