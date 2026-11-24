@@ -41,7 +41,7 @@ function TipCard({ tip }: { tip?: Tip }) {
   return createPortal(
     <div
       ref={ref}
-      className="h-tip"
+      className="home-tip"
       role="tooltip"
       style={{ left: left ?? tip.x, top: tip.y, ...style({ "--tip-dx": `${tip.x - (left ?? tip.x)}px` }) }}
     >
@@ -83,13 +83,13 @@ function clock(at: Date, short = false) {
 }
 
 function Panel({ className = "", children }: { className?: string; children: ReactNode }) {
-  return <section className={`h-panel ${className}`}>{children}</section>;
+  return <section className={`home-panel ${className}`}>{children}</section>;
 }
 
 function Spark({ values, tone }: { values: number[]; tone: "violet" | "red" | "green" }) {
   const top = Math.max(...values, 1);
   return (
-    <span className="h-spark" aria-hidden>
+    <span className="home-spark" aria-hidden>
       {values.map((v, i) => (
         <i
           key={i}
@@ -117,17 +117,17 @@ function Kpi({
   tone: "violet" | "red" | "green";
 }) {
   return (
-    <div className="h-kpi">
-      <div className="h-kpi-l">
+    <div className="home-kpi">
+      <div className="home-kpi-l">
         {ic(icon, 14)}
         {label}
       </div>
-      <div className="h-kpi-b">
+      <div className="home-kpi-b">
         <div>
-          <div className="h-kpi-v" data-count>
+          <div className="home-kpi-v" data-count>
             {value}
           </div>
-          <div className="h-kpi-s">{sub}</div>
+          <div className="home-kpi-s">{sub}</div>
         </div>
         <Spark values={spark} tone={tone} />
       </div>
@@ -167,51 +167,58 @@ function Chart({ f, onTip }: { f: Forecast; onTip: (tip?: Tip) => void }) {
   const goal = y(f.goal);
 
   return (
-    <div ref={ref} className="h-chart">
+    <div ref={ref} className="home-chart">
       {w > 0 && (
         <>
           <svg width={w} height={CH} role="img" aria-label="Open tasks over the next hours, with and without the agents">
             <defs>
-              <linearGradient id="h-bar" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="var(--h-bar-a)" />
-                <stop offset="1" stopColor="var(--h-bar-b)" />
+              <linearGradient id="home-bar" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="var(--home-bar-top)" />
+                <stop offset="1" stopColor="var(--home-bar-bottom)" />
               </linearGradient>
             </defs>
             {[0, 10, 20, 30].map((v) => (
-              <text key={v} x={PAD.l - 14} y={y(v) + 4} textAnchor="end" className="h-axis">
+              <text key={v} x={PAD.l - 14} y={y(v) + 4} textAnchor="end" className="home-axis">
                 {v}
               </text>
             ))}
-            <rect className="h-band" x={PAD.l} y={goal} width={w - PAD.l - PAD.r} height={base - goal} />
-            <line className="h-goal" x1={PAD.l} x2={w - PAD.r} y1={goal} y2={goal} />
-            <text className="h-band-t" x={PAD.l + 10} y={goal + 19}>
+            <rect className="home-band" x={PAD.l} y={goal} width={w - PAD.l - PAD.r} height={base - goal} />
+            <line className="home-goal" x1={PAD.l} x2={w - PAD.r} y1={goal} y2={goal} />
+            <text className="home-band-t" x={PAD.l + 10} y={goal + 19}>
               Goal zone, under {f.goal} open
             </text>
             {f.hours.map((_, i) =>
               i === 0 ? null : (
                 <rect
                   key={i}
-                  className={`h-bar ${on === i ? "on" : ""}`}
+                  className={`home-bar ${on === i ? "on" : ""}`}
                   style={style({ "--d": `${120 + i * 45}ms` })}
                   x={x(i) - 6}
                   y={y(f.without[i]!)}
                   width={12}
                   height={Math.max(12, y(f.withAgents[i]!) - y(f.without[i]!))}
                   rx={6}
-                  fill="url(#h-bar)"
+                  fill="url(#home-bar)"
                 />
               ),
             )}
-            <path className="h-line" d={line} pathLength={1} />
+            <path className="home-line" d={line} pathLength={1} />
             {f.hours.map((_, i) =>
               i === 0 ? null : (
-                <circle key={i} className="h-hollow" style={style({ "--d": `${300 + i * 45}ms` })} cx={x(i)} cy={y(f.without[i]!)} r={4.5} />
+                <circle key={i} className="home-hollow" style={style({ "--d": `${300 + i * 45}ms` })} cx={x(i)} cy={y(f.without[i]!)} r={4.5} />
               ),
             )}
             {f.withAgents.map((v, i) => (
-              <circle key={i} className={i ? "h-dot" : "h-now"} style={style({ "--d": `${400 + i * 45}ms` })} cx={x(i)} cy={y(v)} r={i ? 5.5 : 5} />
+              <circle
+                key={i}
+                className={i ? "home-dot" : "home-now"}
+                style={style({ "--d": `${400 + i * 45}ms` })}
+                cx={x(i)}
+                cy={y(v)}
+                r={i ? 5.5 : 5}
+              />
             ))}
-            {on !== undefined && <line className="h-guide" x1={x(on)} x2={x(on)} y1={PAD.t - 6} y2={base} />}
+            {on !== undefined && <line className="home-guide" x1={x(on)} x2={x(on)} y1={PAD.t - 6} y2={base} />}
             {f.hours.map((h, i) => {
               const step = n > 1 ? span / (n - 1) : span;
               const lands = f.lands[i] ?? [];
@@ -235,7 +242,7 @@ function Chart({ f, onTip }: { f: Forecast; onTip: (tip?: Tip) => void }) {
               return (
                 <rect
                   key={`hit${i}`}
-                  className="h-hit"
+                  className="home-hit"
                   x={x(i) - step / 2}
                   y={PAD.t - 10}
                   width={step}
@@ -253,23 +260,23 @@ function Chart({ f, onTip }: { f: Forecast; onTip: (tip?: Tip) => void }) {
               );
             })}
             {f.hours.map((h, i) => (
-              <text key={i} x={x(i)} y={CH - 8} textAnchor="middle" className={`h-axis ${i ? "" : "first"}`}>
+              <text key={i} x={x(i)} y={CH - 8} textAnchor="middle" className={`home-axis ${i ? "" : "first"}`}>
                 {clock(h, true)}
               </text>
             ))}
           </svg>
-          <span className="h-pill" style={{ left: x(0), top: y(f.withAgents[0]!) - 32 }}>
+          <span className="home-pill" style={{ left: x(0), top: y(f.withAgents[0]!) - 32 }}>
             Now {f.withAgents[0]}
           </span>
           {gaps[most]! > 0 && (
-            <span className="h-pill v" style={{ left: x(most), top: y(f.without[most]!) - 30 }}>
+            <span className="home-pill v" style={{ left: x(most), top: y(f.without[most]!) - 30 }}>
               {gaps[most]} fewer open
             </span>
           )}
           {f.marks.length > 0 && (
-            <div className="h-marks" style={{ paddingLeft: Math.max(0, x(f.marks[0]!.at) - 30) }}>
+            <div className="home-marks" style={{ paddingLeft: Math.max(0, x(f.marks[0]!.at) - 30) }}>
               {f.marks.map((m) => (
-                <span key={m.at} className="h-pill v flat">
+                <span key={m.at} className="home-pill v flat">
                   {ic(m.what === "claims" ? ListTodo : GitMerge, 13)}
                   {m.n} {m.what === "reviewed" ? "reviewed tasks land" : m.what === "claims" ? "claims finish" : "tasks land"}
                 </span>
@@ -308,9 +315,9 @@ export function HomePage({ tasks, activity, now, onOpenTask, onAgents }: Props) 
 
   return (
     <Page layout="wide" theme="home">
-      <div className="h-grid">
-        <div className="h-col">
-          <header className="h-head">
+      <div className="home-grid">
+        <div className="home-col">
+          <header className="home-head">
             <div>
               <h1>Command center</h1>
               <p>
@@ -318,12 +325,12 @@ export function HomePage({ tasks, activity, now, onOpenTask, onAgents }: Props) 
                 1 min ago
               </p>
             </div>
-            <span className="h-badge green">
+            <span className="home-badge green">
               <i />
               Daemon live
             </span>
           </header>
-          <Panel className="h-kpis">
+          <Panel className="home-kpis">
             <Kpi
               icon={CircleCheck}
               label="Done"
@@ -367,33 +374,33 @@ export function HomePage({ tasks, activity, now, onOpenTask, onAgents }: Props) 
           </Panel>
 
           <Panel>
-            <div className="h-ph">
+            <div className="home-ph">
               <div>
                 <h2>Live file board</h2>
                 <p>Every file of the repository, by area. Violet files are held by a task's claim.</p>
               </div>
-              <ul className="h-legend">
+              <ul className="home-legend">
                 {MARKS.map((m) => (
                   <li key={m.mark}>
-                    <i className={`h-sq ${m.mark}`} />
+                    <i className={`home-sq ${m.mark}`} />
                     {m.name}
                     <b>{counts[m.mark]}</b>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="h-areas">
+            <div className="home-areas">
               {areas.map((a, i) => (
-                <div key={a.path} className="h-area fx-stagger" style={style({ "--d": `${i * 40}ms` })}>
-                  <div className="h-area-h">
+                <div key={a.path} className="home-area fx-stagger" style={style({ "--d": `${i * 40}ms` })}>
+                  <div className="home-area-h">
                     <span>{a.name}</span>
                     <b className={a.free < 90 ? "red" : a.free < 95 ? "amber" : ""}>{a.free}%</b>
                   </div>
-                  <div className="h-sqs" onMouseLeave={() => setTip(undefined)}>
+                  <div className="home-sqs" onMouseLeave={() => setTip(undefined)}>
                     {a.cells.map((c, j) => (
                       <i
                         key={j}
-                        className={`h-sq ${c.mark} ${c.task ? "link" : ""}`}
+                        className={`home-sq ${c.mark} ${c.task ? "link" : ""}`}
                         onMouseEnter={(e) => setTip(above(e.currentTarget, cellTip(a, c)))}
                         onClick={
                           c.task &&
@@ -411,31 +418,31 @@ export function HomePage({ tasks, activity, now, onOpenTask, onAgents }: Props) 
           </Panel>
 
           <Panel>
-            <div className="h-ph">
+            <div className="home-ph">
               <div>
                 <h2>Open tasks, next {span} hours</h2>
                 <p>Each bar is the gap the {f.held} tasks the agents hold close</p>
               </div>
-              <div className="h-chart-tools">
-                <ul className="h-legend">
+              <div className="home-chart-tools">
+                <ul className="home-legend">
                   <li>
-                    <i className="h-key dot" />
+                    <i className="home-key dot" />
                     With the agents
                   </li>
                   <li>
-                    <i className="h-key ring" />
+                    <i className="home-key hollow" />
                     Without them
                   </li>
                   <li>
-                    <i className="h-key cap" />
+                    <i className="home-key cap" />
                     Tasks closed
                   </li>
                   <li>
-                    <i className="h-key zone" />
+                    <i className="home-key zone" />
                     Goal zone
                   </li>
                 </ul>
-                <div className="h-seg" role="group" aria-label="Span">
+                <div className="home-seg" role="group" aria-label="Span">
                   {([12, 24] as const).map((s) => (
                     <button key={s} type="button" className={span === s ? "on" : ""} aria-pressed={span === s} onClick={() => setSpan(s)}>
                       {s}h
@@ -444,35 +451,35 @@ export function HomePage({ tasks, activity, now, onOpenTask, onAgents }: Props) 
                 </div>
               </div>
             </div>
-            <div className="h-chart-b">
+            <div className="home-chart-b">
               <Chart key={chartKey} f={f} onTip={setTip} />
-              <div className="h-stats">
+              <div className="home-stats">
                 <div>
-                  <div className="h-stat-l">
+                  <div className="home-stat-l">
                     {ic(Clock, 14)}
                     Landed by agents
                   </div>
-                  <div className="h-stat-v violet">
+                  <div className="home-stat-v violet">
                     <b data-count>{byAgents}</b>
                     <span>next {span} hours</span>
                   </div>
                 </div>
                 <div>
-                  <div className="h-stat-l">
+                  <div className="home-stat-l">
                     {ic(CircleGauge, 14)}
                     Open at {clock(f.hours[end]!)}
                   </div>
-                  <div className="h-stat-v">
+                  <div className="home-stat-v">
                     <b data-count>{f.withAgents[end]}</b>
                     <span>vs {f.without[end]} without them</span>
                   </div>
                 </div>
                 <div>
-                  <div className="h-stat-l">
+                  <div className="home-stat-l">
                     {ic(CircleCheck, 14)}
                     Under goal from
                   </div>
-                  <div className="h-stat-v green">
+                  <div className="home-stat-v green">
                     <b>{under < 0 ? "Never" : clock(f.hours[under]!)}</b>
                     <span>never without them</span>
                   </div>
@@ -482,15 +489,15 @@ export function HomePage({ tasks, activity, now, onOpenTask, onAgents }: Props) 
           </Panel>
         </div>
 
-        <div className="h-col">
+        <div className="home-col">
           <Panel>
-            <div className="h-ph">
+            <div className="home-ph">
               <h2>Agents live</h2>
-              <span className="h-badge green">{live} active</span>
+              <span className="home-badge green">{live} active</span>
             </div>
-            <div className="h-agents">
+            <div className="home-agents">
               {tools.map((t) => (
-                <button key={t.tool} type="button" className="h-agent" onClick={onAgents}>
+                <button key={t.tool} type="button" className="home-agent" onClick={onAgents}>
                   <ToolMark tool={t.tool} size={20} />
                   <b>{TOOL_LABEL[t.tool]}</b>
                   <span>{t.what}</span>
