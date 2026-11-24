@@ -7,7 +7,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   icon?: LucideIcon;
   /** Anything else drawn where the icon goes, such as a status mark. */
   lead?: ReactNode;
-  /** The key that does the same, shown at the right. */
+  /** The key that does the same, shown at the right; while the menu is open, that key presses the item. */
   keys?: string;
   /** The choice that is made, ticked at the right. */
   checked?: boolean;
@@ -17,7 +17,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 /** A row of a menu in a Pop. A press on it closes the menu unless it carries data-keep. */
 export function MenuItem({ icon, lead, keys, checked, danger, className, children, ...rest }: Props) {
   return (
-    <button type="button" className={cx("mi", danger && "danger", className)} {...rest}>
+    <button type="button" className={cx("mi", danger && "danger", className)} data-keys={keys?.toUpperCase()} {...rest}>
       {icon && ic(icon, 15)}
       {lead}
       {children}

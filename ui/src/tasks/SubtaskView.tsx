@@ -1,7 +1,8 @@
 import { ArrowLeft, ArrowUpRight, ChevronLeft, ChevronRight, Folder, Trash2, User } from "lucide-react";
-import { useEffect } from "react";
+
 import { TOOL_LABEL, type Task } from "../board/task.ts";
 import { Button } from "../design/components/Button.tsx";
+import { useEscape } from "../design/components/escape.ts";
 import { ic } from "../design/components/icon.tsx";
 import { KeyValues } from "../design/components/KeyValues.tsx";
 import { toast } from "../design/components/toast.ts";
@@ -27,15 +28,7 @@ export function SubtaskView({
   const i = t.subtasks.findIndex((s) => s.id === id);
   const s = t.subtasks[i];
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      event.stopPropagation();
-      onClose();
-    };
-    addEventListener("keydown", onKey, true);
-    return () => removeEventListener("keydown", onKey, true);
-  }, [onClose]);
+  useEscape(onClose);
 
   if (!s) return null;
   return (

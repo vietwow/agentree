@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useEscape } from "./escape.ts";
 
 type Props = {
   anchor: HTMLElement;
@@ -15,7 +16,7 @@ type Props = {
 const GAP = 4;
 const EDGE = 8;
 
-/** A menu or picker anchored on the control that opened it; Escape or a press outside closes it. */
+/** A menu or picker anchored on the control that opened it; Escape, a press outside, or an item's key closes it. */
 export function Pop({ anchor, onClose, width, role = "menu", label, className = "", style, children }: Props) {
   const box = useRef<HTMLDivElement>(null);
   const [place, setPlace] = useState<CSSProperties>({ visibility: "hidden" });
@@ -33,12 +34,20 @@ export function Pop({ anchor, onClose, width, role = "menu", label, className = 
     setPlace((now) => (now.left === left && now.top === top ? now : { left, top }));
   });
 
+  useEscape(() => {
+    onClose();
+    anchor.focus();
+  });
+
   useLayoutEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      const typing = (event.target as Element).matches?.("input, textarea, [contenteditable='true']");
+      const shortcut = event.key.length === 1 && !typing && !event.metaKey && !event.ctrlKey && !event.altKey;
+      const item = shortcut && box.current?.querySelector<HTMLElement>(`.mi[data-keys="${CSS.escape(event.key.toUpperCase())}"]:not(:disabled)`);
+      if (item) {
+        event.preventDefault();
         event.stopPropagation();
-        onClose();
-        anchor.focus();
+        item.click();
         return;
       }
       if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;

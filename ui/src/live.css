@@ -215,7 +215,7 @@
     border: 1px solid var(--line);
     border-radius: 10px;
     background: var(--surface);
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--live-card-shadow);
     text-align: left;
     font-size: 14px;
     color: var(--ink-2);
@@ -359,7 +359,7 @@
     border: 1px solid var(--line-strong);
     border-radius: 14px;
     background: var(--surface);
-    box-shadow: var(--shadow-pop);
+    box-shadow: var(--live-pop-shadow);
     font-size: 14px;
     color: var(--ink-2);
     animation: fade-in var(--dur-2) var(--ease) both;

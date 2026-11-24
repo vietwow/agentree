@@ -46,6 +46,7 @@
   --primary-fill-hover: none;
   --primary-disabled: var(--primary);
   --on-primary-disabled: var(--on-primary);
+  --primary-disabled-opacity: 0.45;
   --primary-ring: var(--accent);
   --primary-ring-offset: 1px;
   --shadow-primary-hover: var(--shadow-primary);
@@ -67,6 +68,13 @@
   --rose: var(--rose-600);
   --orange: var(--orange-600);
   --gray: var(--stone-450);
+
+  /* The side bar's rows; a surface that stays dark in both themes, and what is written on it; a switch's knob. */
+  --nav-ink: var(--ink-2);
+  --inverse: var(--zinc-800);
+  --on-inverse: var(--zinc-50);
+  --on-inverse-2: var(--zinc-350);
+  --knob: var(--stone-0);
 
   /* A box that stands a little off its tray: a lit top edge, a darker foot. */
   --lift-top: var(--stone-0);
@@ -110,6 +118,7 @@
   --primary-hover: var(--gold-250);
   --primary-pressed: var(--gold-500);
   --primary-disabled: var(--gold-800);
+  --primary-disabled-opacity: 1;
   --primary-fill: linear-gradient(to bottom, var(--primary-top), var(--primary));
   --primary-fill-hover: linear-gradient(to bottom, var(--primary-top-hover), var(--primary-hover));
   --primary-ring: var(--primary);
@@ -127,6 +136,8 @@
   --rose: var(--rose-300);
   --orange: var(--orange-400);
   --gray: var(--zinc-450);
+  --nav-ink: var(--zinc-150);
+  --inverse: var(--zinc-725);
   --pc-mix: 72%;
 
   --lift-top: var(--zinc-800);
@@ -139,6 +150,8 @@
   --shadow-card: 0 0 0 1px var(--line);
   --shadow-pop: 0 16px 40px -10px rgb(0 0 0 / 0.6), 0 0 0 1px var(--line-strong);
   --shadow-drag: 0 18px 40px -10px rgb(0 0 0 / 0.7), 0 0 0 1px var(--line-strong);
+  --shadow-drawer: -24px 0 48px -16px rgb(0 0 0 / 0.7);
+  --shadow-tip: 0 8px 22px rgb(0 0 0 / 0.5), 0 0 0 1px var(--line-strong);
   --shadow-primary:
     0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent), 0 6px 22px -8px color-mix(in srgb, var(--primary) 45%, transparent);
   --shadow-primary-hover:

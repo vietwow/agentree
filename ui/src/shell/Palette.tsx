@@ -2,6 +2,7 @@ import { Command, FolderKanban, Layers, ListChecks, Search, SearchX } from "luci
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Badge } from "../design/components/Badge.tsx";
+import { useEscape } from "../design/components/escape.ts";
 import { ic } from "../design/components/icon.tsx";
 
 export type PaletteItem = {
@@ -102,11 +103,9 @@ export function Palette({ mode: start, idle, commands, tasks, projects, suggeste
     } else if (event.key === "Backspace" && !q && mode === "search") {
       setMode("cmd");
       setHl(0);
-    } else if (event.key === "Escape") {
-      event.stopPropagation();
-      onClose();
     }
   };
+  useEscape(onClose);
 
   let index = 0;
   return createPortal(

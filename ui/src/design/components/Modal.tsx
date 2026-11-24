@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { IconButton } from "./Button.tsx";
+import { useEscape } from "./escape.ts";
 import { ic } from "./icon.tsx";
 
 type Props = {
@@ -20,18 +21,9 @@ export function Modal({ title, sub, size = "", onClose, children, foot }: Props)
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
     box.current?.querySelector<HTMLElement>("[autofocus], .modal-b button, .modal-h button")?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.stopPropagation();
-        onClose();
-      }
-    };
-    addEventListener("keydown", onKey, true);
-    return () => {
-      removeEventListener("keydown", onKey, true);
-      opener?.focus();
-    };
-  }, [onClose]);
+    return () => opener?.focus();
+  }, []);
+  useEscape(onClose);
 
   return createPortal(
     <>

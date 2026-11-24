@@ -214,11 +214,12 @@ function Projects({ projects, project, page, inProject, onProject, onReorder, on
               tabIndex={0}
               onClick={() => onProject(p.id, "board")}
               onKeyDown={(event) => {
-                if (event.key === "Enter") onProject(p.id, "board");
+                if (event.key === "Enter" && event.target === event.currentTarget) onProject(p.id, "board");
               }}
               {...(collapsed ? { "data-tip": p.name, "data-tip-pos": "right" } : {})}
             >
-              <span
+              <button
+                type="button"
                 className="pico"
                 style={{ "--c": p.color } as React.CSSProperties}
                 onClick={(event) => {
@@ -228,15 +229,15 @@ function Projects({ projects, project, page, inProject, onProject, onReorder, on
                 aria-label="Toggle sub-pages"
               >
                 {ic(p.icon, 12)}
-              </span>
+              </button>
               <span className="trunc">{p.name}</span>
               {stars.has(`project:${p.id}`) && <span className="fav">{ic(Star, 11)}</span>}
               {p.private && <span className="faint ml-1">{ic(Lock, 11)}</span>}
               <span className="sdot" style={{ background: status.color }} title={status.name} />
               <span className="hov">
-                <span
+                <button
+                  type="button"
                   className="ibtn ibtn-xs"
-                  role="button"
                   aria-label="Project options"
                   onClick={(event) => {
                     event.stopPropagation();
@@ -244,10 +245,10 @@ function Projects({ projects, project, page, inProject, onProject, onReorder, on
                   }}
                 >
                   {ic(Ellipsis, 14)}
-                </span>
-                <span
+                </button>
+                <button
+                  type="button"
                   className="ibtn ibtn-xs"
-                  role="button"
                   aria-label="Expand"
                   onClick={(event) => {
                     event.stopPropagation();
@@ -255,7 +256,7 @@ function Projects({ projects, project, page, inProject, onProject, onReorder, on
                   }}
                 >
                   {ic(ChevronRight, 13, `chev ${open ? "open" : ""}`)}
-                </span>
+                </button>
               </span>
             </div>
             <div className={`sub ${open && !collapsed ? "open" : ""}`}>

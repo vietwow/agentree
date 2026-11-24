@@ -33,7 +33,8 @@ export const NEW_VIEW: View = {
 
 export function savedView(): View {
   try {
-    return { ...NEW_VIEW, ...JSON.parse(localStorage.getItem(KEY) ?? "{}") };
+    const saved: unknown = JSON.parse(localStorage.getItem(KEY) ?? "{}");
+    return typeof saved === "object" && saved !== null && !Array.isArray(saved) ? { ...NEW_VIEW, ...saved } : NEW_VIEW;
   } catch {
     return NEW_VIEW;
   }

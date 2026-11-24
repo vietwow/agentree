@@ -17,8 +17,6 @@
   --ink-inv: var(--paper-75);
   --good: var(--jade-500);
   --warn: var(--ochre-700);
-  --shadow-card: 0 1px 2px rgb(27 26 23 / 0.04), 0 6px 18px rgb(27 26 23 / 0.05);
-  --shadow-pop: 0 14px 44px rgb(27 26 23 / 0.16);
 
   --live-organism: var(--paper-25);
   --live-site: var(--paper-300);
@@ -27,6 +25,8 @@
   --live-glow: color-mix(in srgb, var(--ochre-300) 95%, transparent);
   --live-wash-in: 24%;
   --live-wash-mid: 8%;
+  --live-card-shadow: 0 1px 2px rgb(27 26 23 / 0.04), 0 6px 18px rgb(27 26 23 / 0.05);
+  --live-pop-shadow: 0 14px 44px rgb(27 26 23 / 0.16);
 }
 .dark .page.live {
   --surface: var(--zinc-800);
@@ -41,8 +41,6 @@
   --ink-inv: var(--zinc-925);
   --good: var(--jade-400);
   --warn: var(--ochre-400);
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 18px rgb(0 0 0 / 0.35);
-  --shadow-pop: 0 14px 44px rgb(0 0 0 / 0.55);
 
   --live-organism: var(--zinc-850);
   --live-site: var(--zinc-650);
@@ -50,4 +48,6 @@
   --live-halo: color-mix(in srgb, var(--good) 45%, transparent);
   --live-wash-in: 20%;
   --live-wash-mid: 6%;
+  --live-card-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 18px rgb(0 0 0 / 0.35);
+  --live-pop-shadow: 0 14px 44px rgb(0 0 0 / 0.55);
 }

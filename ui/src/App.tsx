@@ -6,6 +6,7 @@ import { fixtureProjects } from "./board/projects.ts";
 import { isClaimed, openQuestions, stats } from "./board/summary.ts";
 import { STATUS_LABEL, type Status, type Task } from "./board/task.ts";
 import { useTicks, withTicks } from "./board/ticks.ts";
+import { useEscape } from "./design/components/escape.ts";
 import { ic } from "./design/components/icon.tsx";
 import { toast } from "./design/components/toast.ts";
 import { countUp, reducedMotion } from "./design/motion.ts";
@@ -35,6 +36,16 @@ import { StatusIcon } from "./ui/StatusIcon.tsx";
 const SIDE_KEY = "agentree.sidebar";
 const ORDER_KEY = "agentree.projectOrder";
 
+/** The order the owner dragged the projects into; nothing when the browser holds none or something unreadable. */
+function savedOrder(): string[] {
+  try {
+    const value: unknown = JSON.parse(localStorage.getItem(ORDER_KEY) ?? "[]");
+    return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 const notBuilt = (what: string) => toast(`${what} is not built yet`, { kind: "info", ms: 2200 });
 
 export function App() {
@@ -57,7 +68,7 @@ export function App() {
   const [page, setPage] = useState<Page>("home");
   const [project, setProject] = useState("agentree");
   const [inProject, setInProject] = useState(false);
-  const [order, setOrder] = useState<string[]>(() => JSON.parse(localStorage.getItem(ORDER_KEY) ?? "[]"));
+  const [order, setOrder] = useState(savedOrder);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDE_KEY) === "collapsed");
   const [menuOpen, setMenuOpen] = useState(false);
   const [palette, setPalette] = useState<"cmd" | "search">();
@@ -154,23 +165,15 @@ export function App() {
 
   useEffect(() => {
     if (!menuOpen && !selected) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" || palette || shortcuts) return;
-      if (menuOpen) setMenuOpen(false);
-      else closePanel();
-    };
     const onPointer = (event: PointerEvent) => {
       const target = event.target as Element;
       if (!selected || panel.current?.contains(target) || target.closest("[data-opens-task], .pop, .modal-wrap, #toasts")) return;
       closePanel();
     };
-    addEventListener("keydown", onKey);
     addEventListener("pointerdown", onPointer);
-    return () => {
-      removeEventListener("keydown", onKey);
-      removeEventListener("pointerdown", onPointer);
-    };
-  }, [menuOpen, selected, closePanel, palette, shortcuts]);
+    return () => removeEventListener("pointerdown", onPointer);
+  }, [menuOpen, selected, closePanel]);
+  useEscape(() => (menuOpen ? setMenuOpen(false) : closePanel()), menuOpen || selected !== undefined);
 
   useEffect(() => {
     let pending = 0;

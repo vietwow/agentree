@@ -53,8 +53,6 @@
     place-items: center;
     font-size: var(--text-2xs);
     font-weight: 600;
-    color: #fff;
-    background: var(--c, #3a3934);
     flex-shrink: 0;
   }
   svg.logo {
@@ -106,9 +104,9 @@
     height: var(--side-row);
     padding: 0 8px;
     border-radius: var(--radius-sm);
-    color: var(--ink-2);
+    color: var(--nav-ink);
     font-size: var(--text-base);
-    font-weight: 450;
+    font-weight: var(--font-weight-book);
     text-align: left;
     transition:
       background var(--dur),
@@ -123,14 +121,11 @@
   .sitem.on {
     background: var(--surface);
     color: var(--ink);
-    box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.05),
-      0 0 0 1px var(--line);
+    box-shadow: var(--shadow-card);
     font-weight: 500;
   }
-  .dark .sitem,
   .dark .sitem .ct {
-    color: #e4e4e7;
+    color: var(--nav-ink);
   }
   .dark .sitem .i {
     color: var(--ink-2);
@@ -1063,7 +1058,7 @@
   }
   .pcard:hover {
     border-color: var(--line-strong);
-    box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-hover);
   }
   .pcard .desc {
     font-size: var(--text-sm);
@@ -1222,14 +1217,13 @@
     width: min(620px, 100vw);
     background: var(--float);
     border-left: 1px solid var(--line);
-    box-shadow: -18px 0 40px -24px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow-drawer);
     z-index: var(--z-drawer);
     display: flex;
     flex-direction: column;
   }
   .dark .drawer {
     border-left-color: var(--line-strong);
-    box-shadow: -24px 0 48px -16px rgba(0, 0, 0, 0.7);
   }
   .drawer.enter {
     animation: drawer-in var(--dur-5) var(--ease-drawer) both;

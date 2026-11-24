@@ -4,6 +4,7 @@ import { fixtureAgents } from "../board/fixtures.ts";
 import { liveBoard, saidBy, type Region, type Seat } from "../board/live.ts";
 import type { Task } from "../board/task.ts";
 import { Ago } from "../design/components/Ago.tsx";
+import { useEscape } from "../design/components/escape.ts";
 import { Page } from "../design/components/Page.tsx";
 import { count } from "../design/format/text.ts";
 import { reducedMotion } from "../design/motion.ts";
@@ -110,15 +111,12 @@ export function LivePage({
   useEffect(() => {
     if (!open) return;
     const close = (e: Event) => {
-      if (e instanceof KeyboardEvent ? e.key === "Escape" : !(e.target as Element).closest(".seat-card, .org-pop")) setOpen(undefined);
+      if (!(e.target as Element).closest(".seat-card, .org-pop")) setOpen(undefined);
     };
-    addEventListener("keydown", close);
     addEventListener("pointerdown", close);
-    return () => {
-      removeEventListener("keydown", close);
-      removeEventListener("pointerdown", close);
-    };
+    return () => removeEventListener("pointerdown", close);
   }, [open]);
+  useEscape(() => setOpen(undefined), open !== undefined);
 
   const [updated, setUpdated] = useState(() => new Date());
   const [bursts, setBursts] = useState<Burst[]>([]);

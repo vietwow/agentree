@@ -17,7 +17,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { toggleStar, useStars } from "../board/favorites.ts";
 import { PARENT_TITLES } from "../board/fixtures.ts";
-import { partsOf } from "../board/summary.ts";
+import { openQuestions, partsOf } from "../board/summary.ts";
 import { KIND_LABEL, STATUS_LABEL, TOOL_LABEL, type Status, type Task } from "../board/task.ts";
 import { useTicks } from "../board/ticks.ts";
 import { Button, IconButton } from "../design/components/Button.tsx";
@@ -175,7 +175,7 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
     const ch = kids(t.id);
     const parts = partsOf(t, tasks);
     const open = openRows[t.id];
-    const q = t.questions.length;
+    const q = openQuestions(t).length;
     return (
       <div key={t.id} className="contents">
         <div
@@ -192,19 +192,18 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
           </div>
           <div className="ttl" data-opens-task onClick={() => onOpen(t.id)}>
             {parts.total ? (
-              <span
+              <button
+                type="button"
                 className="ibtn ibtn-xs -ml-1"
-                role="button"
                 aria-label={`${open ? "Hide" : "Show"} subtasks`}
                 aria-expanded={!!open}
-
                 onClick={(e) => {
                   e.stopPropagation();
                   setOpenRows((now) => ({ ...now, [t.id]: !now[t.id] }));
                 }}
               >
                 {ic(open ? ChevronDown : ChevronRight, 13)}
-              </span>
+              </button>
             ) : (
               <span className="w-4.5 shrink-0" />
             )}
@@ -239,9 +238,9 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
             {ch.map((k) => (
               <div key={k.id} className={`subrow ${k.status === "done" ? "done" : ""}`}>
                 <StatusIcon status={k.status} />
-                <span className="cursor-pointer" role="button" tabIndex={0} data-opens-task onClick={() => onOpen(k.id)}>
+                <button type="button" className="cursor-pointer" data-opens-task onClick={() => onOpen(k.id)}>
                   {k.title}
-                </span>
+                </button>
               </div>
             ))}
             {t.subtasks.map((st) => (

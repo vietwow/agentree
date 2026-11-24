@@ -73,9 +73,7 @@
   right: 8px;
   border-radius: var(--radius-sm);
   background: var(--surface);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.05),
-    0 0 0 1px var(--line);
+  box-shadow: var(--shadow-card);
   pointer-events: none;
 }
 .dark .side-mark {
@@ -604,7 +602,7 @@
   .home-seg button.on {
     background: var(--card);
     color: var(--ink);
-    box-shadow: 0 1px 2px rgb(16 18 27 / 10%);
+    box-shadow: var(--shadow-sm);
   }
   .dark .home-seg {
     background: transparent;
@@ -874,11 +872,11 @@
   max-width: 320px;
   padding: 7px 10px;
   border-radius: 6px;
-  background: #1f2023;
-  color: #f2f2f3;
+  background: var(--inverse);
+  color: var(--on-inverse);
   font-size: var(--text-xs);
   line-height: 1.4;
-  box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
+  box-shadow: var(--shadow-tip);
   transform: translate(-50%, calc(-100% - 8px));
   pointer-events: none;
   animation: fade-in var(--dur-1) var(--ease) both;
@@ -897,11 +895,5 @@
   font-weight: 600;
 }
 .home-tip .faint {
-  color: #a9a9ae;
-}
-.dark .home-tip {
-  background: #2c2c30;
-  box-shadow:
-    0 8px 22px rgb(0 0 0 / 0.5),
-    0 0 0 1px var(--line-strong);
+  color: var(--on-inverse-2);
 }
