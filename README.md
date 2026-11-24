@@ -11,17 +11,18 @@ Status: being built while its first RFC,
 | -------------- | ------------------------------------------------------------------------------------------------------- |
 | `src/core/`    | Every rule of the board, as a library on Node alone: the task file, the board's two places, its changes |
 | `src/command/` | `agentree <subcommand>`: the core on the command line                                                   |
+| `src/daemon/`  | `agentree serve`: the HTTP API the UI reads and writes, the events, and the queue of heavy runs         |
 | `ui/`          | The web UI, on sample data ([`ui/README.md`](./ui/README.md))                                           |
 | `seed/`        | The origin's command and protocol, the material the core is split from                                  |
 
-The core holds the task file, the board on its branch `agentree/board`,
-the machine's state under the git common directory, and these changes:
-`init`, `new`, `claim` (with the task's tree), `beat`, `log`, `ask`,
-`answer`, `tick`, `scope`, `commit`, `submit` (with its checks),
-`release`, `review`, `accept`, `reject`, `land`, `option`, `move`,
-`promote` and `lint`. A check runs by the shell in the task's tree. The
-daemon, the queue of heavy runs, the project's container, MCP, memory
-and the kickstart of each tool are not built yet.
+Built: the task file, the board on its branch `agentree/board`, the
+machine's state under the git common directory, a task's whole way from
+`new` to `land`, the memory, what each session used, the documents, the
+machine's list of projects, the sessions of the tools, the queue of
+heavy runs, and the daemon with its API and its events. Not built yet:
+the project's container and what a run is measured to take, MCP, the
+kickstart of each tool, the demo project, and the UI reading the daemon
+in place of its sample data.
 
 ```sh
 pnpm install
