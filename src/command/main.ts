@@ -488,7 +488,7 @@ const COMMANDS: Record<string, () => unknown> = {
     );
   },
   reader() {
-    process.stdout.write(readFileSync(join(import.meta.dirname, "../clone/reader.js"), "utf8"));
+    process.stdout.write(readFileSync(join(import.meta.dirname, "../../extension/reader.js"), "utf8"));
   },
   record() {
     const config = cloneOf();

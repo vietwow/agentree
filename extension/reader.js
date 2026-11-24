@@ -4,21 +4,84 @@
 (() => {
   /** The computed properties every element is read by. */
   const ALWAYS = [
-    "display", "position", "box-sizing", "width", "height", "min-width", "max-width", "min-height", "max-height",
-    "padding-top", "padding-right", "padding-bottom", "padding-left", "margin-top", "margin-right", "margin-bottom", "margin-left",
-    "gap", "row-gap", "column-gap", "flex-direction", "flex-wrap", "align-items", "align-self", "justify-content",
-    "flex-grow", "flex-shrink", "flex-basis", "overflow-x", "overflow-y",
-    "border-top-width", "border-right-width", "border-bottom-width", "border-left-width",
-    "border-top-style", "border-right-style", "border-bottom-style", "border-left-style",
-    "border-top-color", "border-right-color", "border-bottom-color", "border-left-color",
-    "border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius",
-    "box-shadow", "outline-width", "outline-style", "outline-color", "outline-offset",
-    "background-color", "background-image", "color", "opacity",
-    "font-family", "font-size", "font-weight", "font-style", "line-height", "letter-spacing",
-    "text-transform", "text-align", "text-decoration-line", "text-decoration-style", "text-decoration-color",
-    "white-space", "text-overflow", "cursor",
-    "transition-property", "transition-duration", "transition-timing-function", "transition-delay",
-    "transform", "z-index", "visibility", "pointer-events", "vertical-align",
+    "display",
+    "position",
+    "box-sizing",
+    "width",
+    "height",
+    "min-width",
+    "max-width",
+    "min-height",
+    "max-height",
+    "padding-top",
+    "padding-right",
+    "padding-bottom",
+    "padding-left",
+    "margin-top",
+    "margin-right",
+    "margin-bottom",
+    "margin-left",
+    "gap",
+    "row-gap",
+    "column-gap",
+    "flex-direction",
+    "flex-wrap",
+    "align-items",
+    "align-self",
+    "justify-content",
+    "flex-grow",
+    "flex-shrink",
+    "flex-basis",
+    "overflow-x",
+    "overflow-y",
+    "border-top-width",
+    "border-right-width",
+    "border-bottom-width",
+    "border-left-width",
+    "border-top-style",
+    "border-right-style",
+    "border-bottom-style",
+    "border-left-style",
+    "border-top-color",
+    "border-right-color",
+    "border-bottom-color",
+    "border-left-color",
+    "border-top-left-radius",
+    "border-top-right-radius",
+    "border-bottom-right-radius",
+    "border-bottom-left-radius",
+    "box-shadow",
+    "outline-width",
+    "outline-style",
+    "outline-color",
+    "outline-offset",
+    "background-color",
+    "background-image",
+    "color",
+    "opacity",
+    "font-family",
+    "font-size",
+    "font-weight",
+    "font-style",
+    "line-height",
+    "letter-spacing",
+    "text-transform",
+    "text-align",
+    "text-decoration-line",
+    "text-decoration-style",
+    "text-decoration-color",
+    "white-space",
+    "text-overflow",
+    "cursor",
+    "transition-property",
+    "transition-duration",
+    "transition-timing-function",
+    "transition-delay",
+    "transform",
+    "z-index",
+    "visibility",
+    "pointer-events",
+    "vertical-align",
   ];
   /** The properties read only where they apply. */
   const GRID = ["grid-template-columns", "grid-template-rows", "grid-auto-flow"];
@@ -26,9 +89,44 @@
   const BACKGROUND = ["background-size", "background-position", "background-repeat"];
   const SVG = ["fill", "stroke", "stroke-width", "stroke-dasharray", "stroke-linecap", "stroke-linejoin"];
   /** The attributes that tell an element's state. */
-  const STATE = ["aria-expanded", "aria-selected", "aria-current", "aria-haspopup", "aria-hidden", "aria-checked", "aria-pressed", "aria-disabled", "disabled", "tabindex", "type", "placeholder"];
+  const STATE = [
+    "aria-expanded",
+    "aria-selected",
+    "aria-current",
+    "aria-haspopup",
+    "aria-hidden",
+    "aria-checked",
+    "aria-pressed",
+    "aria-disabled",
+    "disabled",
+    "tabindex",
+    "type",
+    "placeholder",
+  ];
   /** The role HTML gives a tag that names none. */
-  const ROLES = { a: "link", button: "button", nav: "navigation", hr: "separator", ul: "list", ol: "list", li: "listitem", h1: "heading", h2: "heading", h3: "heading", h4: "heading", input: "textbox", textarea: "textbox", select: "combobox", img: "img", table: "table", main: "main", header: "banner", footer: "contentinfo", aside: "complementary", dialog: "dialog" };
+  const ROLES = {
+    a: "link",
+    button: "button",
+    nav: "navigation",
+    hr: "separator",
+    ul: "list",
+    ol: "list",
+    li: "listitem",
+    h1: "heading",
+    h2: "heading",
+    h3: "heading",
+    h4: "heading",
+    input: "textbox",
+    textarea: "textbox",
+    select: "combobox",
+    img: "img",
+    table: "table",
+    main: "main",
+    header: "banner",
+    footer: "contentinfo",
+    aside: "complementary",
+    dialog: "dialog",
+  };
   /** The roles whose name is their text when nothing else names them. */
   const NAMED_BY_TEXT = ["button", "link", "tab", "menuitem", "option", "heading"];
   const MARK = "data-record";
@@ -49,7 +147,11 @@
     const labelled = el.getAttribute("aria-labelledby");
     const named =
       el.getAttribute("aria-label") ||
-      (labelled && labelled.split(/\s+/).map((id) => document.getElementById(id)?.textContent ?? "").join(" ")) ||
+      (labelled &&
+        labelled
+          .split(/\s+/)
+          .map((id) => document.getElementById(id)?.textContent ?? "")
+          .join(" ")) ||
       el.getAttribute("alt") ||
       el.getAttribute("title") ||
       el.getAttribute("placeholder") ||
@@ -60,7 +162,13 @@
   /** An element's own text: its direct text nodes; all its text when it holds no element. */
   function textOf(el) {
     if (!el.children.length) return short(el.textContent || "", 200);
-    return short([...el.childNodes].filter((node) => node.nodeType === Node.TEXT_NODE).map((node) => node.textContent).join(" "), 200);
+    return short(
+      [...el.childNodes]
+        .filter((node) => node.nodeType === Node.TEXT_NODE)
+        .map((node) => node.textContent)
+        .join(" "),
+      200,
+    );
   }
 
   function styleOf(el) {
@@ -79,8 +187,20 @@
 
   function iconOf(el) {
     const tag = el.tagName.toLowerCase();
-    if (tag === "svg") return { inline: true, viewBox: el.getAttribute("viewBox") || "", shapes: el.querySelectorAll("path, circle, rect, line, polyline, polygon, ellipse").length, hash: hash(el.innerHTML.replace(/\s+/g, " ").trim()) };
-    if (tag === "img") return { inline: false, width: el.naturalWidth, height: el.naturalHeight, hash: hash((el.currentSrc || el.src || "").split("?")[0].split("/").pop() || "") };
+    if (tag === "svg")
+      return {
+        inline: true,
+        viewBox: el.getAttribute("viewBox") || "",
+        shapes: el.querySelectorAll("path, circle, rect, line, polyline, polygon, ellipse").length,
+        hash: hash(el.innerHTML.replace(/\s+/g, " ").trim()),
+      };
+    if (tag === "img")
+      return {
+        inline: false,
+        width: el.naturalWidth,
+        height: el.naturalHeight,
+        hash: hash((el.currentSrc || el.src || "").split("?")[0].split("/").pop() || ""),
+      };
     return undefined;
   }
 
@@ -92,7 +212,17 @@
     for (const name of STATE) if (el.hasAttribute(name)) attrs[name] = el.getAttribute(name) || "";
     if (el.tagName === "A" && el.getAttribute("href")) attrs.href = el.getAttribute("href").split("?")[0];
     const icon = iconOf(el);
-    return { id, tag: el.tagName.toLowerCase(), role, name: nameOf(el, role), text: textOf(el), box: { x: round(box.x), y: round(box.y), width: round(box.width), height: round(box.height) }, style: styleOf(el), attrs, ...(icon ? { icon } : {}) };
+    return {
+      id,
+      tag: el.tagName.toLowerCase(),
+      role,
+      name: nameOf(el, role),
+      text: textOf(el),
+      box: { x: round(box.x), y: round(box.y), width: round(box.width), height: round(box.height) },
+      style: styleOf(el),
+      attrs,
+      ...(icon ? { icon } : {}),
+    };
   }
 
   /** An element's segment of an id: `role[name]` when it has a role, else what it is. */

@@ -13,6 +13,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 COPY src ./src
+COPY extension ./extension
 COPY rfcs/0001-agentree/standard ./rfcs/0001-agentree/standard
 COPY seed/icon-grab ./seed/icon-grab
 COPY --from=ui /app/ui/dist ./ui/dist

@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "agentree records",
+  "description": "Reads the elements of the page a measure task reads, and carries each record to the agentree daemon of this machine.",
+  "version": "0.1.0",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["http://127.0.0.1/*"],
+  "background": { "service_worker": "worker.js" },
+  "action": { "default_title": "agentree records", "default_popup": "popup.html" },
+  "commands": {
+    "record": {
+      "suggested_key": { "default": "Alt+Shift+R" },
+      "description": "Record the state the page shows now"
+    }
+  }
+}

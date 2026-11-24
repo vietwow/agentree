@@ -222,6 +222,21 @@ all of it; no value is written by hand.
    reason>"\` and in the inventory. It is never filled in.
 7. Tick the inventory as you go. Commit, write the Log entry, submit.
 
+## With the extension
+
+When the owner loaded agentree's extension in Chrome (the directory
+\`extension/\` of agentree, loaded unpacked) and set the daemon, the
+project, this task and the part in its popup, the reader is in the
+tab already and no text is carried by hand. Ask the page's window for
+each record, and read the answer there:
+
+    window.postMessage({ agentree: "record", state: "<name>" }, location.origin)
+
+The answer is a message \`{ agentree: "recorded", ok, text }\`. The
+record is written in this task's tree by the daemon. A state under
+the pointer is recorded by the extension's shortcut, pressed while
+the pointer stays where it is.
+
 A record that is there is not written again: \`agentree record\`
 refuses. When a reading was wrong, say so in the Log, remove that file
 in your tree, and read it again.

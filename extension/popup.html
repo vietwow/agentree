@@ -1,0 +1,63 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>agentree records</title>
+<style>
+  body {
+    width: 320px;
+    margin: 12px;
+    font:
+      13px/1.4 system-ui,
+      sans-serif;
+  }
+  h1 {
+    font-size: 14px;
+    margin: 0 0 8px;
+  }
+  label {
+    display: block;
+    margin-top: 8px;
+  }
+  input,
+  select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 6px;
+    font: inherit;
+  }
+  .row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  button {
+    flex: 1;
+    padding: 6px;
+    font: inherit;
+  }
+  #said {
+    margin-top: 8px;
+    min-height: 1.4em;
+  }
+</style>
+<h1>agentree records</h1>
+<label>The daemon's address <input id="address" placeholder="http://127.0.0.1:4517" /></label>
+<label>Its token <input id="token" type="password" /></label>
+<label>Project <input id="project" /></label>
+<label>The task that measures <input id="task" placeholder="T-0042" /></label>
+<label>Part <input id="part" placeholder="shell" /></label>
+<label>The part's root, a selector <input id="root" placeholder="body" /></label>
+<label
+  >Theme
+  <select id="theme">
+    <option>light</option>
+    <option>dark</option>
+  </select></label
+>
+<label>The state the shortcut records <input id="state" placeholder="base" /></label>
+<label>It differs from <input id="base" placeholder="base" /></label>
+<div class="row">
+  <button id="attach">Read this tab</button>
+  <button id="record">Record now</button>
+</div>
+<div id="said" role="status"></div>
+<script src="popup.js"></script>

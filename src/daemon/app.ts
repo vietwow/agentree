@@ -55,6 +55,9 @@ const OWNER: Actor = { worker: "person/owner", session: "", owner: true };
 
 export type Daemon = { token: string; queue: Queue; events: Events; now: () => Date; origins: string[] };
 
+/** Where a record is sent. */
+const RECORDS = /^\/api\/projects\/[^/]+\/records$/;
+
 /** How long a snapshot of a board that did not change stands for the board. */
 const SNAPSHOT_HOLDS_MS = 5000;
 
@@ -73,7 +76,13 @@ export function createApp(daemon: Daemon) {
 
   app.use("*", async (request, next) => {
     const origin = request.req.header("origin");
-    if (origin !== undefined && !daemon.origins.includes(origin)) return request.json({ error: "this origin is not the daemon's own" }, 403);
+    const bearer = request.req.header("authorization")?.replace(/^Bearer /, "");
+    // A browser's extension is another origin. It is let through for one thing, a record, and only with the token in
+    // its request: the cookie a page of another origin would ride on is not enough.
+    const carries =
+      origin?.startsWith("chrome-extension://") && bearer === daemon.token && request.req.method === "POST" && RECORDS.test(request.req.path);
+    if (origin !== undefined && !daemon.origins.includes(origin) && !carries)
+      return request.json({ error: "this origin is not the daemon's own" }, 403);
     const host = request.req.header("host") ?? "";
     if (!/^(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/.test(host))
       return request.json({ error: "the daemon answers on the loopback address only" }, 403);
@@ -82,7 +91,6 @@ export function createApp(daemon: Daemon) {
       setCookie(request, COOKIE, daemon.token, { httpOnly: true, sameSite: "Lax", path: "/" });
       return request.redirect(request.req.path);
     }
-    const bearer = request.req.header("authorization")?.replace(/^Bearer /, "");
     if (/^\/(api|mcp)\//.test(request.req.path) && getCookie(request, COOKIE) !== daemon.token && bearer !== daemon.token)
       return request.json({ error: "this request carries no token of the daemon; open the address `agentree serve` printed" }, 401);
     return next();

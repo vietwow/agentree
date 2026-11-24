@@ -12,7 +12,8 @@ import { compare, report, type Comparison, type Element } from "../core/clone/re
 import { wholeOf } from "../core/clone/records.ts";
 import { Refusal } from "../core/errors.ts";
 
-const READER = join(import.meta.dirname, "reader.js");
+/** The one reader: the extension's file, which a session adds to the reference and the comparison adds to the project's page. */
+const READER = join(import.meta.dirname, "../../extension/reader.js");
 /** How long the project's application is given to answer after it is started. */
 const STARTS_WITHIN_MS = 120_000;
 /** How long a page is given to settle after a step: its transitions end. */

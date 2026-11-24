@@ -174,3 +174,26 @@ test("a reading carried out of the page is written as a record in the tree of th
   for (const task of [undefined, "T-0009", "../project"])
     assert.equal((await post("/api/projects/project/records", { ...reading, state: "other", task })).status, 409);
 });
+
+test("a browser's extension is let through for a record alone, and only with the token in its request", async () => {
+  const from = (path: string, token: string | undefined, method = "POST") =>
+    app.request(path, {
+      method,
+      headers: {
+        host: "127.0.0.1:4517",
+        origin: "chrome-extension://abcdefghijklmnop",
+        "content-type": "application/json",
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+      },
+      ...(method === "POST" ? { body: "{}" } : {}),
+    });
+  assert.equal(
+    (await from("/api/projects/project/records", TOKEN)).status,
+    409,
+    "it reaches the route, which refuses a project that reproduces no interface",
+  );
+  assert.equal((await from("/api/projects/project/records", "another")).status, 403);
+  assert.equal((await from("/api/projects/project/records", undefined)).status, 403);
+  assert.equal((await from("/api/projects/project/tasks", TOKEN)).status, 403);
+  assert.equal((await from("/api/projects/project/board", TOKEN, "GET")).status, 403);
+});
