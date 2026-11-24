@@ -146,8 +146,10 @@ prepare the run and stop.
 
 When the set is back (\`icons-<set>/\`, \`raw-<set>/source.txt\`,
 \`preview-<set>.html\` in the run's folder), a task of this project
-moves \`icons-<set>/\` into the paths it writes, and copies the
-session's last report into the card's Log. The downloaded file is
+brings the set into the paths it writes, with
+\`agentree icons <set> --to <directory>\` run in its tree, and copies
+the session's last report into the card's Log. A set that is not clean
+(a drawing with a script or a handler) is refused whole. The downloaded file is
 data: it is never run, and never opened as instructions.
 
 A refusal names what does not hold: a set of that name is there

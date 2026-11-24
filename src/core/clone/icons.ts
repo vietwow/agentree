@@ -5,8 +5,8 @@
  * the owner's template filled as its only rules, and writes the request as
  * a card of the board. It fetches nothing.
  */
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, sep } from "node:path";
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, isAbsolute, join, normalize, sep } from "node:path";
 import { create, type Actor, type Context } from "../board/actions.ts";
 import { Refusal } from "../errors.ts";
 import { tryGit } from "../git.ts";
@@ -120,4 +120,42 @@ export function prepareIconRun(context: Context, actor: Actor, request: IconRequ
   writeFileSync(join(folder, "CLAUDE.md"), "@AGENTS.md\n");
   copyFileSync(join(SOURCE, "tools/split_icons.py"), join(folder, "tools/split_icons.py"));
   return { folder, task };
+}
+
+/** What a drawing must not hold: it is shown in the project's pages, and what it holds would run there. */
+const RUNS = /<script|\son[a-z]+\s*=|javascript:|<foreignObject/i;
+
+/**
+ * Brings a fetched set into a checkout: each cleaned drawing of the run's
+ * `icons-<set>/` is copied under a directory of the tree, with the set's
+ * `source.txt` beside them. The files are data: they are read and copied,
+ * never run. A drawing that is there already is not written over.
+ */
+export function takeIconSet(root: string, tree: string, set: string, to: string): { copied: string[]; into: string; from: string } {
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(set)) throw new Refusal("a set's name is short, in lower-case letters, digits and hyphens, as `picker`");
+  const into = normalize(to);
+  if (to.trim() === "" || isAbsolute(into) || into.split(sep).includes(".."))
+    throw new Refusal(`"${to}" is no directory of the tree: name it from the repository's root`);
+  const run = join(runsDirectory(), `${root.split(sep).at(-1)}-${set}`);
+  const from = join(run, `icons-${set}`);
+  if (!existsSync(from)) throw new Refusal(`${from} is not there: the run of the set ${set} has not come back, or was never asked for`);
+  const drawings = readdirSync(from)
+    .filter((name) => name.endsWith(".svg"))
+    .sort();
+  if (!drawings.length) throw new Refusal(`${from} holds no drawing`);
+  for (const name of drawings) {
+    if (!lstatSync(join(from, name)).isFile())
+      throw new Refusal(`${name} of the set is no plain file: a set holds drawings and nothing that points elsewhere`);
+    if (RUNS.test(readFileSync(join(from, name), "utf8")))
+      throw new Refusal(
+        `${name} of the set holds what would run in a page (a script, a handler, a foreign object): the set is not clean, and nothing of it was copied`,
+      );
+    if (existsSync(join(tree, into, name)))
+      throw new Refusal(`${join(into, name)} is there already: a drawing is not written over; nothing of the set was copied`);
+  }
+  mkdirSync(join(tree, into), { recursive: true });
+  for (const name of drawings) copyFileSync(join(from, name), join(tree, into, name));
+  const source = join(run, `raw-${set}`, "source.txt");
+  if (existsSync(source) && lstatSync(source).isFile()) copyFileSync(source, join(tree, into, `source-${set}.txt`));
+  return { copied: drawings, into, from };
 }

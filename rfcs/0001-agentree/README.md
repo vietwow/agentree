@@ -1439,6 +1439,13 @@ project then moves `icons-<set>/` into the paths it writes; the
 downloaded file is data, never run, and the script reads it with
 `python3 -I`, apart from it.
 
+The move is `agentree icons <set> --to <directory>`, run in the task's
+tree: it copies each `.svg` of `icons-<set>/` under that directory,
+and `source.txt` beside them as `source-<set>.txt`. It copies nothing
+when a drawing holds what would run in a page (a script, an event
+handler, a foreign object), when a file of the set is no plain file,
+or when a drawing of that name is there already.
+
 **Emoji.** A character of text is in the record as text and is fetched
 by nobody. A picture that stands for one is an `img` and is fetched as
 any picture. The template names inline `svg`, a sprite, `img`, a

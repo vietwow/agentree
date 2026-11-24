@@ -35,7 +35,7 @@ import { CONFIG_FILE, configOf, type CloneConfig } from "../core/board/config.ts
 import type { Element } from "../core/clone/record.ts";
 import { writeRecord } from "../core/clone/records.ts";
 import { partTasks } from "../core/clone/tasks.ts";
-import { prepareIconRun } from "../core/clone/icons.ts";
+import { prepareIconRun, takeIconSet } from "../core/clone/icons.ts";
 import { git } from "../core/git.ts";
 import { Refusal } from "../core/errors.ts";
 import { projects, register } from "../core/machine/projects.ts";
@@ -99,6 +99,7 @@ const USAGE = `Usage: agentree <subcommand> [options]
                                         write the reader's reading, its JSON on standard input, as the part's record in this checkout
   grab-icons --page <address> --where <steps> --set <name> [--range <words>] [--colour <words>] [--names <words>] [--committed]
                                         make the folder of a run that fetches a set of drawings, and its card; it fetches nothing
+  icons <set> --to <directory>          copy the cleaned drawings of a set that came back into this checkout, under its directory
   agent [T-NNNN] [--role build|review] -- <a tool's headless command>
                                         start a session of a tool, when the machine takes one more; its use is recorded
   demo <directory>                      make the sample projects there, and register them
@@ -125,6 +126,7 @@ const { values, positionals } = parseArgs({
     goal: { type: "string" },
     state: { type: "string" },
     base: { type: "string" },
+    to: { type: "string" },
     clone: { type: "string" },
     colours: { type: "string" },
     font: { type: "string" },
@@ -532,6 +534,11 @@ const COMMANDS: Record<string, () => unknown> = {
     say(
       `${task.fields.id} asks for the set. Its run's folder holds nothing of this project:\n  ${folder}\nOpen a tool that can drive Chrome in that folder, and tell it to follow AGENTS.md.`,
     );
+  },
+  icons() {
+    const at = context();
+    const { copied, into, from } = takeIconSet(at.places.root, git(process.cwd(), "rev-parse", "--show-toplevel"), rest[0] ?? "", values.to ?? "");
+    say(`${copied.length} drawings of ${from} are under ${into}/. Copy the last report of the session that fetched them into the Log of its card.`);
   },
   async doctor() {
     const at = context();
