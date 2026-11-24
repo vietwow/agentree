@@ -22,15 +22,16 @@ type Files = { mcp: string; hooks?: string; definitions?: string; reportsUse: To
 export const TOOL_FILES: Record<Exclude<Tool, "person">, Files> = {
   "claude-code": { mcp: ".mcp.json", hooks: ".claude/settings.json", definitions: ".claude/agents/agentree-worker.md", reportsUse: "full" },
   "claude-desktop": { mcp: ".mcp.json", reportsUse: "none" },
-  cursor: { mcp: ".cursor/mcp.json", hooks: ".cursor/hooks.json", definitions: ".cursor/agents/agentree-worker.md", reportsUse: "model only" },
+  cursor: { mcp: ".cursor/mcp.json", hooks: ".cursor/hooks.json", definitions: ".claude/agents/agentree-worker.md", reportsUse: "model only" },
   codex: { mcp: ".codex/config.toml", hooks: ".codex/hooks.json", definitions: ".codex/agents/agentree-worker.toml", reportsUse: "full" },
   antigravity: { mcp: ".agents/mcp_config.json", hooks: ".agents/hooks.json", definitions: ".agents/agents/agentree-worker.md", reportsUse: "full" },
 };
 
-/** The names of the hooks a tool's file sets to agentree: the keys of its `hooks` object whose text names agentree. */
+/** The names of the hooks a tool's file sets to agentree: the events, under `hooks` or under agentree's own group, whose text names agentree. */
 function hooksIn(file: string): string[] {
   try {
-    const hooks = (JSON.parse(readFileSync(file, "utf8")) as { hooks?: Record<string, unknown> }).hooks ?? {};
+    const set = JSON.parse(readFileSync(file, "utf8")) as { hooks?: Record<string, unknown>; agentree?: Record<string, unknown> };
+    const hooks = set.hooks ?? set.agentree ?? {};
     return Object.keys(hooks).filter((name) => JSON.stringify(hooks[name]).includes("agentree"));
   } catch {
     return [];

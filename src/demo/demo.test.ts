@@ -11,6 +11,7 @@ import { documentsView } from "../core/views/documents.ts";
 import { filesView } from "../core/views/files.ts";
 import { agentsView, milestonesView, projectView } from "../core/views/project.ts";
 import { taskDetailView, taskView } from "../core/views/tasks.ts";
+import { toolsView } from "../core/views/tools.ts";
 import { demo } from "./demo.ts";
 
 test("the demo makes four projects whose boards read as the sample the UI was built on", () => {
@@ -77,6 +78,16 @@ test("the demo makes four projects whose boards read as the sample the UI was bu
   assert.deepEqual(
     [sessions.length, sessions.find((session) => session.id === "7f3a21")?.subagents.map((sub) => sub.state)],
     [24, ["checking", "ended", "ended"]],
+  );
+  assert.deepEqual(
+    toolsView(places).map((tool) => [tool.tool, tool.mcp, tool.hooks.length > 0, tool.reviewsOwn]),
+    [
+      ["claude-code", true, true, false],
+      ["claude-desktop", true, false, false],
+      ["cursor", true, true, false],
+      ["codex", true, true, false],
+      ["antigravity", true, true, true],
+    ],
   );
   rmSync(home, { recursive: true, force: true });
 });

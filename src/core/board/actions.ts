@@ -6,7 +6,21 @@
 import { existsSync } from "node:fs";
 import { Refusal } from "../errors.ts";
 import { git, tryGit } from "../git.ts";
-import { DAEMON, ID_PATTERN, isWorker, KINDS, NEEDS, stamp, statusLine, type Kind, type Need, type Status, type Task } from "../task/model.ts";
+import {
+  CHECKED_KINDS,
+  DAEMON,
+  ID_PATTERN,
+  isWorker,
+  KINDS,
+  NEEDS,
+  stamp,
+  statusLine,
+  type Kind,
+  type Need,
+  type Status,
+  type Task,
+} from "../task/model.ts";
+import { configOf } from "./config.ts";
 import { TASK_BRANCH, treeOf, type Places } from "./places.ts";
 import type { Run } from "./run.ts";
 import { dependenciesDone, isHeld as held, nextId, obstacles, overlaps } from "./rules.ts";
@@ -101,7 +115,7 @@ export function create(context: Context, actor: Actor, input: NewTask): Task {
         writes: input.writes ?? [],
         appends: input.appends ?? [],
         needs: input.needs ?? [],
-        checks: input.checks ?? [],
+        checks: input.checks?.length || !CHECKED_KINDS.includes(input.kind) ? (input.checks ?? []) : configOf(context.places).checks,
         created: stamp(context.now()),
       },
       context: input.context?.trim() ?? "",

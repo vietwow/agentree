@@ -19,6 +19,7 @@ import {
   type Actor,
   type Context,
 } from "../core/board/actions.ts";
+import { onHook } from "../core/board/hooks.ts";
 import { init } from "../core/board/init.ts";
 import { accept, check, commit, land, reject, review, scope, submit, waitingToLand } from "../core/board/lifecycle.ts";
 import { setReviewOwnTasks } from "../core/board/options.ts";
@@ -35,11 +36,12 @@ import { demo } from "../demo/demo.ts";
 import { boardServer } from "../mcp/tools.ts";
 import { ask, projectIdOf } from "./daemon.ts";
 import { renderTask } from "../core/task/file.ts";
-import { KINDS, STATUSES, type Kind, type Need, type Tool } from "../core/task/model.ts";
+import { AGENT_TOOLS, setUp } from "../core/init/tools.ts";
+import { KINDS, STATUSES, TOOLS, type Kind, type Need, type Tool } from "../core/task/model.ts";
 
 const USAGE = `Usage: agentree <subcommand> [options]
 
-  init [--first-commit]                 make this repository's board
+  init [--first-commit] [--tools <tool,...>]   make this repository's board, and set it up for the tools
   board                                 every task by status, and who holds it
   next                                  the ready tasks that can be claimed now, and why the others cannot
   show T-NNNN                           the task as its file holds it
@@ -72,6 +74,7 @@ const USAGE = `Usage: agentree <subcommand> [options]
   projects                              the projects of this machine
   serve [--port <n>]                    the daemon: the UI and its API, on 127.0.0.1 only
   mcp                                   the board's MCP server on standard input and output, for this repository
+  hook <tool> <event>                   what a tool's hook tells the board; its JSON on standard input
   demo <directory>                      make the sample projects there, and register them
 
 Name yourself in AGENTREE_WORKER as <tool>/<model>; a session is told by
@@ -92,6 +95,7 @@ const { values, positionals } = parseArgs({
     "no-wait": { type: "boolean" },
     message: { type: "string", short: "m" },
     name: { type: "string" },
+    tools: { type: "string" },
     desc: { type: "string" },
     port: { type: "string" },
     title: { type: "string" },
@@ -157,6 +161,15 @@ const COMMANDS: Record<string, () => unknown> = {
     const { places, did } = init(process.cwd(), { firstCommit: values["first-commit"] ?? false });
     say(did.length ? did.map((line) => `- ${line}`).join("\n") : "the board is there already; nothing changed");
     say(`The board: ${places.board}\nThe owner's token: ${places.state}/owner-token`);
+    const tools = values.tools === undefined ? AGENT_TOOLS : (list([values.tools]) as Tool[]);
+    for (const tool of tools)
+      if (!(AGENT_TOOLS as readonly string[]).includes(tool))
+        throw new Refusal(`"${tool}" is no tool agentree sets a project up for: ${AGENT_TOOLS.join(", ")}`);
+    const report = setUp(places.root, tools);
+    if (report.did.length) say(`\nWritten into ${places.root} (commit them on main):\n${report.did.map((line) => `- ${line}`).join("\n")}`);
+    if (report.byHand.length) say(`\nLeft to you:\n${report.byHand.map((line) => `- ${line}`).join("\n")}`);
+    const project = register(places.root, new Date());
+    say(`\nThe project "${project.id}" of this machine. Run "agentree serve" for its board in the browser.`);
   },
   board() {
     const at = context();
@@ -373,6 +386,22 @@ const COMMANDS: Record<string, () => unknown> = {
   serve() {
     const daemon = startDaemon({ ...(values.port ? { port: Number(values.port) } : {}), ui: join(import.meta.dirname, "../../ui/dist") });
     say(`agentree serves ${projects().length} ${projects().length === 1 ? "project" : "projects"}. Open:\n  ${daemon.address}`);
+  },
+  hook() {
+    const [tool, event] = rest;
+    if (!tool || !event || !(TOOLS as readonly string[]).includes(tool))
+      throw new Refusal("a hook names its tool and its event, as: agentree hook claude-code PreToolUse");
+    const raw = process.stdin.isTTY ? "" : readFileSync(0, "utf8");
+    let input: Record<string, unknown> = {};
+    try {
+      input = raw.trim() ? (JSON.parse(raw) as Record<string, unknown>) : {};
+    } catch {
+      // A tool that sends no JSON is still let through: a hook never fails its tool.
+    }
+    const hooked = onHook(process.cwd(), tool as Tool, event, input, new Date());
+    if (hooked.stdout) process.stdout.write(`${hooked.stdout}\n`);
+    if (hooked.stderr) process.stderr.write(`${hooked.stderr}\n`);
+    process.exitCode = hooked.exit;
   },
   mcp() {
     const at = context();

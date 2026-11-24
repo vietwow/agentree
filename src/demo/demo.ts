@@ -16,6 +16,7 @@ import { putSession } from "../core/board/sessions.ts";
 import { createReview, putChecks, putClaim, putSubmission, type CheckRun } from "../core/board/state.ts";
 import { Refusal } from "../core/errors.ts";
 import { git } from "../core/git.ts";
+import { AGENT_TOOLS, setUp } from "../core/init/tools.ts";
 import { editProject, machineHome, register } from "../core/machine/projects.ts";
 import { fileName, renderTask } from "../core/task/file.ts";
 import {
@@ -232,6 +233,10 @@ function sample(directory: string, now: Date): Places {
   const rows = fixtureTasks(now);
   const details = new Map(rows.map((row) => [row.id, fixtureDetail(row, rows, now)]));
   const places = repository(directory, mainFiles(rows, details));
+  // The project is set up for every tool, as `agentree init` leaves one, before any tree is made from it.
+  setUp(places.root, AGENT_TOOLS);
+  git(places.root, "add", "--all");
+  git(places.root, "commit", "--quiet", "-m", "Set the project up for the tools");
   const agents = fixtureAgents(now);
 
   for (const row of rows) {

@@ -96,7 +96,8 @@ export function agentsView(places: Places, now: Date): AgentSessionView[] {
   const held = [...claims(places)];
   const marked = [...reviews(places)];
   return sessions(places).map((session: SessionRecord): AgentSessionView => {
-    const mine = (hold: { by: string; session: string }) => hold.by === session.worker && hold.session === session.id;
+    // A claim names its session; the worker's name a hook reports may spell the model another way.
+    const mine = (hold: { session: string }) => hold.session === session.id;
     const claim = held.find(([, hold]) => mine(hold));
     const mark = marked.find(([, hold]) => mine(hold));
     const task = claim?.[0] ?? mark?.[0];

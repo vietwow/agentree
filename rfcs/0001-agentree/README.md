@@ -918,6 +918,51 @@ the project's `CLAUDE.md` and cannot ask the owner. See
 `agentree doctor` then says, for each tool, whether its session can
 reach the board, and by which way in.
 
+As built, `agentree init [--tools <tool,...>]` writes into the main
+checkout, for the owner to commit:
+
+- `agentree.config.json`, with the checks it found among the scripts
+  of `package.json` (`typecheck`, `lint`, `test`), which a new build or
+  fix task takes when it names none;
+- `AGENTS.md`'s section "Taking work", between two marks, so that a
+  second run replaces that section and nothing else; `CLAUDE.md` with
+  `@AGENTS.md` when there is none, and a word to the owner when there
+  is one of the project's own;
+- each skill in `.agents/skills/` and the same file in `.claude/skills/`
+  (`agentree-coordinate`, not loaded by the model; `agentree-plan`);
+- the engineering standard's two pages under `docs/engineering/`;
+- for each tool chosen, its MCP entry and its hooks, merged into what
+  the project's file already holds:
+
+  | Tool           | MCP entry                                   | Hooks                                                              |
+  | -------------- | ------------------------------------------- | ------------------------------------------------------------------ |
+  | Claude Code    | `.mcp.json`, `mcpServers.agentree`          | `.claude/settings.json`: `SessionStart`, `PreToolUse`, `Stop`, `SessionEnd`, `SubagentStart`, `SubagentStop` |
+  | Claude Desktop | the same `.mcp.json`                        | none written                                                       |
+  | Cursor         | `.cursor/mcp.json`, with `type: "stdio"`    | `.cursor/hooks.json` (`version: 1`): `sessionStart`, `preToolUse`, `stop`, `sessionEnd`, `subagentStart`, `subagentStop` |
+  | Codex          | `.codex/config.toml`, `[mcp_servers.agentree]` | `.codex/hooks.json`: `SessionStart`, `PreToolUse`, `Stop`, `SubagentStart`, `SubagentStop` |
+  | Antigravity    | `.agents/mcp_config.json`                   | `.agents/hooks.json`, a group `agentree`: `SessionStart`, `PreToolUse`, `Stop` |
+
+  The MCP entry is the command `agentree mcp` over standard input and
+  output, which the tool starts in the project: no token is written into
+  a file of the repository. Each hook is `agentree hook <tool> <event>`.
+- the worker's and the reviewer's definitions in `.claude/agents/`, for
+  Claude Code and Cursor. None is written for Codex and Antigravity:
+  the form of their definitions was not read on their own pages.
+
+It then registers the project on the machine. A hook reads the tool's
+JSON on standard input: the session's id (`session_id`,
+`conversation_id` or `conversationId`), its model (`model` or
+`modelName`), and for `PreToolUse` the file a call would change (a path
+among the call's arguments, or the files an `apply_patch` names). It
+records the session, beats the claim that session holds, follows a
+subagent's start and stop, and refuses an edit of a file in a task's
+tree outside that task's paths, or of a file of the board: by exit
+code 2 and its reason for Claude Code and Codex, by
+`{"permission":"deny"}` for Cursor, by `{"decision":"deny"}` for
+Antigravity. A hook in a directory with no board lets everything
+through. The formats were read on 2026-11-24 on each tool's own page
+of MCP and of hooks; none was tried in its tool.
+
 ### The engineering standard a project starts with
 
 The origin is built as an enterprise application, and its rules say so
