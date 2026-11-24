@@ -1,5 +1,6 @@
 import { ArrowLeft, ArrowUpRight, ChevronLeft, ChevronRight, Folder, Trash2, User } from "lucide-react";
 
+import { board, post, send } from "../board/daemon.ts";
 import { TOOL_LABEL, type Task } from "../board/task.ts";
 import { Button } from "../design/components/Button.tsx";
 import { useEscape } from "../design/components/escape.ts";
@@ -8,8 +9,6 @@ import { KeyValues } from "../design/components/KeyValues.tsx";
 import { toast } from "../design/components/toast.ts";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { SubCheck } from "./SubCheck.tsx";
-
-const notBuilt = (what: string) => toast(`${what} is not built yet`, { kind: "info", ms: 2200 });
 
 /** gr8r-studio's subtask view, in place of the task drawer's body. */
 export function SubtaskView({
@@ -29,6 +28,7 @@ export function SubtaskView({
   const s = t.subtasks[i];
 
   useEscape(onClose);
+  const convertible = t.status === "backlog" || t.status === "ready" || t.status === "blocked";
 
   if (!s) return null;
   return (
@@ -83,7 +83,17 @@ export function SubtaskView({
         />
       </div>
       <div className="dsec flex items-center gap-1.5 flex-wrap">
-        <Button size="sm" onClick={() => notBuilt("Converting a subtask to a task")}>
+        <Button
+          size="sm"
+          disabled={!convertible}
+          title={convertible ? undefined : "A subtask is made a task while no worker has its task"}
+          onClick={async () => {
+            const made = await post<{ id: string }>(`/api/projects/${board().project.id}/tasks/${t.id}/convert`, { subtask: i + 1 });
+            if (!made) return;
+            toast(`The step is ${made.id} now, in the backlog`, { kind: "ok", ms: 4000 });
+            onClose();
+          }}
+        >
           {ic(ArrowUpRight, 13)}Convert to task
         </Button>
         <span className="flex-1" />
@@ -99,7 +109,13 @@ export function SubtaskView({
         >
           Next{ic(ChevronRight, 14)}
         </Button>
-        <Button variant="danger" size="sm" onClick={() => notBuilt("Deleting a subtask")}>
+        <Button
+          variant="danger"
+          size="sm"
+          disabled={!convertible}
+          title={convertible ? undefined : "A subtask is removed while no worker has its task"}
+          onClick={async () => (await send(`/api/projects/${board().project.id}/tasks/${t.id}/remove-subtask`, { subtask: i + 1 })) && onClose()}
+        >
           {ic(Trash2, 13)}Delete
         </Button>
       </div>

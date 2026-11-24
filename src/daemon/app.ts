@@ -8,7 +8,19 @@ import { createMcpHandler } from "@modelcontextprotocol/server";
 import { Hono, type Context as Request } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { streamSSE } from "hono/streaming";
-import { answer, create, move, promote, release, tick, type Actor, type Context, type NewTask } from "../core/board/actions.ts";
+import {
+  answer,
+  convertSubtask,
+  create,
+  move,
+  promote,
+  release,
+  removeSubtask,
+  tick,
+  type Actor,
+  type Context,
+  type NewTask,
+} from "../core/board/actions.ts";
 import { acceptFact, editFact, readMemory, remember, type NewFact } from "../core/board/memory.ts";
 import { readOptions, setReleaseStale, setReviewOwnTasks } from "../core/board/options.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
@@ -219,6 +231,8 @@ export function createApp(daemon: Daemon) {
     const actions: Record<string, () => unknown> = {
       move: () => move(context, OWNER, id, body.to as "backlog" | "ready" | "dropped", String(body.why ?? "")),
       tick: () => tick(context, OWNER, id, Number(body.subtask), body.done !== false),
+      "remove-subtask": () => removeSubtask(context, OWNER, id, Number(body.subtask)),
+      convert: () => ({ id: convertSubtask(context, OWNER, id, Number(body.subtask)).fields.id }),
       answer: () => answer(context, OWNER, id, String(body.text ?? ""), body.question === undefined ? undefined : Number(body.question)),
       release: () => release(context, OWNER, id, String(body.why ?? ""), { blocked: body.blocked === true }),
       // Review on the diff: the owner's comment on a line, its removal, and the rejection that writes each as a finding.
@@ -228,9 +242,9 @@ export function createApp(daemon: Daemon) {
     };
     const action = actions[request.req.param("action")];
     if (!action) return request.json({ error: `"${request.req.param("action")}" is nothing the owner does to a task here` }, 404);
-    action();
+    const answered = action();
     changed(request);
-    return request.json({ ok: true });
+    return request.json({ ok: true, ...(answered && typeof answered === "object" && "id" in answered ? { id: answered.id } : {}) });
   });
   app.post("/api/projects/:project/promote", (request) => {
     const moved = promote(contextOf(request), OWNER);

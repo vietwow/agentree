@@ -97,6 +97,12 @@ export function startDaemon(options: { port?: number; ui?: string } = {}) {
   const timers = [watch(events, queue, () => fixed ?? new Date()), ...(fixed ? [] : [setInterval(() => queue.read(), SAMPLE_MS)])];
   // In its container the daemon listens on every address of the container, whose port is published on the host's loopback only.
   const server = serve({ fetch: app.fetch, hostname: process.env.AGENTREE_HOST ?? "127.0.0.1", port });
+  // A machine has one daemon: a second one is told so in a line.
+  server.on("error", (error: NodeJS.ErrnoException) => {
+    if (error.code !== "EADDRINUSE") throw error;
+    process.stderr.write(`agentree: the port ${port} is taken: a daemon runs already, or another program has the port (--port names another)\n`);
+    process.exit(1);
+  });
   return {
     address: `http://127.0.0.1:${port}/?token=${token}`,
     close: () => {

@@ -347,3 +347,54 @@ export function releaseStale(context: Context): string[] {
   }
   return released;
 }
+
+/**
+ * Makes a subtask a task of its own: a card beside its task, under the same
+ * parent, with the step as its title, and the step taken off its task. The
+ * owner's, and only while no worker holds the task: a card is not changed
+ * under the worker who builds from it.
+ */
+export function convertSubtask(context: Context, actor: Actor, id: string, number: number): Task {
+  owner(actor, "making a subtask a task");
+  const { task } = taskOf(readBoard(context.places), id);
+  const subtask = task.subtasks[number - 1];
+  if (!subtask) throw new Refusal(`${id} has no subtask ${number}; it has ${task.subtasks.length}`);
+  const { status } = task.fields;
+  if (status !== "backlog" && status !== "ready" && status !== "blocked")
+    throw new Refusal(`${id} is ${status}: a subtask is made a task while no worker has its task, in backlog, ready or blocked`);
+  const made = create(context, actor, {
+    title: subtask.title,
+    kind: task.fields.kind,
+    priority: task.fields.priority,
+    ...(task.fields.parent ? { parent: task.fields.parent } : {}),
+    ...(task.fields.rfc ? { rfc: task.fields.rfc } : {}),
+    context: `A step of ${id}, "${task.fields.title}", made a task of its own.`,
+    backlog: true,
+  });
+  fromItsRead(() => {
+    const stored = taskOf(readBoard(context.places), id);
+    const at = stored.task.subtasks.findIndex((each) => each.title === subtask.title);
+    if (at < 0) return stored.task;
+    return writeTask(
+      context.places,
+      stored,
+      { ...stored.task, subtasks: stored.task.subtasks.toSpliced(at, 1) },
+      `subtask ${number} is ${made.fields.id}`,
+    ).task;
+  });
+  return made;
+}
+
+/** Takes a subtask off its task. The owner's, and only while no worker holds the task. */
+export function removeSubtask(context: Context, actor: Actor, id: string, number: number): Task {
+  owner(actor, "removing a subtask");
+  return fromItsRead(() => {
+    const stored = taskOf(readBoard(context.places), id);
+    if (!stored.task.subtasks[number - 1]) throw new Refusal(`${id} has no subtask ${number}; it has ${stored.task.subtasks.length}`);
+    const { status } = stored.task.fields;
+    if (status !== "backlog" && status !== "ready" && status !== "blocked")
+      throw new Refusal(`${id} is ${status}: a subtask is removed while no worker has its task, in backlog, ready or blocked`);
+    return writeTask(context.places, stored, { ...stored.task, subtasks: stored.task.subtasks.toSpliced(number - 1, 1) }, `subtask ${number} removed`)
+      .task;
+  });
+}
