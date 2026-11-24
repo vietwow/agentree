@@ -93,7 +93,7 @@ export function Sidebar(props: Props) {
     const c = counts[key];
     if (!c || c.count === 0) return undefined;
     return (
-      <span className="ct" style={c.old ? { color: "var(--bad)" } : undefined} title={c.old ? "Something here has waited long" : undefined}>
+      <span className={`ct ${c.old ? "text-bad" : ""}`} title={c.old ? "Something here has waited long" : undefined}>
         {c.count}
       </span>
     );
@@ -102,11 +102,9 @@ export function Sidebar(props: Props) {
   return (
     <nav className="side" aria-label="Main">
       <div className="side-top">
-        <div className="row" style={{ gap: 2 }}>
+        <div className="row gap-0.5">
           <div className="ws grow">
-            <span className="ws-logo" style={{ background: "var(--ink)", color: "var(--ink-inv)" }}>
-              {ic(TreeDeciduous, 13)}
-            </span>
+            <span className="ws-logo bg-ink text-ink-inv">{ic(TreeDeciduous, 13)}</span>
             <span className="ws-name trunc">agentree</span>
           </div>
           {!collapsed && (
@@ -117,7 +115,7 @@ export function Sidebar(props: Props) {
         </div>
       </div>
 
-      <div className="side-scroll" ref={scroll} style={{ position: "relative" }}>
+      <div className="side-scroll relative" ref={scroll}>
         {mark && (
           <span
             aria-hidden
@@ -146,17 +144,15 @@ export function Sidebar(props: Props) {
         {item("options")}
         <button
           type="button"
-          className="sitem"
+          className="sitem h-9"
           onClick={pop.toggle("user")}
           aria-haspopup="menu"
           aria-expanded={pop.open?.key === "user"}
-          style={{ height: 36 }}
+
           {...tip("Profile")}
         >
           <OwnerAvatar size="sm" presence />
-          <span className="trunc" style={{ color: "var(--ink)", fontWeight: 500 }}>
-            Owner
-          </span>
+          <span className="trunc text-ink font-medium">Owner</span>
           <span className="ct">{ic(ChevronsUpDown, 13)}</span>
         </button>
       </div>
@@ -235,11 +231,7 @@ function Projects({ projects, project, page, inProject, onProject, onReorder, on
               </span>
               <span className="trunc">{p.name}</span>
               {stars.has(`project:${p.id}`) && <span className="fav">{ic(Star, 11)}</span>}
-              {p.private && (
-                <span className="faint" style={{ marginLeft: 4 }}>
-                  {ic(Lock, 11)}
-                </span>
-              )}
+              {p.private && <span className="faint ml-1">{ic(Lock, 11)}</span>}
               <span className="sdot" style={{ background: status.color }} title={status.name} />
               <span className="hov">
                 <span

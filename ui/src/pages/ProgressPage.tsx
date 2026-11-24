@@ -190,7 +190,7 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
       <PageHeader title="Progress">
         How far along the project is, read from the board: each task from its claim to its landing, and the milestones.
       </PageHeader>
-      <div className="@container" style={{ padding: "0 var(--gutter) 16px" }}>
+      <div className="@container pt-0 px-(--gutter) pb-4">
         <SummaryCards
           cards={[
             {
@@ -240,32 +240,25 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
                 r.type === "ms" ? (
                   <div key="ms" className="tl-row g">
                     {ic(Diamond, 12)}Milestones
-                    <span className="faint" style={{ fontWeight: 500 }}>
-                      {ms.length}
-                    </span>
+                    <span className="faint font-medium">{ms.length}</span>
                   </div>
                 ) : r.type === "g" ? (
                   <div key={`g${i}`} className="tl-row g">
                     {r.html}
                     {r.name}
-                    <span className="faint" style={{ fontWeight: 500 }}>
-                      {r.count}
-                    </span>
+                    <span className="faint font-medium">{r.count}</span>
                   </div>
                 ) : (
                   <div
                     key={r.t.id}
-                    className="tl-row"
+                    className={`tl-row ${selected === r.t.id ? "bg-surface-2" : ""}`}
                     data-opens-task
-                    style={selected === r.t.id ? { background: "var(--surface-2)" } : undefined}
                     onClick={() => onOpenTask(r.t.id)}
                   >
                     <StatusIcon status={r.t.status} size={12} />
-                    <span className="trunc grow" style={r.t.status === "done" ? { color: "var(--ink-3)" } : undefined}>
-                      {r.t.title}
-                    </span>
+                    <span className={`trunc grow ${r.t.status === "done" ? "text-ink-3" : ""}`}>{r.t.title}</span>
                     {r.t.subtasks.length > 0 && (
-                      <span className="faint num" style={{ fontSize: 11 }}>
+                      <span className="faint num text-2xs">
                         {r.t.subtasks.filter((s) => s.done).length}/{r.t.subtasks.length}
                       </span>
                     )}
@@ -273,7 +266,7 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
                   </div>
                 ),
               )}
-              <div style={{ height: 40 }} />
+              <div className="h-10" />
             </div>
           </div>
           <div
@@ -346,8 +339,8 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
                   <Fragment key={t.id}>
                     <div className="tl-rowbg" style={{ top: y }} />
                     <div
-                      className={`bar ${t.status === "done" ? "done" : ""}`}
-                      style={{ ...style({ "--c": c }), left: x, top: y + 7, width: w, cursor: "pointer" }}
+                      className={`bar cursor-pointer ${t.status === "done" ? "done" : ""}`}
+                      style={{ ...style({ "--c": c }), left: x, top: y + 7, width: w }}
                       data-opens-task
                       onClick={() => onOpenTask(t.id)}
                       title={`${t.title} · ${start(t).toLocaleString()} → ${t.landedAt ? t.landedAt.toLocaleString() : STATUS_LABEL[t.status]}`}

@@ -17,6 +17,7 @@ import { HomePage } from "./pages/HomePage.tsx";
 import { LivePage } from "./pages/LivePage.tsx";
 import { MemoryPage } from "./pages/MemoryPage.tsx";
 import { NumbersPage } from "./pages/NumbersPage.tsx";
+import { PIcon } from "./pages/parts.tsx";
 import { ProgressPage } from "./pages/ProgressPage.tsx";
 import { ProjectsPage } from "./pages/ProjectsPage.tsx";
 import { ReviewPage } from "./pages/ReviewPage.tsx";
@@ -242,22 +243,7 @@ export function App() {
         { label: "Projects", onClick: () => go("projects") },
         {
           label: current.name,
-          icon: (
-            <span
-              className="pico"
-              style={{
-                width: 16,
-                height: 16,
-                borderRadius: 4,
-                display: "grid",
-                placeItems: "center",
-                color: current.color,
-                background: `color-mix(in srgb, ${current.color} 16%, transparent)`,
-              }}
-            >
-              {ic(current.icon, 11)}
-            </span>
-          ),
+          icon: <PIcon project={current} size={11} className="sm" />,
           onClick: () => openProject(current.id, "board"),
         },
         { label: PAGE_INFO[page].label },

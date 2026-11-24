@@ -48,11 +48,9 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
   );
   const taskCell = (id?: string) =>
     id ? (
-      <span className="row" style={{ gap: 8, minWidth: 0 }} data-opens-task onClick={() => onOpenTask(id)}>
+      <span className="row gap-2 min-w-0" data-opens-task onClick={() => onOpenTask(id)}>
         <span className="key mono">{id}</span>
-        <span className="trunc obj" style={{ cursor: "pointer" }}>
-          {title(id)}
-        </span>
+        <span className="trunc obj cursor-pointer">{title(id)}</span>
       </span>
     ) : (
       <span className="faint">Coordinating</span>
@@ -60,8 +58,8 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
 
   const row = (s: AgentSession) => (
     <div key={s.id} className="contents">
-      <div className="trow" style={{ ...style({ "--cols": COLS }), paddingLeft: ROW_INSET, ...(s.state === "ended" ? { opacity: 0.6 } : {}) }}>
-        <div className="ttl" style={{ cursor: "default" }}>
+      <div className={`trow ${s.state === "ended" ? "opacity-60" : ""}`} style={{ ...style({ "--cols": COLS }), paddingLeft: ROW_INSET }}>
+        <div className="ttl cursor-default">
           <ToolMark tool={s.tool} size={20} />
           <span className="tt">
             {TOOL_LABEL[s.tool]} <span className="mono faint">{s.id}</span>
@@ -73,19 +71,17 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
             </span>
           )}
         </div>
-        <div className="c-meta" style={{ minWidth: 0, overflow: "hidden" }}>
+        <div className="c-meta min-w-0 overflow-hidden">
           <span className="trunc" title={s.by ? `Started headless by ${s.by}` : undefined}>
             {s.started === "owner" ? "By you" : "Headless"}
             {s.by && <span className="faint"> · from {s.by.split(" ").at(-1)}</span>}
           </span>
         </div>
-        <div className="c-meta" style={{ minWidth: 0, overflow: "hidden" }}>
-          {taskCell(s.task)}
-        </div>
+        <div className="c-meta min-w-0 overflow-hidden">{taskCell(s.task)}</div>
         <div className="c-meta">{badge(s.state)}</div>
         <div className="c-meta mono faint">{s.model}</div>
         <div className="c-meta">
-          <span className="row" style={{ gap: 5, whiteSpace: "nowrap", color: s.state === "stale" ? "var(--bad)" : "var(--ink-3)" }}>
+          <span className={`row gap-1.25 whitespace-nowrap ${s.state === "stale" ? "text-bad" : "text-ink-3"}`}>
             {ic(Clock, 13)}
             <Ago at={s.ended ?? s.beat} now={now} />
           </span>
@@ -96,29 +92,22 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
           {s.subagents.map((a) => (
             <div
               key={`${a.kind}-${a.task}`}
-              className="trow"
+              className={`trow min-h-8 bg-transparent ${a.state === "ended" ? "opacity-60" : ""}`}
               style={{
                 ...style({ "--cols": COLS }),
                 paddingLeft: ROW_INSET + 30,
-                minHeight: 32,
-                background: "transparent",
-                ...(a.state === "ended" ? { opacity: 0.6 } : {}),
               }}
             >
-              <div className="ttl" style={{ cursor: "default", fontSize: "var(--text-sm)" }}>
+              <div className="ttl cursor-default text-sm">
                 <span className="row faint">{ic(CornerDownRight, 13)}</span>
-                <span className="mono" style={{ fontSize: "var(--text-xs)" }}>
-                  {a.kind}
-                </span>
+                <span className="mono text-(length:--text-xs)">{a.kind}</span>
               </div>
               <div className="c-meta faint">Subagent</div>
-              <div className="c-meta" style={{ minWidth: 0, overflow: "hidden" }}>
-                {taskCell(a.task)}
-              </div>
+              <div className="c-meta min-w-0 overflow-hidden">{taskCell(a.task)}</div>
               <div className="c-meta">{badge(a.state)}</div>
               <div className="c-meta mono faint">{s.model}</div>
               <div className="c-meta">
-                <span className="row faint" style={{ gap: 5, whiteSpace: "nowrap" }}>
+                <span className="row faint gap-1.25 whitespace-nowrap">
                   {ic(Clock, 13)}
                   <Ago at={a.ended ?? a.since} now={now} />
                 </span>
@@ -130,7 +119,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
     </div>
   );
 
-  const mark = (on: boolean) => <span style={{ color: on ? "var(--good)" : "var(--ink-4)", display: "flex" }}>{ic(on ? Check : Minus, 14)}</span>;
+  const mark = (on: boolean) => <span className={`flex ${on ? "text-good" : "text-ink-4"}`}>{ic(on ? Check : Minus, 14)}</span>;
 
   return (
     <Page layout="flush" className="overflow-y-auto">
@@ -138,7 +127,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
         The sessions of each tool and the subagents they start. agentree starts none of them; it follows their calls of the board and the tools'
         hooks.
       </PageHeader>
-      <div className="@container" style={{ padding: "0 var(--gutter) 16px", flexShrink: 0 }}>
+      <div className="@container pt-0 px-(--gutter) pb-4 shrink-0">
         <SummaryCards
           cards={[
             {
@@ -171,7 +160,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
         />
       </div>
 
-      <div className="list-wrap" style={{ flexShrink: 0, paddingBottom: 0 }}>
+      <div className="list-wrap shrink-0 pb-0">
         <div className="tlist" role="table" aria-label="Sessions">
           <div className="thead" style={{ ...style({ "--cols": COLS }), paddingLeft: ROW_INSET }} role="row">
             <div>Session</div>
@@ -196,22 +185,18 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
         </div>
       </div>
 
-      <div style={{ padding: "20px var(--gutter) 32px", flexShrink: 0 }}>
+      <div className="pt-5 px-(--gutter) pb-8 shrink-0">
         <Panel title="The tools" note="set up by agentree init">
-          <div className="tbl-wrap" style={{ border: 0 }}>
-            <table className="tbl" style={{ width: "100%" }} aria-label="The tools">
+          <div className="tbl-wrap border-0">
+            <table className="tbl w-full" aria-label="The tools">
               <thead>
                 <tr>
                   <th>Tool</th>
                   <th>
-                    <span className="row" style={{ gap: 5 }}>
-                      {ic(Webhook, 13)}Hooks
-                    </span>
+                    <span className="row gap-1.25">{ic(Webhook, 13)}Hooks</span>
                   </th>
                   <th>
-                    <span className="row" style={{ gap: 5 }}>
-                      {ic(Plug, 13)}MCP
-                    </span>
+                    <span className="row gap-1.25">{ic(Plug, 13)}MCP</span>
                   </th>
                   <th>Worker and reviewer</th>
                   <th>Reports its use</th>
@@ -222,16 +207,16 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                 {tools.map((t) => (
                   <tr key={t.tool}>
                     <td>
-                      <span className="row" style={{ gap: 8 }}>
+                      <span className="row gap-2">
                         <ToolMark tool={t.tool as Tool} size={20} />
                         {TOOL_LABEL[t.tool]}
                       </span>
                     </td>
                     <td>
                       {t.hooks.length ? (
-                        <span className="row" style={{ gap: 4, flexWrap: "wrap" }}>
+                        <span className="row gap-1 flex-wrap">
                           {t.hooks.map((h) => (
-                            <span key={h} className="lbl mono" style={{ fontSize: "var(--text-2xs)" }}>
+                            <span key={h} className="lbl mono text-2xs">
                               {h}
                             </span>
                           ))}

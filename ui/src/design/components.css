@@ -40,6 +40,21 @@
   .sp {
     flex: 1;
   }
+  /* Reading text: a document's sections, their headings and paragraphs. */
+  .prose {
+    font-size: var(--text-base);
+    line-height: 1.65;
+  }
+  .prose h3 {
+    margin: 0 0 2px;
+    font-size: var(--text-md);
+    font-weight: 600;
+    line-height: 26px;
+  }
+  .prose p {
+    margin: 0 0 6px;
+    color: var(--ink-2);
+  }
   .sr {
     position: absolute;
     width: 1px;
@@ -51,7 +66,7 @@
   kbd,
   .kbd {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     min-width: 18px;
     height: 18px;
     padding: 0 5px;
@@ -216,13 +231,13 @@
     transform: translateX(-50%);
     background: var(--ink);
     color: var(--ink-inv);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     font-weight: 500;
     line-height: 1;
     padding: 5px 7px;
     border-radius: 5px;
     white-space: nowrap;
-    z-index: 200;
+    z-index: var(--z-tooltip);
     pointer-events: none;
     animation: fade-in 0.12s 0.35s both;
   }
@@ -858,7 +873,7 @@
     gap: 6px;
   }
   .stat .v {
-    font-size: 22px;
+    font-size: var(--text-2xl);
     font-weight: 600;
     letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
@@ -888,7 +903,7 @@
     position: fixed;
     inset: 0;
     background: var(--overlay);
-    z-index: 60;
+    z-index: calc(var(--z-modal) - 1);
   }
   .scrim.enter {
     animation: fade-in 0.18s ease both;
@@ -896,7 +911,7 @@
   .modal-wrap {
     position: fixed;
     inset: 0;
-    z-index: 61;
+    z-index: var(--z-modal);
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -956,7 +971,7 @@
 
   .pop {
     position: fixed;
-    z-index: 80;
+    z-index: var(--z-pop);
     min-width: 200px;
     max-width: 320px;
     background: var(--float);
@@ -1048,7 +1063,7 @@
     position: fixed;
     bottom: 20px;
     right: 20px;
-    z-index: 100;
+    z-index: var(--z-toast);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -1117,7 +1132,7 @@
     animation: toast-count var(--tcount-ms) linear forwards;
   }
   .toast .tcount b {
-    font-size: 11px;
+    font-size: var(--text-2xs);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
   }

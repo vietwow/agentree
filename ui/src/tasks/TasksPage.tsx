@@ -125,7 +125,7 @@ export function TasksPage({ tasks, now, mode, selected, onOpen, onMove, order, o
       >
         {sum.open} open tasks · {sum.done} of {sum.all} landed
       </PageHeader>
-      <div className="@container" style={{ padding: "0 var(--gutter) 16px" }}>
+      <div className="@container pt-0 px-(--gutter) pb-4">
         <StatCards stats={stats(tasks, now)} now={now} />
       </div>
       <ViewToolbar view={view} onView={change} tasks={tasks} group={view.mode !== "board"} cols={view.mode === "table"} right={seg} />

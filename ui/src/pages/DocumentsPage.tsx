@@ -63,53 +63,31 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
         </div>
         <Segmented label="Kind" value={kind} onChange={setKind} options={KINDS.map(([value, label]) => ({ value, label }))} />
         <span className="sp" />
-        <span className="faint mono" style={{ fontSize: "var(--text-xs)" }}>
-          rfcs/ · docs/adr/
-        </span>
+        <span className="faint mono text-(length:--text-xs)">rfcs/ · docs/adr/</span>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(280px, 360px) minmax(0, 1fr)",
-          gap: 16,
-          padding: "12px var(--gutter) 24px",
-          alignItems: "start",
-        }}
-      >
+      <div className="grid grid-cols-[minmax(280px,360px)_minmax(0,1fr)] items-start gap-4 px-(--gutter) pt-3 pb-6">
         <Panel clip>
           {shown.length ? (
             shown.map((d) => (
               <div
                 key={d.id}
-                className="nrow"
+                className={`nrow ${d.id === openId ? "bg-accent-soft" : ""}`}
                 role="button"
                 tabIndex={0}
                 onClick={() => openDoc(d.id)}
                 onKeyDown={(e) => e.key === "Enter" && openDoc(d.id)}
-                style={d.id === openId ? { background: "var(--accent-soft)" } : undefined}
                 aria-current={d.id === openId ? "true" : undefined}
               >
-                <span className="row" style={{ color: "var(--ink-3)", marginTop: 2 }}>
-                  {ic(d.kind === "RFC" ? BookOpen : FileText, 15)}
-                </span>
-                <div className="grow" style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span className="row" style={{ gap: 8, minWidth: 0 }}>
-                    <span className="mono faint" style={{ fontSize: "var(--text-xs)", whiteSpace: "nowrap", flexShrink: 0 }}>
+                <span className="row text-ink-3 mt-0.5">{ic(d.kind === "RFC" ? BookOpen : FileText, 15)}</span>
+                <div className="grow min-w-0 flex flex-col gap-1">
+                  <span className="row gap-2 min-w-0">
+                    <span className="mono faint text-(length:--text-xs) whitespace-nowrap shrink-0">
                       {d.kind} {d.number}
                     </span>
-                    <span
-                      className="trunc"
-                      style={{
-                        fontWeight: 500,
-                        textDecoration: d.status === "superseded" ? "line-through" : undefined,
-                        color: d.status === "superseded" ? "var(--ink-3)" : undefined,
-                      }}
-                    >
-                      {d.title}
-                    </span>
+                    <span className={`trunc font-medium ${d.status === "superseded" ? "text-ink-3 line-through" : ""}`}>{d.title}</span>
                   </span>
-                  <span className="row faint" style={{ gap: 8, fontSize: "var(--text-xs)" }}>
+                  <span className="row faint gap-2 text-(length:--text-xs)">
                     <Badge tone={STATUS[d.status].tone} dot>
                       {STATUS[d.status].label}
                     </Badge>
@@ -123,18 +101,15 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
           )}
         </Panel>
 
-        <article
-          className="panel"
-          style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 248px", gap: 24, alignItems: "start", padding: "20px 24px 24px" }}
-        >
-          <div style={{ minWidth: 0 }}>
-            <div className="row faint" style={{ gap: 8, fontSize: "var(--text-xs)", marginBottom: 6 }}>
+        <article className="panel grid grid-cols-[minmax(0,1fr)_248px] items-start gap-6 px-6 pt-5 pb-6">
+          <div className="min-w-0">
+            <div className="row faint gap-2 text-(length:--text-xs) mb-1.5">
               <span className="mono">{doc.path}</span>
             </div>
-            <h2 style={{ margin: "0 0 8px", fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em" }}>
+            <h2 className="doc-title">
               {doc.kind} {doc.number}: {doc.title}
             </h2>
-            <div className="row" style={{ gap: 10, fontSize: "var(--text-xs)", marginBottom: 16, flexWrap: "wrap" }}>
+            <div className="row gap-2.5 text-(length:--text-xs) mb-4 flex-wrap">
               <Badge tone={STATUS[doc.status].tone} dot>
                 {STATUS[doc.status].label}
               </Badge>
@@ -153,12 +128,12 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
               )}
             </div>
 
-            <div key={doc.id} style={{ fontSize: "var(--text-base)", lineHeight: 1.65 }}>
+            <div className="prose" key={doc.id}>
               {doc.sections.map((s) => (
-                <section key={s.h} id={slug(s.h)} className="fx-stagger" style={{ marginBottom: 18 }}>
-                  <h3 style={{ fontSize: 15, lineHeight: "26px", fontWeight: 600, margin: "0 0 2px" }}>{s.h}</h3>
+                <section key={s.h} id={slug(s.h)} className="fx-stagger mb-4.5">
+                  <h3>{s.h}</h3>
                   {s.body.map((p) => (
-                    <p key={p} style={{ margin: "0 0 6px", color: "var(--ink-2)" }}>
+                    <p key={p}>
                       <MdText s={p} />
                     </p>
                   ))}
@@ -185,7 +160,7 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
                 <span className="trunc">{sec.h}</span>
               </a>
             ))}
-            <div className="doc-side-h" style={{ marginTop: 14 }}>
+            <div className="doc-side-h mt-3.5">
               {ic(ListChecks, 13)}
               <span>Tasks naming it</span>
               {named.length > 0 && <span className="num faint">{named.length}</span>}
@@ -207,9 +182,7 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
                 )}
               </>
             ) : (
-              <span className="doc-side-i faint" style={{ cursor: "default" }}>
-                No task names it
-              </span>
+              <span className="doc-side-i faint cursor-default">No task names it</span>
             )}
           </aside>
         </article>

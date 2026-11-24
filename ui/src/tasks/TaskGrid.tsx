@@ -95,14 +95,10 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
       case "title":
         return (
           <td key={c} className="sticky cellbtn" data-opens-task onClick={() => onOpen(t.id)}>
-            <span className="row" style={{ gap: 8 }}>
+            <span className="row gap-2">
               <StatusIcon status={t.status} size={14} />
-              <span className="trunc" style={{ fontWeight: 450 }}>
-                {t.title}
-              </span>
-              <span className="mono faint" style={{ fontSize: 11, marginLeft: "auto" }}>
-                {t.id}
-              </span>
+              <span className="trunc font-book">{t.title}</span>
+              <span className="mono faint ml-auto text-2xs">{t.id}</span>
             </span>
           </td>
         );
@@ -115,7 +111,7 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
             onClick={movable ? (e) => pop.toggle(t.id)(e) : undefined}
             aria-haspopup={movable ? "menu" : undefined}
           >
-            <span className="row" style={{ gap: 6 }}>
+            <span className="row gap-1.5">
               <StatusIcon status={t.status} />
               <span>{STATUS_LABEL[t.status]}</span>
             </span>
@@ -125,7 +121,7 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
       case "priority":
         return (
           <td key={c}>
-            <span className="row" style={{ gap: 6 }}>
+            <span className="row gap-1.5">
               <PriorityIcon priority={t.priority} />
               <span>P{t.priority}</span>
             </span>
@@ -134,7 +130,7 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
       case "assignee":
         return (
           <td key={c}>
-            <span className="row" style={{ gap: 6 }}>
+            <span className="row gap-1.5">
               <ToolMark tool={t.holder?.tool} size={20} />
               <span className={`trunc ${t.holder ? "" : "faint"}`}>{t.holder ? TOOL_LABEL[t.holder.tool] : "Not held"}</span>
             </span>
@@ -143,7 +139,7 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
       case "labels":
         return (
           <td key={c}>
-            <span className="row" style={{ gap: 4 }}>
+            <span className="row gap-1">
               <Labels task={t} max={9} />
             </span>
           </td>
@@ -201,7 +197,7 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
               {cols.map((c) => {
                 const f = SORTABLE[c[0]];
                 return (
-                  <th key={c[0]} className={c[0] === "title" ? "sticky" : ""} style={{ position: "sticky" }} scope="col">
+                  <th key={c[0]} className={c[0] === "title" ? "sticky" : ""} scope="col">
                     <div className="thi" onClick={() => sortBy(c[0])}>
                       {c[1]}
                       {f && v.sort.f === f && ic(v.sort.dir > 0 ? ArrowUp : ArrowDown, 11)}
@@ -225,18 +221,16 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
                   {v.group !== "none" && (
                     <tr className="grow-row">
                       <td className="sticky" colSpan={cols.length}>
-                        <span className="row" style={{ gap: 6 }}>
+                        <span className="row gap-1.5">
                           {head.html}
                           {head.name}
-                          <span className="faint" style={{ fontWeight: 500 }}>
-                            {g.tasks.length}
-                          </span>
+                          <span className="faint font-medium">{g.tasks.length}</span>
                         </span>
                       </td>
                     </tr>
                   )}
                   {g.tasks.map((t) => (
-                    <tr key={t.id} style={selected === t.id ? { outline: "1px solid var(--accent-line)", outlineOffset: -1 } : undefined}>
+                    <tr key={t.id} className={selected === t.id ? "outline -outline-offset-1 outline-accent-line" : ""}>
                       {cols.map((c) => cell(t, c[0]))}
                     </tr>
                   ))}
@@ -244,28 +238,22 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
               );
             })}
             <tr>
-              <td className="sticky cellbtn" colSpan={cols.length} style={{ color: "var(--ink-3)" }} onClick={() => onNotBuilt("Creating a task")}>
-                <span className="row" style={{ gap: 6 }}>
-                  {ic(Plus, 14)}New task
-                </span>
+              <td className="sticky cellbtn text-ink-3" colSpan={cols.length} onClick={() => onNotBuilt("Creating a task")}>
+                <span className="row gap-1.5">{ic(Plus, 14)}New task</span>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-      <div className="only-m" style={{ padding: "8px 16px 90px" }}>
+      <div className="only-m pt-2 px-4 pb-22.5">
         {tasks.map((t) => (
-          <div key={t.id} className="panel" style={{ padding: 12, marginBottom: 8 }} data-opens-task onClick={() => onOpen(t.id)}>
-            <div className="row" style={{ marginBottom: 8 }}>
+          <div key={t.id} className="panel p-3 mb-2" data-opens-task onClick={() => onOpen(t.id)}>
+            <div className="row mb-2">
               <StatusIcon status={t.status} />
-              <b style={{ fontWeight: 500 }} className="grow">
-                {t.title}
-              </b>
-              <span className="mono faint" style={{ fontSize: 11 }}>
-                {t.id}
-              </span>
+              <b className="grow font-medium">{t.title}</b>
+              <span className="mono faint text-2xs">{t.id}</span>
             </div>
-            <div className="row muted" style={{ flexWrap: "wrap", gap: 10, fontSize: 12 }}>
+            <div className="row muted flex-wrap gap-2.5 text-(length:--text-xs)">
               <PriorityIcon priority={t.priority} />
               <span>P{t.priority}</span>
               <ToolMark tool={t.holder?.tool} size={20} />

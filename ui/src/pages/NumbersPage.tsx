@@ -76,12 +76,12 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
 
   const label = (r: (typeof rows)[number]) =>
     by === "tool" ? (
-      <span className="row" style={{ gap: 8 }}>
+      <span className="row gap-2">
         <ToolMark tool={r.tool} size={20} />
         {TOOL_LABEL[r.tool!]}
       </span>
     ) : by === "task" ? (
-      <span className="row" style={{ gap: 8, cursor: "pointer" }} data-opens-task onClick={() => onOpenTask(r.task!.id)}>
+      <span className="row gap-2 cursor-pointer" data-opens-task onClick={() => onOpenTask(r.task!.id)}>
         <span className="key mono faint">{r.task!.id}</span>
         <span className="trunc">{r.task!.title}</span>
       </span>
@@ -94,7 +94,7 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
       <PageHeader title="Numbers">
         The tokens and cost each tool reports, summed over tools, tasks and days. What a tool does not report is not known, never estimated.
       </PageHeader>
-      <div className="@container" style={{ padding: "0 var(--gutter) 16px" }}>
+      <div className="@container pt-0 px-(--gutter) pb-4">
         <SummaryCards
           cards={[
             {
@@ -128,12 +128,10 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
       <div className="toolbar" role="toolbar">
         <Segmented label="Sum by" value={by} onChange={setBy} collapse options={BYS.map(([value, label, icon]) => ({ value, label, icon }))} />
         <span className="sp" />
-        <span className="faint" style={{ fontSize: "var(--text-xs)" }}>
-          Costs are the tools' own estimates, as they report them.
-        </span>
+        <span className="faint text-(length:--text-xs)">Costs are the tools' own estimates, as they report them.</span>
       </div>
-      <div className="tbl-wrap" style={{ flex: "0 1 auto" }}>
-        <table className="tbl" style={{ width: "100%", minWidth: 980 }} aria-label="Numbers">
+      <div className="tbl-wrap flex-initial">
+        <table className="tbl w-full min-w-245" aria-label="Numbers">
           <thead>
             <tr>
               {[
@@ -147,12 +145,7 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
                 "",
                 "Not known",
               ].map((h, i) => (
-                <th
-                  key={i}
-                  className={i === 0 ? "sticky" : ""}
-                  style={{ position: "sticky", width: i === 0 ? 320 : i === 7 ? 140 : undefined }}
-                  scope="col"
-                >
+                <th key={i} className={i === 0 ? "sticky w-80" : i === 7 ? "w-35" : ""} scope="col">
                   <div className="thi">{h}</div>
                 </th>
               ))}
@@ -174,7 +167,7 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
                       <td className="num">{num(r.sum.tokens.cachedInput)}</td>
                       <td className="num">{num(r.sum.tokens.output)}</td>
                       <td className="num">{num(r.sum.tokens.reasoning)}</td>
-                      <td className="num" style={{ fontWeight: 500 }}>
+                      <td className="num font-medium">
                         {usd(r.sum.cost)}
                         {r.sum.unknown > 0 && <span className="faint"> + not known</span>}
                       </td>
@@ -182,16 +175,12 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
                   )}
                   <td>
                     {r.sum.unknown < r.sum.sessions && (
-                      <div style={{ display: "flex" }}>
+                      <div className="flex">
                         <ProgressBar value={Math.round((r.sum.cost / top) * 100)} />
                       </div>
                     )}
                   </td>
-                  <td
-                    className="num"
-                    title={[...r.sum.why].join(" · ") || undefined}
-                    style={{ color: r.sum.unknown ? "var(--warn)" : "var(--ink-3)" }}
-                  >
+                  <td className={`num ${r.sum.unknown ? "text-warn" : "text-ink-3"}`} title={[...r.sum.why].join(" · ") || undefined}>
                     {r.sum.unknown ? `${r.sum.unknown} of ${r.sum.sessions}` : "None"}
                   </td>
                 </tr>
@@ -201,9 +190,9 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
         </table>
       </div>
       {total.why.size > 0 && (
-        <div style={{ padding: "12px var(--gutter) 24px", fontSize: "var(--text-xs)", color: "var(--ink-3)" }}>
+        <div className="pt-3 px-(--gutter) pb-6 text-(length:--text-xs) text-ink-3">
           {[...total.why].map((w) => (
-            <p key={w} style={{ margin: "2px 0" }}>
+            <p className="my-0.5 mx-0" key={w}>
               Not known: {w}
             </p>
           ))}

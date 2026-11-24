@@ -40,21 +40,17 @@ export function SubtaskView({
   if (!s) return null;
   return (
     <div className="subview">
-      <button type="button" className="pillbtn" onClick={onClose} style={{ margin: "-4px 0 14px -7px", fontSize: 12.5, color: "var(--ink-2)" }}>
+      <button type="button" className="pillbtn -mt-1 mr-0 mb-3.5 -ml-1.75 text-sm text-ink-2" onClick={onClose}>
         {ic(ArrowLeft, 14)}
-        <span className="trunc" style={{ maxWidth: 420 }}>
-          {t.title}
-        </span>
+        <span className="trunc max-w-105">{t.title}</span>
       </button>
-      <div className={`row ${popped === s.id ? "fx-done" : ""}`} style={{ gap: 10, alignItems: "flex-start" }}>
-        <span style={{ marginTop: 9, display: "flex" }}>
+      <div className={`row ${popped === s.id ? "fx-done" : ""} gap-2.5 items-start`}>
+        <span className="mt-2.25 flex">
           <SubCheck id={s.id} done={s.done} title={s.title} round />
         </span>
-        <div className="ttl-edit" style={s.done ? { textDecoration: "line-through", color: "var(--ink-3)" } : undefined}>
-          {s.title}
-        </div>
+        <div className={`ttl-edit ${s.done ? "text-ink-3 line-through" : ""}`}>{s.title}</div>
       </div>
-      <div className="faint" style={{ fontSize: 12, margin: "4px 0 0 26px" }}>
+      <div className="faint text-(length:--text-xs) mt-1 mr-0 mb-0 ml-6.5">
         Subtask {i + 1} of {t.subtasks.length} · {s.done ? "Done" : "Open"}
       </div>
       <KeyValues className="mt-4">
@@ -76,9 +72,7 @@ export function SubtaskView({
         <dt>{ic(Folder, 14)}Parent</dt>
         <dd>
           <button type="button" className="pillbtn" onClick={onClose}>
-            <span className="mono faint" style={{ fontSize: 11 }}>
-              {t.id}
-            </span>
+            <span className="mono faint text-2xs">{t.id}</span>
             {t.title}
           </button>
         </dd>
@@ -95,7 +89,7 @@ export function SubtaskView({
           aria-labelledby="s-note-l"
         />
       </div>
-      <div className="dsec row" style={{ gap: 6, flexWrap: "wrap" }}>
+      <div className="dsec row gap-1.5 flex-wrap">
         <Button size="sm" onClick={() => notBuilt("Converting a subtask to a task")}>
           {ic(ArrowUpRight, 13)}Convert to task
         </Button>

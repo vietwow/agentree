@@ -90,7 +90,7 @@ export function optLabel(f: Field, id: string, name: string): { html?: ReactNode
       return { html: <PriorityIcon priority={Number(id)} />, name };
     case "labels":
       return id.startsWith("rfc:")
-        ? { html: <span className="pdot" style={style({ "--c": "var(--gray)" })} />, name }
+        ? { html: <span className="pdot [--c:var(--gray)]" />, name }
         : { html: <span className="pdot" style={style({ "--c": KIND_COLOR[id as Kind] })} />, name: KIND_LABEL[id as Kind] };
     case "created":
     case "updated":
@@ -138,7 +138,7 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
     return fieldOpts(f.f, tasks).map((o) => {
       const l = optLabel(f.f, o.id, o.name);
       return (
-        <label key={o.id} className="mi" data-keep style={{ cursor: "pointer", ...(boxed ? { minHeight: 28 } : {}) }}>
+        <label key={o.id} className={`mi cursor-pointer ${boxed ? "min-h-7" : ""}`} data-keep>
           <input type="checkbox" className="check" checked={f.v.includes(o.id)} onChange={() => toggleVal(i, o.id)} />
           {l.html}
           {l.name}
@@ -201,7 +201,7 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
               <span key={i} className="contents">
                 {i > 0 && <span>and</span>}
                 <span className="chip">
-                  <button type="button" onClick={pop.toggle(`fvals:${i}`)} style={{ display: "inline-flex", gap: 5, alignItems: "center" }}>
+                  <button className="inline-flex gap-1.25 items-center" type="button" onClick={pop.toggle(`fvals:${i}`)}>
                     {ic(FIELD_ICON[f.f], 12)}
                     <b>{FIELD_NAME[f.f]}</b> {f.op === "not" ? "is not" : "is"} <span>{val}</span>
                   </button>
@@ -223,7 +223,7 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
       )}
 
       {pop.open?.key === "filter" && (
-        <Pop anchor={pop.open.anchor} onClose={pop.close} className="fbuild" style={{ maxWidth: 560 }}>
+        <Pop anchor={pop.open.anchor} onClose={pop.close} className="fbuild max-w-140">
           <div className="mh fb-h">
             Filter by
             {v.filters.length > 0 && (
@@ -264,20 +264,7 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
                         {ic(Trash2, 13)}
                       </IconButton>
                     </div>
-                    {edit === i && (
-                      <div
-                        style={{
-                          marginLeft: 50,
-                          border: "1px solid var(--line)",
-                          borderRadius: "var(--radius-md)",
-                          padding: 4,
-                          maxHeight: 200,
-                          overflow: "auto",
-                        }}
-                      >
-                        {valueList(i, true)}
-                      </div>
-                    )}
+                    {edit === i && <div className="ml-12.5 max-h-50 overflow-auto rounded-md border border-line p-1">{valueList(i, true)}</div>}
                   </div>
                 );
               })}
@@ -294,8 +281,8 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
               <button
                 key={k}
                 type="button"
-                className="badge"
-                style={{ cursor: "pointer" }}
+                className="badge cursor-pointer"
+
                 onClick={() => {
                   set({ filters: [...v.filters, { f: k, op: "is", v: [] }] });
                   setEdit(v.filters.length);
@@ -333,7 +320,7 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
             </MenuItem>
           ))}
           <MenuSeparator />
-          <div style={{ padding: "4px 6px" }}>
+          <div className="py-1 px-1.5">
             <Segmented
               label="Direction"
               fill
@@ -363,7 +350,7 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
         <Pop anchor={pop.open.anchor} onClose={pop.close}>
           <MenuLabel>Visible columns</MenuLabel>
           {COLUMNS.filter(([c]) => c !== "title").map(([c, n]) => (
-            <label key={c} className="mi" data-keep style={{ cursor: "pointer" }}>
+            <label key={c} className="mi cursor-pointer" data-keep>
               <input
                 type="checkbox"
                 className="check"

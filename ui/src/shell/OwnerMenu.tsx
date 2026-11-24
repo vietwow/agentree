@@ -30,13 +30,11 @@ const THEMES: [ThemeChoice, typeof Sun, string][] = [
 export function OwnerMenu({ theme, onTheme, onSettings, onShortcuts }: OwnerMenuProps) {
   return (
     <>
-      <div className="row" style={{ padding: "8px 8px 10px", gap: 10 }}>
+      <div className="row pt-2 px-2 pb-2.5 gap-2.5">
         <OwnerAvatar size="lg" />
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontWeight: 600 }}>Owner</div>
-          <div className="faint trunc" style={{ fontSize: 12 }}>
-            This machine
-          </div>
+        <div className="min-w-0">
+          <div className="font-semibold">Owner</div>
+          <div className="faint trunc text-(length:--text-xs)">This machine</div>
         </div>
       </div>
       <MenuSeparator />
@@ -46,7 +44,7 @@ export function OwnerMenu({ theme, onTheme, onSettings, onShortcuts }: OwnerMenu
       </MenuItem>
       <MenuSeparator />
       <MenuLabel>Theme</MenuLabel>
-      <div style={{ padding: "2px 6px 6px" }}>
+      <div className="pt-0.5 px-1.5 pb-1.5">
         <Segmented label="Theme" fill value={theme} onChange={onTheme} options={THEMES.map(([value, icon, label]) => ({ value, label, icon }))} />
       </div>
       <MenuSeparator />

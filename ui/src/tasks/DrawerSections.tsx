@@ -21,7 +21,7 @@ function Box({ title, aside, children }: { title: string; aside?: ReactNode; chi
 }
 
 export function None({ children }: { children: ReactNode }) {
-  return <p className="text-[13px] leading-5 text-ink-4">{children}</p>;
+  return <p className="text-(length:--text-base) leading-5 text-ink-4">{children}</p>;
 }
 
 const Mono = ({ children }: { children: ReactNode }) => <span className="font-mono text-xs leading-5 break-all text-ink">{children}</span>;
@@ -136,7 +136,7 @@ export function ChecksSection({ task, runs }: { task: Task; runs: CheckRun[] }) 
           <ChecksBar checks={task.checks} />
         </Stat>
         <Stat label={task.checks.queuePlace ? "Place in the queue" : "Waited for a slot"}>
-          <span className="text-[13px] leading-5 font-semibold tabular-nums">
+          <span className="text-(length:--text-base) leading-5 font-semibold tabular-nums">
             {task.checks.queuePlace ? `#${task.checks.queuePlace}` : duration(waited)}
           </span>
         </Stat>
@@ -148,7 +148,7 @@ export function ChecksSection({ task, runs }: { task: Task; runs: CheckRun[] }) 
               <span className="inline-flex" title={RESULT[run.result].label}>
                 {RESULT[run.result].icon}
               </span>
-              <span className="min-w-0 flex-1 truncate text-[13px] leading-5 text-ink">{run.name}</span>
+              <span className="min-w-0 flex-1 truncate text-(length:--text-base) leading-5 text-ink">{run.name}</span>
               <span className="flex shrink-0 flex-col items-end">
                 <span className="text-xs leading-4 text-ink-2 tabular-nums">
                   {run.tookMs === undefined ? RESULT[run.result].label : duration(run.tookMs)}
@@ -207,7 +207,7 @@ export function SessionsSection({ sessions, now }: { sessions: Session[]; now: D
           <div className="flex items-center gap-2.5">
             <ToolMark tool={s.tool} size={24} />
             <span className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-[13px] leading-5 font-medium">{TOOL_LABEL[s.tool]}</span>
+              <span className="truncate text-(length:--text-base) leading-5 font-medium">{TOOL_LABEL[s.tool]}</span>
               <span className="truncate font-mono text-2xs leading-4 text-ink-4" title={s.models.join(" then ")}>
                 {s.models.join(" → ")}
               </span>
@@ -232,7 +232,7 @@ export function SessionsSection({ sessions, now }: { sessions: Session[]; now: D
               ).map(([label, value]) => (
                 <div key={label} className="flex flex-col bg-tray px-2 py-1.5">
                   <dt className="text-2xs leading-4 text-ink-4">{label}</dt>
-                  <dd className="text-[13px] leading-5 font-semibold tabular-nums" title={value.toLocaleString()}>
+                  <dd className="text-(length:--text-base) leading-5 font-semibold tabular-nums" title={value.toLocaleString()}>
                     {compact(value)}
                   </dd>
                 </div>
@@ -256,14 +256,14 @@ export function SessionsSection({ sessions, now }: { sessions: Session[]; now: D
 }
 
 function Cost({ value }: { value: number | null | undefined }) {
-  if (value === undefined) return <span className="text-[13px] leading-5 text-ink-4">None</span>;
+  if (value === undefined) return <span className="text-(length:--text-base) leading-5 text-ink-4">None</span>;
   if (value === null)
     return (
-      <span className="text-[13px] leading-5 text-ink-4" title="A session did not report its cost">
+      <span className="text-(length:--text-base) leading-5 text-ink-4" title="A session did not report its cost">
         Not known
       </span>
     );
-  return <span className="text-[13px] leading-5 font-semibold tabular-nums">{money(value)}</span>;
+  return <span className="text-(length:--text-base) leading-5 font-semibold tabular-nums">{money(value)}</span>;
 }
 
 /** The Log draws in from the top: a node, its text, then the rail down to the next. */
@@ -298,7 +298,7 @@ export function LogSection({ detail, now }: { detail: TaskDetail; now: Date }) {
             )}
           </span>
           <span className="flex min-w-0 flex-col animate-appear" style={{ animationDelay: `${i * LOG_STEP_MS + 80}ms` }}>
-            <span className="text-[13px] leading-5 text-ink">{entry.text}</span>
+            <span className="text-(length:--text-base) leading-5 text-ink">{entry.text}</span>
             <time
               dateTime={entry.at.toISOString()}
               title={`${timeAgo(entry.at, now)} · ${fullTime(entry.at)}`}

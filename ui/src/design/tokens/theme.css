@@ -166,6 +166,8 @@
   --color-ink-4: var(--ink-4);
   --color-ink-inv: var(--ink-inv);
   --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
   --color-good: var(--good);
   --color-good-soft: var(--good-soft);
   --color-warn: var(--warn);

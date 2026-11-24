@@ -71,12 +71,11 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
     .sort((a, b) => (sorter[sort](a) > sorter[sort](b) ? 1 : -1));
   const active = projects.filter((p) => p.status !== "complete").length;
 
-  const more = (p: Project, extra?: React.CSSProperties) => (
+  const more = (p: Project, extra = "") => (
     <IconButton
       label="Project options"
       size="sm"
-      className="more"
-      style={extra}
+      className={`more ${extra}`}
       onClick={(event) => {
         event.stopPropagation();
         menu.toggle(p.id)(event);
@@ -123,29 +122,23 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
         {shown.map((p) => {
           const pr = progressOf(p);
           return (
-            <div key={p.id} className="mini" style={{ minHeight: 52, gap: 12 }} role="link" tabIndex={0} onClick={() => onOpen(p.id)}>
+            <div key={p.id} className="mini min-h-13 gap-3" role="link" tabIndex={0} onClick={() => onOpen(p.id)}>
               <PIcon project={p} />
-              <div className="grow" style={{ minWidth: 0 }}>
-                <div className="row" style={{ gap: 6 }}>
-                  <b style={{ fontWeight: 500 }}>{p.name}</b>
+              <div className="grow min-w-0">
+                <div className="row gap-1.5">
+                  <b className="font-medium">{p.name}</b>
                   {p.private && ic(Lock, 12)}
                 </div>
-                <div className="trunc faint" style={{ fontSize: 12 }}>
-                  {p.desc}
-                </div>
+                <div className="trunc faint text-(length:--text-xs)">{p.desc}</div>
               </div>
               <span className="hide-m">
                 <PStatus status={p.status} />
               </span>
-              <span className="row hide-m" style={{ width: 140 }}>
+              <span className="row hide-m w-35">
                 <ProgressBar value={pr} />
-                <span className="num faint" style={{ fontSize: 11.5 }}>
-                  {pr}%
-                </span>
+                <span className="num faint text-(length:--text-xs)">{pr}%</span>
               </span>
-              <span className="num muted hide-m" style={{ width: 70, fontSize: 12 }}>
-                {shortDate(p.createdAt, now)}
-              </span>
+              <span className="num muted hide-m w-17.5 text-(length:--text-xs)">{shortDate(p.createdAt, now)}</span>
               <ToolStack tools={p.tools.slice(0, 3)} />
               {more(p)}
             </div>
@@ -155,17 +148,17 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
     );
   else
     body = (
-      <Panel style={{ overflowX: "auto" }}>
-        <table className="perm-t" style={{ minWidth: 860 }}>
+      <Panel className="overflow-x-auto">
+        <table className="perm-t min-w-215">
           <thead>
             <tr>
-              <th style={{ paddingLeft: 14 }}>Project</th>
-              <th style={{ textAlign: "left" }}>Status</th>
-              <th style={{ textAlign: "left" }}>Workers</th>
-              <th style={{ textAlign: "left", width: "16%" }}>Progress</th>
+              <th className="pl-3.5">Project</th>
+              <th className="text-left">Status</th>
+              <th className="text-left">Workers</th>
+              <th className="w-[16%] text-left">Progress</th>
               <th>Tasks</th>
-              <th style={{ textAlign: "left" }}>Created</th>
-              <th style={{ textAlign: "left" }}>Last activity</th>
+              <th className="text-left">Created</th>
+              <th className="text-left">Last activity</th>
               <th />
             </tr>
           </thead>
@@ -173,32 +166,28 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
             {shown.map((p) => {
               const pr = progressOf(p);
               return (
-                <tr key={p.id} style={{ cursor: "pointer" }} onClick={() => onOpen(p.id)}>
-                  <td style={{ paddingLeft: 14 }}>
+                <tr className="cursor-pointer" key={p.id} onClick={() => onOpen(p.id)}>
+                  <td className="pl-3.5">
                     <span className="row">
                       <PIcon project={p} size={14} />
-                      <span style={{ fontWeight: 500 }}>{p.name}</span>
+                      <span className="font-medium">{p.name}</span>
                     </span>
                   </td>
-                  <td style={{ textAlign: "left" }}>
+                  <td className="text-left">
                     <PStatus status={p.status} />
                   </td>
-                  <td style={{ textAlign: "left" }}>
+                  <td className="text-left">
                     <ToolStack tools={p.tools.slice(0, 4)} />
                   </td>
                   <td>
                     <span className="row">
                       <ProgressBar value={pr} />
-                      <span className="num faint" style={{ fontSize: 11.5 }}>
-                        {pr}%
-                      </span>
+                      <span className="num faint text-(length:--text-xs)">{pr}%</span>
                     </span>
                   </td>
                   <td className="num">{p.total}</td>
-                  <td style={{ textAlign: "left" }} className="num muted">
-                    {shortDate(p.createdAt, now)}
-                  </td>
-                  <td style={{ textAlign: "left" }} className="muted">
+                  <td className="num muted text-left">{shortDate(p.createdAt, now)}</td>
+                  <td className="muted text-left">
                     <Ago at={p.lastAt} now={now} />
                   </td>
                   <td>{more(p)}</td>
@@ -226,7 +215,7 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
       >
         {active} active · {projects.length - active} completed
       </PageHeader>
-      <div className="row" style={{ marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
+      <div className="row mb-4 flex-wrap gap-2">
         <div className="inwrap">
           {ic(Search, 13)}
           <input
@@ -238,8 +227,8 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
           />
         </div>
         <select
-          className="select"
-          style={{ height: 26, width: "auto", fontSize: 12 }}
+          className="select h-6.5 w-auto text-(length:--text-xs)"
+
           value={status}
           onChange={(e) => setStatus(e.target.value as "all" | ProjectStatus)}
           aria-label="Filter by status"
@@ -252,8 +241,8 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
           ))}
         </select>
         <select
-          className="select"
-          style={{ height: 26, width: "auto", fontSize: 12 }}
+          className="select h-6.5 w-auto text-(length:--text-xs)"
+
           value={sort}
           onChange={(e) => setSort(e.target.value as Sort)}
           aria-label="Sort"
@@ -299,7 +288,7 @@ export function ProjectCard({
   now: Date;
   starred: boolean;
   onOpen: (id: string) => void;
-  more: (p: Project, style?: React.CSSProperties) => React.ReactNode;
+  more: (p: Project, className?: string) => React.ReactNode;
 }) {
   const pr = progressOf(p);
   return (
@@ -313,12 +302,10 @@ export function ProjectCard({
     >
       <div className="row">
         <PIcon project={p} />
-        <div className="grow" style={{ minWidth: 0 }}>
-          <div className="row" style={{ gap: 6 }}>
-            <b className="trunc" style={{ fontWeight: 600, fontSize: 14 }}>
-              {p.name}
-            </b>
-            {starred && <span style={{ color: "var(--warn)" }}>{ic(Star, 12)}</span>}
+        <div className="grow min-w-0">
+          <div className="row gap-1.5">
+            <b className="trunc text-(length:--text-md) font-semibold">{p.name}</b>
+            {starred && <span className="text-warn">{ic(Star, 12)}</span>}
             {p.private && (
               <span className="faint" data-tip="Private project">
                 {ic(Lock, 12)}
@@ -329,29 +316,27 @@ export function ProjectCard({
         <PStatus status={p.status} />
       </div>
       <div className="desc">{p.desc}</div>
-      <div className="row" style={{ gap: 10 }}>
+      <div className="row gap-2.5">
         <ProgressBar value={pr} tone={tone(p)} />
-        <span className="num" style={{ fontSize: 12, fontWeight: 500 }}>
-          {pr}%
-        </span>
+        <span className="num text-(length:--text-xs) font-medium">{pr}%</span>
       </div>
       <div className="foot">
-        <span className="row" style={{ gap: 4 }}>
+        <span className="row gap-1">
           {ic(CircleCheck, 12)}
           {p.done}/{p.total}
         </span>
-        <span className="row" style={{ gap: 4 }} title="Created">
+        <span className="row gap-1" title="Created">
           {ic(Calendar, 12)}
           {shortDate(p.createdAt, now)}
         </span>
-        <span className="row hide-m" style={{ gap: 4 }} title="Last activity">
+        <span className="row hide-m gap-1" title="Last activity">
           {ic(Clock, 12)}
           <Ago at={p.lastAt} now={now} />
         </span>
         <span className="sp" />
         <ToolStack tools={p.tools.slice(0, 3)} />
       </div>
-      {more(p, { background: "var(--surface)", boxShadow: "0 0 0 1px var(--line)" })}
+      {more(p, "bg-surface ring-1 ring-line")}
     </div>
   );
 }

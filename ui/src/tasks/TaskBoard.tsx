@@ -29,7 +29,7 @@ type Props = Open & {
 
 export function TaskBoard({ tasks, all, now, selected, onOpen, landed, onLanded, onNotBuilt }: Props) {
   return (
-    <div className="flex min-h-0 flex-1 items-start gap-3 overflow-x-auto" style={{ padding: "14px var(--gutter) 24px" }}>
+    <div className="flex min-h-0 flex-1 items-start gap-3 overflow-x-auto pt-3.5 px-(--gutter) pb-6">
       {COLUMNS.map((status, index) => (
         <Column
           key={status}
@@ -71,7 +71,7 @@ function Column({
     >
       <header className="flex h-8 items-center gap-2 pr-0.5 pl-1.5">
         <StatusIcon status={status} />
-        <h3 className="truncate text-[13px] leading-5 font-semibold">{STATUS_LABEL[status]}</h3>
+        <h3 className="truncate text-(length:--text-base) leading-5 font-semibold">{STATUS_LABEL[status]}</h3>
         <span className="text-xs leading-4 text-ink-4 tabular-nums">{tasks.length}</span>
         <span className="ml-auto flex items-center gap-1">
           {working.length > 0 && (
@@ -186,7 +186,7 @@ function Card({ task, parts, now, delay, open, landing, onLanded, onOpen }: Card
           )}
         </span>
       </span>
-      <span className="line-clamp-2 text-[13px] leading-5 font-medium" title={task.title}>
+      <span className="line-clamp-2 text-(length:--text-base) leading-5 font-medium" title={task.title}>
         {task.title}
       </span>
       {total > 0 && (

@@ -43,7 +43,7 @@ export function ChecksBar({ checks }: { checks: Checks }) {
           style={{ width: `${(done / checks.total) * 100}%` }}
         />
       </div>
-      <span className={`text-[13px] leading-5 font-semibold whitespace-nowrap tabular-nums ${tone.text}`}>
+      <span className={`text-(length:--text-base) leading-5 font-semibold whitespace-nowrap tabular-nums ${tone.text}`}>
         {checks.passed}
         <span className="font-normal text-ink-4"> / {checks.total}</span>
       </span>

@@ -66,15 +66,13 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
       <div key={f.file} className="contents">
         <div className={`trow ${isOpen ? "sel" : ""}`} style={{ ...style({ "--cols": COLS }), paddingLeft: ROW_INSET }}>
           <div className="ttl" onClick={() => setOpen(isOpen ? undefined : f.file)} aria-expanded={isOpen}>
-            <span className="row" style={{ color: "var(--ink-3)" }}>
-              {ic(KIND_ICON[f.kind], 14)}
-            </span>
+            <span className="row text-ink-3">{ic(KIND_ICON[f.kind], 14)}</span>
             <span className="tt">{f.title}</span>
           </div>
-          <div className="c-meta" style={{ minWidth: 0, overflow: "hidden", gap: 4 }}>
+          <div className="c-meta min-w-0 overflow-hidden gap-1">
             {f.paths.length ? (
               f.paths.map((p) => (
-                <span key={p} className="lbl mono" style={{ fontSize: "var(--text-2xs)" }}>
+                <span key={p} className="lbl mono text-2xs">
                   {p}
                 </span>
               ))
@@ -91,8 +89,8 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
               <span className="faint">{f.by === "person" ? "The owner" : "No task"}</span>
             )}
           </div>
-          <div className="c-meta" style={{ minWidth: 0, overflow: "hidden" }}>
-            <span className="row" style={{ gap: 6, minWidth: 0 }}>
+          <div className="c-meta min-w-0 overflow-hidden">
+            <span className="row gap-1.5 min-w-0">
               <ToolMark tool={f.by} size={20} />
               <span className="trunc">{f.by === "person" ? "The owner" : TOOL_LABEL[f.by]}</span>
             </span>
@@ -103,21 +101,21 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
             </Badge>
           </div>
           <div className="c-meta">
-            <span className="row" style={{ gap: 5, whiteSpace: "nowrap", color: "var(--ink-3)" }}>
+            <span className="row gap-1.25 whitespace-nowrap text-ink-3">
               {ic(Clock, 13)}
               <Ago at={f.at} now={now} />
             </span>
           </div>
         </div>
         {isOpen && (
-          <div className="fx-stagger" style={{ padding: `6px 24px 14px ${ROW_INSET + 30}px`, borderBottom: "1px solid var(--divider)" }}>
+          <div className="fx-stagger border-b border-divider pt-1.5 pr-6 pb-3.5" style={{ paddingLeft: ROW_INSET + 30 }}>
             <div className="mem-file">
               <div className="mem-file-h">
                 {ic(FileText, 13)}
                 <span className="mono trunc">work/memory/{f.file}.md</span>
                 <span className="sp" />
                 {f.state === "proposed" ? (
-                  <span style={{ paddingRight: 8, whiteSpace: "nowrap" }}>Accepted with {f.task}'s review</span>
+                  <span className="pr-2 whitespace-nowrap">Accepted with {f.task}'s review</span>
                 ) : (
                   f.state === "in-force" && (
                     <>
@@ -138,21 +136,11 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
                 <span>
                   Kind <b>{f.kind[0]!.toUpperCase() + f.kind.slice(1)}</b>
                 </span>
-                <span className="row" style={{ gap: 6 }}>
+                <span className="row gap-1.5">
                   About
                   {f.paths.length ? (
                     f.paths.map((p) => (
-                      <code
-                        key={p}
-                        className="mono"
-                        style={{
-                          fontSize: "var(--text-2xs)",
-                          padding: "1px 5px",
-                          borderRadius: 4,
-                          background: "var(--surface-2)",
-                          color: "var(--ink-2)",
-                        }}
-                      >
+                      <code key={p} className="mono rounded-xs bg-surface-2 px-1.25 py-0.25 text-2xs text-ink-2">
                         {p}
                       </code>
                     ))
@@ -177,7 +165,7 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
         What a session learns, kept as one Markdown file a fact in work/memory/. A claim's brief holds the agreements and the facts about the task's
         paths; the rest is found by recall.
       </PageHeader>
-      <div className="@container" style={{ padding: "0 var(--gutter) 16px" }}>
+      <div className="@container pt-0 px-(--gutter) pb-4">
         <SummaryCards
           cards={[
             {

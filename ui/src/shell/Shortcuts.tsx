@@ -47,22 +47,16 @@ const SHORTCUTS: [string, [string, string[]][]][] = [
 export function Shortcuts({ onClose }: { onClose: () => void }) {
   return (
     <Modal title="Keyboard shortcuts" size="lg" onClose={onClose}>
-      <div className="modal-b" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 22 }}>
+      <div className="modal-b grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-5.5">
         {SHORTCUTS.map(([group, list]) => (
           <div key={group}>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>
-              {group}
-            </div>
+            <div className="eyebrow mb-1.5">{group}</div>
             {list.map(([name, keys]) => (
-              <div key={name} className="row" style={{ height: 30, fontSize: 13, borderBottom: "1px solid var(--divider)" }}>
+              <div key={name} className="row h-7.5 border-b border-divider text-(length:--text-base)">
                 <span className="grow">{name}</span>
                 {keys.map((k, i) => (
-                  <span key={k + i} className="row" style={{ gap: 8 }}>
-                    {i > 0 && keys[0] === "G" && (
-                      <span className="faint" style={{ fontSize: 11 }}>
-                        then
-                      </span>
-                    )}
+                  <span key={k + i} className="row gap-2">
+                    {i > 0 && keys[0] === "G" && <span className="faint text-2xs">then</span>}
                     <kbd>{k}</kbd>
                   </span>
                 ))}

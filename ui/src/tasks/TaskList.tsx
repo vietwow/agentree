@@ -59,7 +59,7 @@ export function Labels({ task, max = 2 }: { task: Task; max?: number }) {
     </span>,
     ...(task.rfc
       ? [
-          <span key="r" className="lbl" style={style({ "--c": "var(--gray)" })}>
+          <span key="r" className="lbl [--c:var(--gray)]">
             <i />
             {rfcLabel(task.rfc)}
           </span>,
@@ -129,9 +129,8 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
         return (
           <button
             type="button"
-            className="pillbtn"
+            className={`pillbtn ${movable ? "" : "cursor-default"}`}
             onClick={movable ? pop.toggle(`status:${t.id}`) : undefined}
-            style={movable ? undefined : { cursor: "default" }}
             aria-label={`Status: ${STATUS_LABEL[t.status]}`}
           >
             <StatusIcon status={t.status} />
@@ -155,7 +154,7 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
         );
       case "labels":
         return (
-          <span className="pillbtn" aria-label="Labels" style={{ gap: 4, overflow: "hidden" }}>
+          <span className="pillbtn gap-1 overflow-hidden" aria-label="Labels">
             <Labels task={t} />
           </span>
         );
@@ -180,8 +179,8 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
     return (
       <div key={t.id} className="contents">
         <div
-          className={`trow ${t.status === "done" ? "done" : ""} ${sel.has(t.id) ? "sel" : ""}`}
-          style={{ ...style({ "--cols": tpl }), ...(selected === t.id ? { background: "var(--surface-2)" } : {}) }}
+          className={`trow ${t.status === "done" ? "done" : ""} ${sel.has(t.id) ? "sel" : ""} ${selected === t.id ? "bg-surface-2" : ""}`}
+          style={style({ "--cols": tpl })}
           data-task-row={t.id}
           data-group={g.key}
         >
@@ -194,11 +193,11 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
           <div className="ttl" data-opens-task onClick={() => onOpen(t.id)}>
             {parts.total ? (
               <span
-                className="ibtn ibtn-xs"
+                className="ibtn ibtn-xs -ml-1"
                 role="button"
                 aria-label={`${open ? "Hide" : "Show"} subtasks`}
                 aria-expanded={!!open}
-                style={{ marginLeft: -4 }}
+
                 onClick={(e) => {
                   e.stopPropagation();
                   setOpenRows((now) => ({ ...now, [t.id]: !now[t.id] }));
@@ -207,7 +206,7 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
                 {ic(open ? ChevronDown : ChevronRight, 13)}
               </span>
             ) : (
-              <span style={{ width: 18, flexShrink: 0 }} />
+              <span className="w-4.5 shrink-0" />
             )}
             <span className="key">{t.id}</span>
             <span className="tt">{t.title}</span>
@@ -240,7 +239,7 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
             {ch.map((k) => (
               <div key={k.id} className={`subrow ${k.status === "done" ? "done" : ""}`}>
                 <StatusIcon status={k.status} />
-                <span role="button" tabIndex={0} style={{ cursor: "pointer" }} data-opens-task onClick={() => onOpen(k.id)}>
+                <span className="cursor-pointer" role="button" tabIndex={0} data-opens-task onClick={() => onOpen(k.id)}>
                   {k.title}
                 </span>
               </div>
@@ -281,13 +280,13 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
               aria-label="Select all"
             />
           </div>
-          <div onClick={() => sortBy("title")} style={{ cursor: "pointer" }}>
+          <div className="cursor-pointer" onClick={() => sortBy("title")}>
             Task {arrow("title")}
           </div>
           {COLS.map((c) => {
             const f: SortKey = c === "labels" || c === "parent" ? "manual" : c;
             return (
-              <div key={c} onClick={() => sortBy(f)} style={{ cursor: "pointer" }}>
+              <div className="cursor-pointer" key={c} onClick={() => sortBy(f)}>
                 {LCOLS[c][0]} {v.sort.f === c ? arrow(c) : null}
               </div>
             );
@@ -330,7 +329,7 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
 
       {nSel > 0 && (
         <div className={`bulkbar ${bulkIn ? "enter" : ""}`} role="toolbar" aria-label="Bulk actions" onAnimationEnd={() => setBulkIn(false)}>
-          <b style={{ fontWeight: 600 }}>{nSel} selected</b>
+          <b className="font-semibold">{nSel} selected</b>
           <span className="sep" />
           <Button variant="inverse" size="sm" onClick={pop.toggle("bulk")}>
             {ic(CircleDot, 14)}Status

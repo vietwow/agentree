@@ -35,17 +35,13 @@ export function Modal({ title, sub, size = "", onClose, children, foot }: Props)
 
   return createPortal(
     <>
-      <div className="scrim enter" style={{ zIndex: 60 }} onClick={onClose} />
-      <div className="modal-wrap" style={{ zIndex: 61 }} onClick={(event) => event.target === event.currentTarget && onClose()}>
+      <div className="scrim enter" onClick={onClose} />
+      <div className="modal-wrap" onClick={(event) => event.target === event.currentTarget && onClose()}>
         <div ref={box} className={`modal enter ${size}`} role="dialog" aria-modal="true" aria-labelledby={id}>
           <div className="modal-h">
             <div>
               <h2 id={id}>{title}</h2>
-              {sub && (
-                <div className="muted" style={{ fontSize: 12.5, marginTop: 2 }}>
-                  {sub}
-                </div>
-              )}
+              {sub && <div className="muted mt-0.5 text-sm">{sub}</div>}
             </div>
             <IconButton label="Close" size="sm" onClick={onClose}>
               {ic(X, 16)}

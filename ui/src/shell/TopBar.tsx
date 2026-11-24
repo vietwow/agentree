@@ -52,20 +52,7 @@ export function TopBar({ crumbs, unread, onMenu, onSearch, onNotices, onNewTask,
       </button>
       <IconButton label="Notifications" tip onClick={onNotices}>
         {ic(Bell, 16)}
-        {unread && (
-          <span
-            style={{
-              position: "absolute",
-              top: 6,
-              right: 7,
-              width: 7,
-              height: 7,
-              borderRadius: "50%",
-              background: "var(--accent)",
-              boxShadow: "0 0 0 2px var(--surface)",
-            }}
-          />
-        )}
+        {unread && <span className="absolute top-1.5 right-1.75 size-1.75 rounded-full bg-accent ring-2 ring-surface" />}
       </IconButton>
       <Button size="sm" onClick={pop.toggle("create")} aria-haspopup="menu" aria-expanded={pop.open?.key === "create"} aria-label="Create new">
         {ic(Plus, 14)}
@@ -74,11 +61,10 @@ export function TopBar({ crumbs, unread, onMenu, onSearch, onNotices, onNewTask,
       </Button>
       <IconButton
         label="Account menu"
-        className="hide-m"
+        className="hide-m w-auto py-0 px-0.5"
         onClick={pop.toggle("user")}
         aria-haspopup="menu"
         aria-expanded={pop.open?.key === "user"}
-        style={{ width: "auto", padding: "0 2px" }}
       >
         <OwnerAvatar size="md" />
       </IconButton>

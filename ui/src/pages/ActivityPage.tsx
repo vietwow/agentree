@@ -26,7 +26,7 @@ const nameOf = (who: Who) => (who === "person" ? "You" : who === "daemon" ? "age
 function Avatar({ who }: { who: Who }) {
   if (who === "daemon")
     return (
-      <span className="av sm" style={style({ "--c": "var(--gray)" })} aria-label="agentree">
+      <span className="av sm [--c:var(--gray)]" aria-label="agentree">
         {ic(TreeDeciduous, 11)}
       </span>
     );
@@ -52,7 +52,7 @@ export function ActivityPage({ entries, tasks, now, onOpenTask }: Props) {
   return (
     <Page layout="narrow">
       <PageHeader title="Activity">Everything that's changed across the board.</PageHeader>
-      <div className="row" style={{ gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+      <div className="row gap-2 mb-1.5 flex-wrap">
         <Segmented label="Show" value={filter} onChange={setFilter} options={FILTERS.map(([value, label]) => ({ value, label }))} />
         <Select
           value={who}

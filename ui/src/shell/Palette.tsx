@@ -111,7 +111,7 @@ export function Palette({ mode: start, idle, commands, tasks, projects, suggeste
   let index = 0;
   return createPortal(
     <>
-      <div className="scrim" style={{ zIndex: 89 }} onClick={onClose} />
+      <div className="scrim z-[calc(var(--z-palette)-1)]" onClick={onClose} />
       <div className="palette" role="dialog" aria-modal="true" aria-label="Command menu" onKeyDown={onKey}>
         <div className="pal-in">
           {ic(mode === "search" ? Search : Command, 17)}
@@ -209,7 +209,7 @@ export function Palette({ mode: start, idle, commands, tasks, projects, suggeste
               <kbd>⌫</kbd>back to commands
             </span>
           )}
-          <span className="sp" style={{ flex: 1 }} />
+          <span className="sp flex-1" />
           <span>agentree</span>
         </div>
       </div>

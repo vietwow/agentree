@@ -8,6 +8,9 @@
   --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --font-serif: "Newsreader Variable", "Iowan Old Style", Georgia, serif;
 
+  /* Between normal and medium: navigation rows and table titles. */
+  --font-weight-book: 450;
+
   --text-*: initial;
   --text-2xs: 11px;
   --text-xs: 12px;
@@ -57,6 +60,16 @@
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --dur: 140ms;
+
+  /* Layers, lowest first. A layer's scrim sits one below it. */
+  --z-bar: 40;
+  --z-drawer: 50;
+  --z-modal: 61;
+  --z-side: 70;
+  --z-pop: 80;
+  --z-palette: 90;
+  --z-toast: 100;
+  --z-tooltip: 200;
 }
 
 @media (max-width: 900px) {

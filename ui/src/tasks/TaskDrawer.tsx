@@ -138,14 +138,12 @@ export function TaskDrawer(props: Props) {
           {sub ? `Subtask: ${t.subtasks.find((x) => x.id === sub)?.title ?? ""}` : `Task: ${t.title}`}
         </h2>
         <div className="drawer-h">
-          <button type="button" className="pillbtn" style={{ fontSize: 12.5 }}>
+          <button type="button" className="pillbtn text-sm">
             <span className="pdot" style={style({ "--c": project.color })} />
             {project.name}
           </button>
           <span className="faint">/</span>
-          <span className="mono faint" style={{ fontSize: 11.5, padding: "0 6px" }}>
-            {t.id}
-          </span>
+          <span className="mono faint px-1.5 py-0 text-(length:--text-xs)">{t.id}</span>
           <span className="sp" />
           <IconButton
             label="Favorite"
@@ -153,7 +151,7 @@ export function TaskDrawer(props: Props) {
             onClick={star}
             data-tip={starred ? "Unfavorite" : "Favorite"}
             aria-pressed={starred}
-            style={starred ? { color: "var(--warn)" } : undefined}
+            className={starred ? "text-warn" : ""}
           >
             {ic(Star, 15)}
           </IconButton>
@@ -177,17 +175,17 @@ export function TaskDrawer(props: Props) {
           ) : (
             <>
               {t.status === "done" && t.landedAt ? (
-                <div className="alert ok" style={{ marginBottom: 12 }}>
+                <div className="alert ok mb-3">
                   {ic(CircleCheck, 15)}
                   <span>Landed on main {timeAgo(t.landedAt, now)}.</span>
                 </div>
               ) : stale ? (
-                <div className="alert danger" style={{ marginBottom: 12 }}>
+                <div className="alert danger mb-3">
                   {ic(Clock, 15)}
                   <span>No beat from its worker in over 30 minutes.</span>
                 </div>
               ) : asking > 0 ? (
-                <div className="alert warn" style={{ marginBottom: 12 }}>
+                <div className="alert warn mb-3">
                   {ic(MessageCircleQuestion, 15)}
                   <span>{asking === 1 ? "A question waits for your answer." : `${asking} questions wait for your answer.`}</span>
                 </div>
@@ -203,10 +201,9 @@ export function TaskDrawer(props: Props) {
                   "Status",
                   <button
                     type="button"
-                    className="pillbtn"
+                    className={`pillbtn ${movable ? "" : "cursor-default"}`}
                     onClick={movable ? pop.toggle("status") : undefined}
                     aria-label={`Status: ${STATUS_LABEL[t.status]}`}
-                    style={movable ? undefined : { cursor: "default" }}
                   >
                     <StatusIcon status={t.status} />
                     <span>{STATUS_LABEL[t.status]}</span>
@@ -239,22 +236,14 @@ export function TaskDrawer(props: Props) {
                 {prop(
                   ic(Tag, 14),
                   "Labels",
-                  <span
-                    className="pillbtn"
-                    style={{
-                      flexWrap: "wrap",
-                      height: "auto",
-                      minHeight: 26,
-                      padding: "3px 7px",
-                    }}
-                  >
+                  <span className="pillbtn flex-wrap h-auto min-h-6.5 py-0.75 px-1.75">
                     <span className="lbl">
                       <i style={style({ "--c": KIND_COLOR[t.kind] })} />
                       {KIND_LABEL[t.kind]}
                     </span>
                     {t.rfc && (
                       <span className="lbl">
-                        <i style={style({ "--c": "var(--gray)" })} />
+                        <i className="[--c:var(--gray)]" />
                         RFC {t.rfc}
                       </span>
                     )}
@@ -263,24 +252,12 @@ export function TaskDrawer(props: Props) {
                 {prop(
                   ic(GitBranch, 14),
                   "Blocked by",
-                  <span className={`pillbtn ${detail.dependsOn.length ? "" : "empty"}`} style={{ height: "auto", minHeight: 26, flexWrap: "wrap" }}>
+                  <span className={`pillbtn ${detail.dependsOn.length ? "" : "empty"} h-auto min-h-6.5 flex-wrap`}>
                     {detail.dependsOn.length ? (
                       detail.dependsOn.map((d) => (
-                        <button key={d.id} type="button" className="row" style={{ gap: 6 }} onClick={() => onOpen(d.id)}>
-                          <span
-                            className="depchip mono"
-                            style={{
-                              fontSize: 11,
-                              padding: "1px 5px",
-                              borderRadius: 4,
-                              background: "var(--surface-3)",
-                            }}
-                          >
-                            {d.id}
-                          </span>
-                          <span className="trunc" style={{ maxWidth: 160 }}>
-                            {d.title}
-                          </span>
+                        <button key={d.id} type="button" className="row gap-1.5" onClick={() => onOpen(d.id)}>
+                          <span className="depchip mono rounded-xs bg-surface-3 px-1.25 py-0.25 text-2xs">{d.id}</span>
+                          <span className="trunc max-w-40">{d.title}</span>
                         </button>
                       ))
                     ) : (
@@ -320,16 +297,12 @@ export function TaskDrawer(props: Props) {
                     {parts.done}/{parts.total}
                   </span>
                   {parts.total > 0 && (
-                    <span style={{ width: 90, display: "flex" }}>
+                    <span className="w-22.5 flex">
                       <ProgressBar value={Math.round((parts.done / parts.total) * 100)} tone={parts.done === parts.total ? "good" : undefined} />
                     </span>
                   )}
                 </div>
-                {parts.total === 0 && (
-                  <p className="faint" style={{ fontSize: 13, margin: "6px 0" }}>
-                    This task has no subtasks.
-                  </p>
-                )}
+                {parts.total === 0 && <p className="faint mx-0 my-1.5 text-(length:--text-base)">This task has no subtasks.</p>}
                 {kids.map((k) => (
                   <div key={k.id} className={`subt ${k.status === "done" ? "done" : ""}`}>
                     <StatusIcon status={k.status} />
@@ -371,7 +344,7 @@ export function TaskDrawer(props: Props) {
                         </div>
                         <div className="txt">{q.text}</div>
                         {q.answer ? (
-                          <div className="txt" style={{ marginTop: 6, color: "var(--ink-2)" }}>
+                          <div className="txt mt-1.5 text-ink-2">
                             <b>You</b> {q.answer}
                           </div>
                         ) : (
@@ -403,7 +376,7 @@ export function TaskDrawer(props: Props) {
                     { value: "memory", label: "Memory", count: detail.memory.length },
                   ]}
                 />
-                <div style={{ paddingTop: 8 }} className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 pt-2">
                   {tab === "log" && <LogSection key={t.id} detail={detail} now={now} />}
                   {tab === "checks" && <ChecksSection task={t} runs={detail.checkRuns} />}
                   {tab === "sessions" && (
@@ -416,7 +389,7 @@ export function TaskDrawer(props: Props) {
                     <>
                       <KeyValues>
                         <dt>Writes</dt>
-                        <dd className="col" style={{ alignItems: "flex-start" }}>
+                        <dd className="col items-start">
                           {detail.writes.map((p) => (
                             <span key={p} className="mono">
                               {p}
@@ -424,7 +397,7 @@ export function TaskDrawer(props: Props) {
                           ))}
                         </dd>
                         <dt>Appends</dt>
-                        <dd className="col" style={{ alignItems: "flex-start" }}>
+                        <dd className="col items-start">
                           {detail.appends.length ? (
                             detail.appends.map((p) => (
                               <span key={p} className="mono">

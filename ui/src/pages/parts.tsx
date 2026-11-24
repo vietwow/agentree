@@ -28,7 +28,7 @@ export function MdText({ s }: { s: string }) {
     <>
       {s.split("`").map((part, i) =>
         i % 2 ? (
-          <code key={i} className="mono" style={{ fontSize: "0.92em", padding: "1px 4px", borderRadius: 4, background: "var(--surface-2)" }}>
+          <code key={i} className="mono rounded-xs bg-surface-2 px-1 py-0.25">
             {part}
           </code>
         ) : (

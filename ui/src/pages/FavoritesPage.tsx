@@ -40,28 +40,20 @@ export function FavoritesPage({ projects, tasks, now, onOpenProject, onOpenTask,
         </Panel>
       ) : (
         <>
-          <h2 className="sec" style={{ marginBottom: 10 }}>
-            Projects{" "}
-            <span className="faint" style={{ fontWeight: 500 }}>
-              {ps.length}
-            </span>
+          <h2 className="sec mb-2.5">
+            Projects <span className="faint font-medium">{ps.length}</span>
           </h2>
           {ps.length ? (
-            <div className="pgrid" style={{ marginBottom: 28 }}>
+            <div className="pgrid mb-7">
               {ps.map((p) => (
                 <ProjectCard key={p.id} project={p} now={now} starred onOpen={onOpenProject} more={() => null} />
               ))}
             </div>
           ) : (
-            <p className="faint" style={{ marginBottom: 28 }}>
-              No favorite projects.
-            </p>
+            <p className="faint mb-7">No favorite projects.</p>
           )}
-          <h2 className="sec" style={{ marginBottom: 6 }}>
-            Tasks{" "}
-            <span className="faint" style={{ fontWeight: 500 }}>
-              {ts.length}
-            </span>
+          <h2 className="sec mb-1.5">
+            Tasks <span className="faint font-medium">{ts.length}</span>
           </h2>
           {ts.length ? (
             <Panel clip>

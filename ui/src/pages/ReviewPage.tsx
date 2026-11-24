@@ -66,21 +66,11 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
 
   const landing = ({ t, stage }: Row) => {
     if (stage === "reviewing") return <span className="faint">After the review</span>;
-    if (stage === "rejected")
-      return (
-        <span className="row" style={{ gap: 5, color: "var(--ink-2)" }}>
-          {ic(Undo2, 13)}Back to its worker
-        </span>
-      );
-    if (stage === "landed")
-      return (
-        <span className="row" style={{ gap: 5, color: "var(--good)" }}>
-          {ic(GitMerge, 13)}On main
-        </span>
-      );
+    if (stage === "rejected") return <span className="row gap-1.25 text-ink-2">{ic(Undo2, 13)}Back to its worker</span>;
+    if (stage === "landed") return <span className="row gap-1.25 text-good">{ic(GitMerge, 13)}On main</span>;
     const place = queue.findIndex((r) => r.t.id === t.id);
     return (
-      <span className="row" style={{ gap: 5, color: place === 0 ? "var(--warn)" : "var(--ink-2)" }}>
+      <span className={`row gap-1.25 ${place === 0 ? "text-warn" : "text-ink-2"}`}>
         {ic(GitMerge, 13)}
         {place === 0 ? "Next to land" : `${place + 1} in the queue`}
       </span>
@@ -103,15 +93,15 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
             <span className="key">{t.id}</span>
             <span className="tt">{t.title}</span>
           </div>
-          <div className="c-meta" style={{ minWidth: 0, overflow: "hidden" }}>
-            <span className="row" style={{ gap: 6, minWidth: 0 }}>
+          <div className="c-meta min-w-0 overflow-hidden">
+            <span className="row gap-1.5 min-w-0">
               <ToolMark tool={t.holder?.tool} size={20} />
               <span className="trunc">{t.holder ? `${TOOL_LABEL[t.holder.tool]} · ${t.holder.model}` : "Not held"}</span>
             </span>
           </div>
-          <div className="c-meta" style={{ minWidth: 0, overflow: "hidden" }}>
+          <div className="c-meta min-w-0 overflow-hidden">
             {reviewer ? (
-              <span className="row" style={{ gap: 6, minWidth: 0 }}>
+              <span className="row gap-1.5 min-w-0">
                 <ToolMark tool={reviewer} size={20} />
                 <span className="trunc">{TOOL_LABEL[reviewer]}</span>
               </span>
@@ -125,24 +115,22 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
             </Badge>
           </div>
           <div className="c-meta num">
-            <span className="row" style={{ gap: 5, color: t.checks.failed ? "var(--bad)" : "var(--good)" }}>
+            <span className={`row gap-1.25 ${t.checks.failed ? "text-bad" : "text-good"}`}>
               {ic(ShieldCheck, 13)}
               {t.checks.passed}/{t.checks.total}
             </span>
           </div>
           <div className="c-meta num">
-            <span className="row" style={{ gap: 5 }}>
+            <span className="row gap-1.25">
               {ic(FileDiff, 13)}
               <span>{diff.length}</span>
-              <span style={{ color: "var(--good)" }}>+{added}</span>
-              <span style={{ color: "var(--bad)" }}>−{removed}</span>
+              <span className="text-good">+{added}</span>
+              <span className="text-bad">−{removed}</span>
             </span>
           </div>
-          <div className="c-meta" style={{ minWidth: 0, overflow: "hidden", whiteSpace: "nowrap" }}>
-            {landing(r)}
-          </div>
-          <div className="c-meta" style={{ minWidth: 0, overflow: "hidden" }}>
-            <span className="row" style={{ gap: 5, whiteSpace: "nowrap", color: late ? "var(--bad)" : "var(--ink-3)" }}>
+          <div className="c-meta min-w-0 overflow-hidden whitespace-nowrap">{landing(r)}</div>
+          <div className="c-meta min-w-0 overflow-hidden">
+            <span className={`row gap-1.25 whitespace-nowrap ${late ? "text-bad" : "text-ink-3"}`}>
               {ic(Clock, 13)}
               <Ago at={at} now={now} />
             </span>
@@ -152,9 +140,7 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
           <div className="subrows">
             {d.review.findings.map((f) => (
               <div key={f} className="subrow" style={{ paddingLeft: ROW_INSET + 30 }}>
-                <span className="row" style={{ color: stage === "rejected" ? "var(--bad)" : "var(--warn)" }}>
-                  {ic(CircleAlert, 13)}
-                </span>
+                <span className={`row ${stage === "rejected" ? "text-bad" : "text-warn"}`}>{ic(CircleAlert, 13)}</span>
                 <span>{f}</span>
               </div>
             ))}
@@ -170,7 +156,7 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
         An agent reviews each task whose checks passed and accepts it, or rejects it with findings. The lander then puts the accepted tasks on main,
         one at a time.
       </PageHeader>
-      <div className="@container" style={{ padding: "0 var(--gutter) 16px" }}>
+      <div className="@container pt-0 px-(--gutter) pb-4">
         <SummaryCards
           cards={[
             {
