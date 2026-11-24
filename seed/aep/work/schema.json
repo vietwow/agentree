@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "The frontmatter of a task file (work/tasks/T-NNNN-short-name.md)",
+  "description": "Checked by `node scripts/task.mjs lint`, which reads the keywords used here and refuses any other.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "status",
+    "kind",
+    "step",
+    "rfc",
+    "priority",
+    "depends-on",
+    "writes",
+    "appends",
+    "needs",
+    "checks",
+    "claim"
+  ],
+  "properties": {
+    "id": { "$ref": "#/$defs/id" },
+    "title": { "type": "string", "minLength": 1 },
+    "status": {
+      "enum": [
+        "backlog",
+        "ready",
+        "in-progress",
+        "review",
+        "done",
+        "blocked",
+        "dropped"
+      ]
+    },
+    "kind": {
+      "enum": ["build", "measure", "fix", "research", "review", "decision"]
+    },
+    "step": {
+      "description": "The step of the RFC the task delivers, or the empty string.",
+      "type": "string"
+    },
+    "rfc": {
+      "description": "The number of the RFC the task belongs to, or the empty string.",
+      "type": "string",
+      "pattern": "^([0-9]{4})?$"
+    },
+    "priority": {
+      "description": "1 is taken first.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "depends-on": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/id" },
+      "uniqueItems": true
+    },
+    "writes": {
+      "description": "The paths only this task may change while it is held.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/path" },
+      "uniqueItems": true
+    },
+    "appends": {
+      "description": "The shared files it may make small additive edits to.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/path" },
+      "uniqueItems": true
+    },
+    "needs": {
+      "type": "array",
+      "items": {
+        "enum": ["owner", "browser", "docker", "network", "reference-app"]
+      },
+      "uniqueItems": true
+    },
+    "checks": {
+      "description": "The commands that pass before the task is submitted, run from the repository's root. `yarn platform:check`, `yarn platform:test` and `yarn prettier:check` run on what the task changed, and `yarn lint:repo` as far as its parts take files; `AEP_WHOLE_TREE=1` before one runs it on the whole tree (work/README.md). A task of kind build or fix needs at least one: its claim and its submit are refused without (the lint is not).",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "claim": {
+      "description": "Null unless the task is in progress.",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["by", "since", "beat"],
+      "properties": {
+        "by": { "$ref": "#/$defs/worker" },
+        "since": { "$ref": "#/$defs/time" },
+        "beat": { "$ref": "#/$defs/time" }
+      }
+    },
+    "review": {
+      "description": "The review mark: who reviews the task in review, since when, and its last beat. Absent or null unless the task is in review and a reviewer ran `task review`.",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["by", "since", "beat"],
+      "properties": {
+        "by": { "$ref": "#/$defs/worker" },
+        "since": { "$ref": "#/$defs/time" },
+        "beat": { "$ref": "#/$defs/time" }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^T-[0-9]{4}$" },
+    "path": {
+      "description": "A file, or a directory ending in `/`, from the repository's root. No wildcard.",
+      "type": "string",
+      "pattern": "^[^/*?\\[\\]{}\\s][^*?\\[\\]{}\\s]*$"
+    },
+    "worker": {
+      "description": "The tool and the model, never a person's name or email address.",
+      "type": "string",
+      "pattern": "^(claude-code|antigravity|cursor|person)/[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "time": {
+      "description": "UTC, to the second.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    }
+  }
+}
