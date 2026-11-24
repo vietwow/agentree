@@ -545,7 +545,7 @@
     font-size: var(--text-sm);
   }
   .bulkbar.enter {
-    animation: pop-up 0.28s var(--spring);
+    animation: pop-up var(--dur-4) var(--spring);
   }
   .btn-inverse {
     color: var(--ink-inv);
@@ -1232,10 +1232,10 @@
     box-shadow: -24px 0 48px -16px rgba(0, 0, 0, 0.7);
   }
   .drawer.enter {
-    animation: drawer-in 0.34s var(--ease-drawer) both;
+    animation: drawer-in var(--dur-5) var(--ease-drawer) both;
   }
   .drawer.enter .drawer-b > * {
-    animation: rise-in 0.38s var(--ease) both;
+    animation: rise-in var(--dur-5) var(--ease) both;
   }
   .drawer.enter .drawer-b > *:nth-child(2) {
     animation-delay: 0.04s;
@@ -1256,7 +1256,7 @@
     border: 1px solid var(--line);
   }
   .drawer.full.enter {
-    animation: float-in 0.26s var(--ease) both;
+    animation: float-in var(--dur-4) var(--ease) both;
   }
   .drawer-scrim {
     position: fixed;
@@ -1268,7 +1268,7 @@
     background: var(--overlay);
   }
   .drawer-scrim.full.enter {
-    animation: fade-in 0.18s both;
+    animation: fade-in var(--dur-2) both;
   }
   .drawer-h {
     display: flex;
@@ -1712,7 +1712,7 @@
   }
   /* route change: content rises in, lightly staggered */
   .fx-route > .page > * {
-    animation: rise-in 0.36s var(--ease) both;
+    animation: rise-in var(--dur-5) var(--ease) both;
   }
   .fx-route > .page > *:nth-child(2) {
     animation-delay: 0.035s;
@@ -1725,27 +1725,27 @@
   }
   .fx-route .grid2 > * > *:nth-child(2),
   .fx-route .grid2 > *:nth-child(2) > *:first-child {
-    animation: rise-in 0.4s 0.09s var(--ease) both;
+    animation: rise-in var(--dur-6) 0.09s var(--ease) both;
   }
   .fx-route .prog > i {
-    animation: grow-x 0.8s 0.12s var(--ease) both;
+    animation: grow-x var(--dur-8) 0.12s var(--ease) both;
   }
   .fx-route .bar {
-    animation: rise-in 0.4s var(--ease) both;
+    animation: rise-in var(--dur-6) var(--ease) both;
   }
   /* task completed */
   .trow.fx-done,
   .mini.fx-done {
-    animation: done-wash 1s var(--ease) both;
+    animation: done-wash var(--dur-8) var(--ease) both;
   }
   .fx-done .check {
-    animation: pop-check 0.42s var(--spring) both;
+    animation: pop-check var(--dur-6) var(--spring) both;
   }
   .fx-done .tt,
   .fx-done .title {
     text-decoration: none !important;
     background: linear-gradient(currentColor, currentColor) 0 58%/0 1.5px no-repeat;
-    animation: strike 0.38s 0.1s var(--ease) forwards;
+    animation: strike var(--dur-5) 0.1s var(--ease) forwards;
   }
   /* dropped, created */
   /* auth + onboarding */
@@ -1757,16 +1757,16 @@
     transition:
       background var(--dur),
       border-color var(--dur),
-      transform 0.12s var(--ease);
+      transform var(--dur-1) var(--ease);
   }
   .toggle::after {
-    transition: transform 0.28s var(--spring);
+    transition: transform var(--dur-4) var(--spring);
   }
   .pcard {
     transition:
       border-color var(--dur),
-      box-shadow 0.2s var(--ease),
-      transform 0.2s var(--ease);
+      box-shadow var(--dur-3) var(--ease),
+      transform var(--dur-3) var(--ease);
   }
   .pcard:hover {
     transform: translateY(-2px);
@@ -1802,7 +1802,7 @@
       width: 280px;
       z-index: var(--z-side);
       transform: translateX(-100%);
-      transition: transform 0.22s var(--ease);
+      transition: transform var(--dur-3) var(--ease);
       box-shadow: var(--shadow-pop);
     }
     .shell.mnav .side {
@@ -1818,7 +1818,7 @@
       inset: 0;
       background: var(--overlay);
       z-index: calc(var(--z-side) - 1);
-      animation: fade-in 0.14s both;
+      animation: fade-in var(--dur) both;
     }
     .set {
       grid-template-columns: minmax(0, 1fr);

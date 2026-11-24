@@ -55,11 +55,20 @@
   /* One horizontal content edge shared by breadcrumb, page headers, toolbars, lists, tables and boards. */
   --gutter: 24px;
 
-  /* Motion. */
+  /* Motion: three curves, a hover's duration, and a scale from quick feedback to slow reveals. */
   --ease: cubic-bezier(0.23, 1, 0.32, 1);
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --dur: 140ms;
+  --dur-1: 120ms;
+  --dur-2: 160ms;
+  --dur-3: 200ms;
+  --dur-4: 280ms;
+  --dur-5: 360ms;
+  --dur-6: 420ms;
+  --dur-7: 600ms;
+  --dur-8: 900ms;
+  --dur-loop: 2s;
 
   /* Layers, lowest first. A layer's scrim sits one below it. */
   --z-bar: 40;

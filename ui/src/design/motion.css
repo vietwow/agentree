@@ -70,7 +70,7 @@
 /* A list's items rising in one after another; each sets `--d`, its delay. */
 @layer components {
   .fx-stagger {
-    animation: rise-in 0.36s var(--ease) both;
+    animation: rise-in var(--dur-5) var(--ease) both;
     animation-delay: var(--d, 0ms);
   }
 }

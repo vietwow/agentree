@@ -239,7 +239,7 @@
     white-space: nowrap;
     z-index: var(--z-tooltip);
     pointer-events: none;
-    animation: fade-in 0.12s 0.35s both;
+    animation: fade-in var(--dur-1) 0.35s both;
   }
   [data-tip-pos="right"]:hover::after,
   [data-tip-pos="right"]:focus-visible::after {
@@ -498,7 +498,7 @@
     background: var(--ink);
   }
   .fx-tabs .tab.on::after {
-    animation: tab-in 0.26s var(--ease);
+    animation: tab-in var(--dur-4) var(--ease);
   }
   .tab .cnt {
     font-size: var(--text-2xs);
@@ -698,7 +698,7 @@
     background: var(--accent);
     transform-origin: left;
     transform: scaleX(var(--p, 0));
-    transition: transform 0.3s var(--ease);
+    transition: transform var(--dur-4) var(--ease);
   }
   .prog.good > i {
     background: var(--good);
@@ -906,7 +906,7 @@
     z-index: calc(var(--z-modal) - 1);
   }
   .scrim.enter {
-    animation: fade-in 0.18s ease both;
+    animation: fade-in var(--dur-2) ease both;
   }
   .modal-wrap {
     position: fixed;
@@ -929,7 +929,7 @@
     max-height: 80vh;
   }
   .modal.enter {
-    animation: float-in 0.26s var(--ease) both;
+    animation: float-in var(--dur-4) var(--ease) both;
   }
   .modal.sm {
     max-width: 420px;
@@ -985,7 +985,7 @@
   }
   .pop.enter {
     --float-y: -4px;
-    animation: float-in 0.16s var(--ease) both;
+    animation: float-in var(--dur-2) var(--ease) both;
   }
   .pop .pin {
     padding: 4px 4px 6px;
@@ -1085,11 +1085,11 @@
     box-shadow: var(--shadow-pop);
     --float-y: 14px;
     --float-scale: 0.96;
-    animation: float-in 0.2s var(--ease) both;
+    animation: float-in var(--dur-3) var(--ease) both;
     max-width: 400px;
   }
   .toast.out {
-    animation: toast-out 0.16s ease both;
+    animation: toast-out var(--dur-2) ease both;
   }
   .toast .i.ok {
     color: var(--good);
