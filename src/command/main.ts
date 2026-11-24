@@ -3,6 +3,7 @@
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import {
   answer,
   ask as askOwner,
@@ -27,9 +28,11 @@ import { claims, ownerToken } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
 import { Refusal } from "../core/errors.ts";
 import { projects, register } from "../core/machine/projects.ts";
+import { loadInWords } from "../daemon/load.ts";
 import type { SlotsView } from "../daemon/queue.ts";
 import { startDaemon } from "../daemon/serve.ts";
 import { demo } from "../demo/demo.ts";
+import { boardServer } from "../mcp/tools.ts";
 import { ask, projectIdOf } from "./daemon.ts";
 import { renderTask } from "../core/task/file.ts";
 import { KINDS, STATUSES, type Kind, type Need, type Tool } from "../core/task/model.ts";
@@ -68,6 +71,7 @@ const USAGE = `Usage: agentree <subcommand> [options]
   register [--name <words>] [--desc <words>]   add this repository to the machine's projects
   projects                              the projects of this machine
   serve [--port <n>]                    the daemon: the UI and its API, on 127.0.0.1 only
+  mcp                                   the board's MCP server on standard input and output, for this repository
   demo <directory>                      make the sample projects there, and register them
 
 Name yourself in AGENTREE_WORKER as <tool>/<model>; a session is told by
@@ -116,8 +120,6 @@ const say = (text: string) => process.stdout.write(`${text}\n`);
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /** How often a command that waits looks at the board again. */
 const POLL_MS = 1000;
-/** The processors a worker with its tool is counted to take, when an agent asks how many more the machine takes. */
-const WORKER_PROCESSORS = 2;
 
 /** A list option given several times, or once with commas. */
 const list = (given: string[] | undefined) =>
@@ -306,23 +308,7 @@ const COMMANDS: Record<string, () => unknown> = {
   async load() {
     const slots = await ask<SlotsView>("/api/slots");
     if (!slots) throw new Refusal("no daemon answers on this machine: start it with: agentree serve");
-    const last = slots.load.at(-1);
-    const share = (value?: number) => (value === undefined ? "not read" : `${Math.round(value * 100)}%`);
-    say(
-      `Load: host ${share(last?.host)}, Docker's machine ${share(last?.vm)} of ${slots.cores} processors; no run is added over ${share(slots.mark)}.`,
-    );
-    say(
-      `Heavy runs: ${slots.runs.length} running, ${slots.queue.length} waiting; between ${slots.bounds.lowest} and ${slots.bounds.highest} at once.`,
-    );
-    say(`Free now, with the margin kept: ${Math.max(0, slots.free.cpu)} processors, ${Math.max(0, slots.free.memory)} GB.`);
-    const over = last === undefined || Math.max(last.host ?? 1, last.vm) > slots.mark;
-    const more =
-      slots.queue.length > 0 || over
-        ? 0
-        : Math.max(0, Math.min(slots.bounds.highest - slots.runs.length, Math.floor(slots.free.cpu / WORKER_PROCESSORS)));
-    say(
-      `Start no more than ${more} more ${more === 1 ? "worker" : "workers"} now${slots.queue.length ? ": heavy runs wait" : over ? ": the machine is past its mark, or its load is not read" : ""}. Ask again before the next.`,
-    );
+    say(loadInWords(slots));
   },
   async wait() {
     const at = context();
@@ -387,6 +373,19 @@ const COMMANDS: Record<string, () => unknown> = {
   serve() {
     const daemon = startDaemon({ ...(values.port ? { port: Number(values.port) } : {}), ui: join(import.meta.dirname, "../../ui/dist") });
     say(`agentree serves ${projects().length} ${projects().length === 1 ? "project" : "projects"}. Open:\n  ${daemon.address}`);
+  },
+  mcp() {
+    const at = context();
+    const project = projectIdOf(at.places.root);
+    const daemon = <T>(path: string, body?: unknown) =>
+      ask<T>(path, body).then((answer) => answer ?? Promise.reject(new Refusal("no daemon answers on this machine: start it with: agentree serve")));
+    serveStdio(() =>
+      boardServer({
+        context: at,
+        run: (command, cwd, task, by) => daemon(`/api/projects/${project}/run`, { command, cwd, task, by }),
+        load: () => daemon<SlotsView>("/api/slots").then(loadInWords),
+      }),
+    );
   },
   demo() {
     if (!rest[0]) throw new Refusal("name the directory the sample projects are made in");

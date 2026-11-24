@@ -559,6 +559,17 @@ answered. The command finds the daemon at `127.0.0.1:4517` (or
 `AGENTREE_PORT`) with the machine's token. The other subcommands still
 write the board themselves, under its lock.
 
+The MCP server is the daemon's, at `/mcp/<project>` over streamable
+HTTP with the machine's token as a bearer, and `agentree mcp` in a
+repository over standard input and output. Its tools are the worker's
+and the reviewer's calls of the core (`board`, `next`, `show`, `load`,
+`recall`, `claim`, `beat`, `log`, `ask`, `answers`, `tick`, `scope`,
+`commit`, `run`, `submit`, `release`, `new`, `review`, `accept`,
+`reject`, `land`, `remember`, `acceptFact`); each call that acts names
+its worker and its session, and a session that calls is recorded as
+there. What is the owner's alone has no tool. A refusal of the board is
+the tool's answer, in the board's words.
+
 ### How it looks
 
 The owner gave a picture of an interface to follow (a screenshot of a

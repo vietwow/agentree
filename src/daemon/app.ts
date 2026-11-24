@@ -4,6 +4,7 @@
  * of the core, a write one call of it. It answers only its own origin, and
  * only a request that carries the machine's token.
  */
+import { createMcpHandler } from "@modelcontextprotocol/server";
 import { Hono, type Context as Request } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { streamSSE } from "hono/streaming";
@@ -21,7 +22,9 @@ import { filesView } from "../core/views/files.ts";
 import { agentsView, milestonesView, projectView } from "../core/views/project.ts";
 import { activityView, taskDetailView, taskView } from "../core/views/tasks.ts";
 import { toolsView } from "../core/views/tools.ts";
+import { boardServer } from "../mcp/tools.ts";
 import { fingerprint } from "./fingerprint.ts";
+import { loadInWords } from "./load.ts";
 import type { Queue } from "./queue.ts";
 
 /** What changed, for the browser to read again: a project's board, or the machine's queue. */
@@ -74,7 +77,7 @@ export function createApp(daemon: Daemon) {
       return request.redirect(request.req.path);
     }
     const bearer = request.req.header("authorization")?.replace(/^Bearer /, "");
-    if (request.req.path.startsWith("/api/") && getCookie(request, COOKIE) !== daemon.token && bearer !== daemon.token)
+    if (/^\/(api|mcp)\//.test(request.req.path) && getCookie(request, COOKIE) !== daemon.token && bearer !== daemon.token)
       return request.json({ error: "this request carries no token of the daemon; open the address `agentree serve` printed" }, 401);
     return next();
   });
@@ -225,6 +228,36 @@ export function createApp(daemon: Daemon) {
   app.post("/api/slots/bounds", async (request) => {
     daemon.queue.setBounds((await request.req.json()) as Partial<Bounds>);
     return request.json(daemon.queue.view().bounds);
+  });
+
+  // The board's tools for a session that cannot run the command: streamable HTTP, a project an address.
+  const servers = new Map<string, ReturnType<typeof createMcpHandler>>();
+  app.all("/mcp/:project", (request) => {
+    const project = request.req.param("project");
+    const context = contextOf(request);
+    const config = configOf(context.places);
+    const handler =
+      servers.get(project) ??
+      createMcpHandler(() =>
+        boardServer({
+          context,
+          run: (command, cwd, task, by) =>
+            daemon.queue.run({
+              project,
+              task,
+              by,
+              what: "command",
+              command,
+              cwd,
+              heavy: isHeavy(config, command),
+              boundMinutes: config.boundMinutes,
+              keepOutput: true,
+            }),
+          load: () => Promise.resolve(loadInWords(daemon.queue.view())),
+        }),
+      );
+    servers.set(project, handler);
+    return handler.fetch(request.req.raw).finally(() => daemon.events.emit({ project, what: "board" }));
   });
 
   app.all("/api/*", (request) => request.json({ error: "the daemon has no such address" }, 404));

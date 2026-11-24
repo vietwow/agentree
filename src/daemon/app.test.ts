@@ -104,3 +104,43 @@ test("the memory, the options and the slots' bounds are read and changed the sam
   assert.deepEqual((await get("/api/slots")).runs, []);
   assert.deepEqual(await get("/api/projects/project/documents"), []);
 });
+
+test("the board's tools are served as MCP at a project's address: a session claims, logs and is refused in the board's words", async () => {
+  await post("/api/projects/project/tasks", NEW);
+  const call = async (method: string, params: unknown) => {
+    const response = await app.request("/mcp/project", {
+      method: "POST",
+      headers: { ...headers, "content-type": "application/json", accept: "application/json, text/event-stream" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+    });
+    const sent = (await response.text()).split("\n").find((line) => line.startsWith("data: "))!;
+    return (JSON.parse(sent.slice(6)) as { result: any }).result;
+  };
+  const tool = (name: string, args: Record<string, unknown>) =>
+    call("tools/call", { name, arguments: { worker: "codex/gpt-5", session: "s-1", ...args } });
+  const listed = (await call("tools/list", {})).tools.map((each: { name: string }) => each.name);
+  assert.deepEqual(listed.slice(0, 6), ["board", "next", "show", "load", "recall", "claim"]);
+  assert.ok(!listed.includes("answer") && !listed.includes("move"), "what is the owner's alone has no tool");
+  assert.match(
+    (await tool("claim", { task: "T-0001" })).content[0].text,
+    /^T-0001 is yours\. Its tree: .+\/project-trees\/T-0001 \(branch task\/T-0001\)/,
+  );
+  assert.equal((await tool("log", { task: "T-0001", entry: "Did: nothing yet." })).content[0].text, "The entry is in its Log.");
+  const refused = await call("tools/call", {
+    name: "log",
+    arguments: { worker: "cursor/composer-2", session: "s-2", task: "T-0001", entry: "Mine." },
+  });
+  assert.deepEqual(
+    [refused.isError, refused.content[0].text],
+    [true, "Refused: T-0001 is not held by cursor/composer-2: it is in-progress, held by codex/gpt-5"],
+  );
+  assert.match((await tool("run", { task: "T-0001", command: "pwd" })).content[0].text, /^The command passed\.\n\n.+\/project-trees\/T-0001$/);
+  assert.equal((await app.request("/mcp/project", { method: "POST", headers: { host: "127.0.0.1:4517" } })).status, 401);
+  assert.deepEqual(
+    (await get("/api/projects/project/agents")).sessions.map((session: { id: string; task?: string }) => [session.id, session.task]),
+    [
+      ["s-1", "T-0001"],
+      ["s-2", undefined],
+    ],
+  );
+});
