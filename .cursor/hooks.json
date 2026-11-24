@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "agentree hook cursor sessionStart"
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "agentree hook cursor preToolUse"
+      }
+    ],
+    "stop": [
+      {
+        "command": "agentree hook cursor stop"
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": "agentree hook cursor sessionEnd"
+      }
+    ],
+    "subagentStart": [
+      {
+        "command": "agentree hook cursor subagentStart"
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": "agentree hook cursor subagentStop"
+      }
+    ]
+  }
+}

@@ -31,3 +31,44 @@ change it from here. What to read there is in
 - Comments and documents describe the system as it is, in the present
   tense, never how it got there.
 - Every library and tool is on its latest release.
+
+<!-- agentree:start -->
+
+## Taking work
+
+The work of this repository is on a board: one task a file, read and
+written only through `agentree` (the command) or its MCP tools of the
+same names. No task file is edited by hand, and none is in your tree.
+
+Name yourself by tool and model, never by a person: `<tool>/<model>`,
+as `claude-code/opus-5.5` or `codex/gpt-5.6`, in `AGENTREE_WORKER`
+for the command and in `worker` for a tool call, with your session's id.
+
+1. `agentree next` lists the ready tasks and what keeps each from being
+   claimed. `agentree claim T-NNNN` takes one and prints its tree, its
+   brief and what the project remembers for it. A session holds one task.
+2. Work only in the task's tree, on its branch, and change only the
+   paths under its `writes`; in a file under `appends`, add only.
+   Commit there (`agentree commit T-NNNN -m ...` when you cannot).
+3. Run every command of the project through `agentree run T-NNNN --
+   <command>`: a heavy one waits for its turn on the machine.
+4. A question for the owner goes on the card: `agentree ask T-NNNN`.
+   The task stays yours; read the answer with `agentree wait T-NNNN`.
+5. Before you stop, whatever the reason, `agentree log T-NNNN`: what was
+   done, the checks and their numbers, what is left, what you found
+   wrong outside your paths, what was not verified.
+6. `agentree submit T-NNNN` when "Done when" holds. Its checks run in
+   the queue; take your next task meanwhile. `agentree release T-NNNN`
+   gives it back unfinished, with what the next worker starts from.
+7. Never review a task your session built. `agentree review T-NNNN`
+   marks a task as yours to review; read its diff against its base in
+   its tree, run its checks again, then `agentree accept` or
+   `agentree reject` with findings, each one checkable.
+8. Before you start another agent, `agentree load`: start no more than
+   it says, and none while heavy runs wait.
+
+Never: edit outside your task's paths; edit another task's file or
+Log; run git in the main checkout or in another's tree; push or fetch.
+What the project should remember goes to `agentree remember`.
+
+<!-- agentree:end -->

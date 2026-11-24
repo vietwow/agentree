@@ -1,0 +1,17 @@
+{
+  "heavy": [
+    "\\b(test|e2e|vitest|jest|playwright|build)\\b"
+  ],
+  "image": "",
+  "setup": [],
+  "volumes": [],
+  "boundMinutes": 90,
+  "checks": [
+    "pnpm typecheck",
+    "pnpm lint",
+    "pnpm test"
+  ],
+  "notify": "",
+  "maxTrees": 0,
+  "areas": []
+}

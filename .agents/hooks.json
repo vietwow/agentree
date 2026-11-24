@@ -1,0 +1,27 @@
+{
+  "agentree": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "agentree hook antigravity SessionStart"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "agentree hook antigravity PreToolUse"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "agentree hook antigravity Stop"
+      }
+    ]
+  }
+}

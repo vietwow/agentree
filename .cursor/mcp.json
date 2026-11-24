@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "agentree": {
+      "type": "stdio",
+      "command": "agentree",
+      "args": [
+        "mcp"
+      ]
+    }
+  }
+}
