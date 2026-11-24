@@ -36,7 +36,7 @@ export type Ask = {
   /** Keep what the command said when it passes too: a worker's own run, whose words it asked for. */
   keepOutput?: boolean;
   /** The project's image, and the directory mounted into its container at the same path: the one that holds the repository and its trees. */
-  container?: { image: string; mount: string };
+  container?: { image: string; mount: string; volumes?: { name: string; path: string }[] };
 };
 export type Ran = { result: "passed" | "failed" | "timed-out"; tookMs: number; waitedMs: number; output: string; took?: Cost };
 
@@ -176,6 +176,7 @@ export function createQueue(options: { home: string; now?: () => Date; machine?:
               `${Math.max(MIN_MEMORY_MB, Math.round(given.memory * 1024))}m`,
               "--volume",
               `${ask.container.mount}:${ask.container.mount}`,
+              ...(ask.container.volumes ?? []).flatMap((volume) => ["--volume", `${volume.name}:${volume.path}`]),
               "--workdir",
               ask.cwd,
               ...Object.entries(variables).flatMap(([key, value]) => ["--env", `${key}=${value}`]),

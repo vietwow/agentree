@@ -11,6 +11,10 @@ export type ProjectConfig = {
   heavy: string[];
   /** The image with the project's toolchain: its commands run in a container of it, each held to what it is given. None named, they run on the daemon's own system. */
   image: string;
+  /** The commands that make a new tree runnable, run in it at its claim: an install, a copy of what git ignores. */
+  setup: string[];
+  /** The directories of a tree kept in a volume of the project's container and not on the host: its dependencies, its caches. */
+  volumes: string[];
   /** No check runs longer than this many minutes. */
   boundMinutes: number;
   /** The checks a new build or fix task is given when it names none. */
@@ -22,6 +26,8 @@ export type ProjectConfig = {
 export const DEFAULT_CONFIG: ProjectConfig = {
   heavy: ["\\b(test|e2e|vitest|jest|playwright|build)\\b"],
   image: "",
+  setup: [],
+  volumes: [],
   boundMinutes: 90,
   checks: [],
   areas: [],

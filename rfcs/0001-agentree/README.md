@@ -565,8 +565,19 @@ is given the heaviest's, or a quarter of the machine. A project with no
 image runs its commands as processes of the daemon's own system, where
 nothing is measured. Tried on 2026-11-24 with Docker 29.9.3 and
 `alpine:3`: the limit read back in `cpu.max`, the measure, and the end
-at the bound. A tree's dependencies in a volume, and its install at
-the claim, are not built.
+at the bound.
+
+A project's part names `setup`, the commands that make a new tree
+runnable, and `volumes`, the directories of a tree kept in a volume of
+its container (`agentree-<project>-<task>-<directory>`) and not on the
+host. A claim that makes a tree marks its setup as waiting; the daemon
+runs it on its next look, each command through the queue as a heavy
+run, and a submit's checks wait for it. A setup that fails says which
+command failed and what it said. A tree a claim before left is not set
+up again. The command runs the setup itself when no daemon answers.
+The daemon removes a tree's volumes once the tree is gone. Tried with
+`alpine:3`: a file written into a volume by the setup was not in the
+host's tree, and the volume went with the tree.
 
 `agentree demo <directory>` makes four projects there and registers
 them: the sample board the UI was built on, as a real repository (its

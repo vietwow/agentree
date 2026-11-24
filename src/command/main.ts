@@ -28,7 +28,8 @@ import { accept, check, commit, land, reject, review, scope, submit, waitingToLa
 import { setReviewOwnTasks } from "../core/board/options.ts";
 import { boardOf } from "../core/board/places.ts";
 import { lintProblems, obstacles, unwritten } from "../core/board/rules.ts";
-import { claims, ownerToken } from "../core/board/state.ts";
+import { setUpTree } from "../core/board/setup.ts";
+import { claims, ownerToken, setupOf } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
 import { Refusal } from "../core/errors.ts";
 import { projects, register } from "../core/machine/projects.ts";
@@ -244,11 +245,17 @@ const COMMANDS: Record<string, () => unknown> = {
     const blank = unwritten(task);
     say(`${task.fields.id} is ${task.fields.status}.${blank.length ? ` Write its ${blank.join(", ")} before it is claimed.` : ""}`);
   },
-  claim() {
+  async claim() {
     const at = context();
     const { task, claim: hold } = claim(at, actor(at), id(), { ownerTold: values["owner-told"] ?? false });
     say(`${task.fields.id} is yours. Work in its tree, on its branch, and change only its paths:\n  ${hold.tree}  (${hold.branch})\n`);
     process.stdout.write(renderTask(task));
+    if (setupOf(at.places, task.fields.id)?.state !== "waiting") return;
+    // The daemon sets a new tree up while its worker reads the task; with no daemon, the command does it here.
+    if (projectIdOf(at.places.root) && (await ask("/api/slots").catch(() => undefined)))
+      return say("\nIts tree is being set up by the daemon: the project's commands run in it once that is done.");
+    const setup = setUpTree(at, task.fields.id);
+    say(setup?.state === "done" ? "\nIts tree is set up." : `\nIts tree's setup failed. ${setup?.output ?? ""}`);
   },
   beat() {
     const at = context();

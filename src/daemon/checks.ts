@@ -5,7 +5,7 @@
  */
 import type { Context } from "../core/board/actions.ts";
 import { checksToRun, settleChecks } from "../core/board/lifecycle.ts";
-import { checksOf, submissionOf, type CheckRun } from "../core/board/state.ts";
+import { checksOf, setupOf, submissionOf, type CheckRun } from "../core/board/state.ts";
 import { readBoard } from "../core/board/store.ts";
 import { askFor } from "./asks.ts";
 import type { Queue } from "./queue.ts";
@@ -21,7 +21,9 @@ export function runWaitingChecks(project: string, context: Context, queue: Queue
       (task) =>
         task.fields.status === "checking" &&
         checksOf(context.places, task.fields.id)?.state === "queued" &&
-        !running.has(`${project} ${task.fields.id}`),
+        !running.has(`${project} ${task.fields.id}`) &&
+        // A check runs in a tree that is set up: one whose setup still runs waits for it.
+        !["waiting", "running"].includes(setupOf(context.places, task.fields.id)?.state ?? ""),
     );
   return Promise.all(
     waiting.map(async ({ fields }) => {

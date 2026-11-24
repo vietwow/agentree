@@ -21,6 +21,7 @@ import {
   putSubmission,
   removeClaim,
   removeReview,
+  removeSetup,
   removeSubmission,
   reviewOf,
   submissionOf,
@@ -327,6 +328,7 @@ export function land(context: Context, id: string): Landing {
     tryGit(places.root, "worktree", "unlock", submission.tree);
     tryGit(places.root, "worktree", "remove", submission.tree);
     tryGit(places.root, "branch", "--quiet", "-D", submission.branch);
+    removeSetup(places, id);
     afterLanding(context, id, at);
     return { task, landed };
   });

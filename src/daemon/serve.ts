@@ -9,6 +9,7 @@ import { createApp, createEvents, type Events } from "./app.ts";
 import { fingerprint } from "./fingerprint.ts";
 import { runWaitingChecks } from "./checks.ts";
 import { createQueue, type Queue } from "./queue.ts";
+import { removeLeftVolumes, runWaitingSetups } from "./setup.ts";
 
 export const DEFAULT_PORT = 4517;
 /** How often the daemon looks for a change it did not make: a command's write, or an edit by hand. */
@@ -39,8 +40,12 @@ function watch(events: Events, queue: Queue, now: () => Date) {
       try {
         // A task's checks run in the tree of its project, each heavy one in its turn of the machine's queue.
         runWaitingChecks(id, { places: placesOfProject(id), now }, queue).catch((error: unknown) => console.error(error));
+        runWaitingSetups(id, { places: placesOfProject(id), now }, queue).catch((error: unknown) => console.error(error));
         const print = fingerprint(id);
-        if (seen.has(id) && seen.get(id) !== print) events.emit({ project: id, what: "board" });
+        if (seen.has(id) && seen.get(id) !== print) {
+          events.emit({ project: id, what: "board" });
+          removeLeftVolumes(id, { places: placesOfProject(id), now });
+        }
         seen.set(id, print);
       } catch {
         // A project whose repository is gone or mid-change is looked at again on the next period.

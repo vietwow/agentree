@@ -29,7 +29,10 @@ export type CheckRun = { command: string; result: "passed" | "failed" | "timed-o
 /** The checks of a task's last submission. */
 export type Checks = { commit: string; state: "queued" | "running" | "finished"; runs: CheckRun[] };
 
-type Kind = "claims" | "reviews" | "submissions" | "checks";
+/** How the setup of a task's tree went: the commands that make it runnable, run at its claim. */
+export type Setup = { state: "waiting" | "running" | "done" | "failed"; output: string };
+
+type Kind = "claims" | "reviews" | "submissions" | "checks" | "setups";
 
 const directory = (places: Places, kind: Kind) => join(places.state, kind);
 const fileOf = (places: Places, kind: Kind, id: string) => join(directory(places, kind), `${id}.json`);
@@ -88,6 +91,10 @@ export const putClaim = (places: Places, id: string, claim: Claim) => put(places
 export const submissionOf = (places: Places, id: string) => read<Submission>(places, "submissions", id);
 export const putSubmission = (places: Places, id: string, submission: Submission) => put(places, "submissions", id, submission);
 export const removeSubmission = (places: Places, id: string) => rmSync(fileOf(places, "submissions", id), { force: true });
+
+export const setupOf = (places: Places, id: string) => read<Setup>(places, "setups", id);
+export const putSetup = (places: Places, id: string, setup: Setup) => put(places, "setups", id, setup);
+export const removeSetup = (places: Places, id: string) => rmSync(fileOf(places, "setups", id), { force: true });
 
 export const checksOf = (places: Places, id: string) => read<Checks>(places, "checks", id);
 export const putChecks = (places: Places, id: string, checks: Checks) => put(places, "checks", id, checks);

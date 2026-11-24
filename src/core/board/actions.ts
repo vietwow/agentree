@@ -24,7 +24,7 @@ import { configOf } from "./config.ts";
 import { TASK_BRANCH, treeOf, type Places } from "./places.ts";
 import type { Run } from "./run.ts";
 import { dependenciesDone, isHeld as held, nextId, obstacles, overlaps } from "./rules.ts";
-import { beat as beatHold, claimOf, claims, createClaim, putClaim, removeClaim, reviewOf, type Claim } from "./state.ts";
+import { beat as beatHold, claimOf, claims, createClaim, putClaim, putSetup, removeClaim, reviewOf, type Claim } from "./state.ts";
 import { fromItsRead, readBoard, taskOf, writeTask, type Board, type Stored } from "./store.ts";
 
 /** A claim, or a review mark, not beaten for this long is stale: a tool's hooks beat it at each call. */
@@ -159,16 +159,16 @@ export function promote(context: Context, actor: Actor): string[] {
 }
 
 /** The task's tree: made from the head of the main checkout on a branch of its own, or the one a claim before left. */
-function treeFor(places: Places, id: string, by: string): { tree: string; branch: string; base: string } {
+function treeFor(places: Places, id: string, by: string): { tree: string; branch: string; base: string; made: boolean } {
   const tree = treeOf(places, id);
   const branch = TASK_BRANCH(id);
   const exists = tryGit(places.root, "rev-parse", "--verify", "--quiet", `refs/heads/${branch}`).status === 0;
-  if (!existsSync(tree))
-    git(places.root, "worktree", "add", "--quiet", "--relative-paths", ...(exists ? [tree, branch] : ["-b", branch, tree, "HEAD"]));
+  const made = !existsSync(tree);
+  if (made) git(places.root, "worktree", "add", "--quiet", "--relative-paths", ...(exists ? [tree, branch] : ["-b", branch, tree, "HEAD"]));
   else if (!exists) throw new Refusal(`${tree} is there and the branch ${branch} is not: it is no tree of this task. Remove it and claim again`);
   tryGit(places.root, "worktree", "unlock", tree);
   git(places.root, "worktree", "lock", "--reason", `claimed by ${by}`, tree);
-  return { tree, branch, base: git(places.root, "merge-base", "HEAD", branch) };
+  return { tree, branch, base: git(places.root, "merge-base", "HEAD", branch), made };
 }
 
 /** Takes a ready task: the claim one worker alone creates, its tree, and the brief to work from. */
@@ -198,8 +198,11 @@ export function claim(context: Context, actor: Actor, id: string, options: { own
         if (theirs && other < id && overlaps(task, theirs).length)
           throw new Refusal(`${id} is not claimed: ${other} was claimed at the same moment and overlaps it`);
       }
-      Object.assign(mine, treeFor(context.places, id, by));
+      const { made, ...tree } = treeFor(context.places, id, by);
+      Object.assign(mine, tree);
       putClaim(context.places, id, mine);
+      // A tree made anew is set up before it is worked in; one a claim before left is as that claim left it.
+      if (made && configOf(context.places).setup.length) putSetup(context.places, id, { state: "waiting", output: "" });
       const note = [
         `Claimed by ${by}; tree ${mine.tree}, branch ${mine.branch}, from ${mine.base.slice(0, 12)}.`,
         options.ownerTold ? "The owner told this worker to take it." : "",
