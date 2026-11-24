@@ -212,6 +212,19 @@ backlog ─▶ ready ─claim─▶ in-progress ─submit─▶ checking ─pass
 - `accepted`: reviewed, waiting for its turn to land. `done` means its
   change is on `main`.
 
+As built: a submit is refused before any check runs for a missing Log
+entry, a change not committed, a file outside the task's paths, no
+change at all (build and fix) or a conflict with what landed. A failing
+check gives the task back to its worker, in progress and still held; a
+rejection and a landing that is sent back make it `ready`, with its tree
+and branch kept for its next claim. The machine's state also holds the
+submission (who built it, the commit that was checked, its base) and the
+result of each check. Until the daemon's queue runs them (step 10),
+`agentree submit` runs the checks before it returns, by the shell, in
+the task's tree. A landing makes ready each backlog task that waited
+for it and now waits for nothing, and done the parent whose parts are
+all done. `agentree commit` commits under the worker's name.
+
 ## A worktree a task, and what git is used for
 
 | Need                                         | What git gives                                                                                                                                    |

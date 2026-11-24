@@ -17,9 +17,11 @@ Status: being built while its first RFC,
 The core holds the task file, the board on its branch `agentree/board`,
 the machine's state under the git common directory, and these changes:
 `init`, `new`, `claim` (with the task's tree), `beat`, `log`, `ask`,
-`answer`, `tick`, `release`, `move`, `promote` and `lint`. Submitting,
-checks, review, landing, the daemon, MCP and the kickstart of each tool
-are not built yet.
+`answer`, `tick`, `scope`, `commit`, `submit` (with its checks),
+`release`, `review`, `accept`, `reject`, `land`, `option`, `move`,
+`promote` and `lint`. A check runs by the shell in the task's tree. The
+daemon, the queue of heavy runs, the project's container, MCP, memory
+and the kickstart of each tool are not built yet.
 
 ```sh
 pnpm install

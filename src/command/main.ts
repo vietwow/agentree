@@ -4,13 +4,15 @@ import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { answer, ask, beat, claim, create, isStale, log, move, promote, release, tick, type Actor, type Context } from "../core/board/actions.ts";
 import { init } from "../core/board/init.ts";
+import { accept, check, commit, land, reject, review, scope, submit, waitingToLand } from "../core/board/lifecycle.ts";
+import { setReviewOwnTasks } from "../core/board/options.ts";
 import { boardOf } from "../core/board/places.ts";
 import { lintProblems, obstacles, unwritten } from "../core/board/rules.ts";
 import { claims, ownerToken } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
 import { Refusal } from "../core/errors.ts";
 import { renderTask } from "../core/task/file.ts";
-import { KINDS, STATUSES, type Kind, type Need } from "../core/task/model.ts";
+import { KINDS, STATUSES, type Kind, type Need, type Tool } from "../core/task/model.ts";
 
 const USAGE = `Usage: agentree <subcommand> [options]
 
@@ -28,7 +30,15 @@ const USAGE = `Usage: agentree <subcommand> [options]
   ask T-NNNN [--choice <words>]... < question.md
   answer T-NNNN [--question <n>] < answer.md       (the owner's)
   tick T-NNNN <n> [--undo]              mark subtask n done
+  scope T-NNNN                          the files its tree changed, by whose they are
+  commit T-NNNN -m <message>            commit its tree on its branch, for a session that cannot
+  submit T-NNNN                         the scope check, then its checks; review when they pass
   release T-NNNN [--blocked] < why.md   give it back without finishing
+  review T-NNNN [--drop]                mark it as under review by you
+  accept T-NNNN < review.md             reviewed; it waits for its turn to land
+  reject T-NNNN < findings.md           ready again, with the findings
+  land [T-NNNN]                         land an accepted task on main, or each that waits, in turn
+  option review-own-tasks <tool> on|off (the owner's)
   move T-NNNN backlog|ready|dropped     (the owner's)
   promote                               make ready every backlog task that waits for nothing (the owner's)
   lint                                  what is wrong on the board
@@ -47,6 +57,8 @@ const { values, positionals } = parseArgs({
     backlog: { type: "boolean" },
     blocked: { type: "boolean" },
     undo: { type: "boolean" },
+    drop: { type: "boolean" },
+    message: { type: "string", short: "m" },
     title: { type: "string" },
     kind: { type: "string" },
     priority: { type: "string" },
@@ -204,6 +216,56 @@ const COMMANDS: Record<string, () => void> = {
     const at = context();
     const task = release(at, actor(at), id(), stdin("what was done and what is left"), { blocked: values.blocked ?? false });
     say(`${id()} is ${task.fields.status}; its tree and branch stay for the next worker`);
+  },
+  scope() {
+    const { mine, others } = scope(context(), id());
+    say(mine.length ? `Yours:\n${mine.map((file) => `  ${file}`).join("\n")}` : "Its tree changed no file of its paths.");
+    if (others.length) {
+      say(`Outside its "writes" and "appends":\n${others.map((file) => `  ${file}`).join("\n")}`);
+      process.exitCode = 1;
+    }
+  },
+  commit() {
+    const at = context();
+    say(`${id()}: committed as ${commit(at, actor(at), id(), values.message ?? "").slice(0, 12)}`);
+  },
+  submit() {
+    const at = context();
+    const { submission } = submit(at, actor(at), id());
+    say(`${id()}: submitted at ${submission.commit.slice(0, 12)}; its checks run in ${submission.tree}`);
+    const task = check(at, id());
+    say(task.log.at(-1)!.text);
+    if (task.fields.status !== "review") process.exitCode = 1;
+  },
+  review() {
+    const at = context();
+    review(at, actor(at), id(), { drop: values.drop ?? false });
+    say(values.drop ? `${id()}: your review mark is given back` : `${id()} is under review by you; accept or reject it`);
+  },
+  accept() {
+    const at = context();
+    accept(at, actor(at), id(), stdin("the review"));
+    say(`${id()} is accepted; it waits for its turn to land`);
+  },
+  reject() {
+    const at = context();
+    reject(at, actor(at), id(), stdin("the findings"));
+    say(`${id()} is ready again, with the findings in its Log`);
+  },
+  land() {
+    const at = context();
+    for (const each of rest[0] ? [rest[0]] : waitingToLand(at)) {
+      const landing = land(at, each);
+      say(landing.landed ? `${each} landed on main as ${landing.landed.slice(0, 12)}` : `${each} is ${landing.task.fields.status}. ${landing.why}`);
+    }
+  },
+  option() {
+    const at = context();
+    const [name, tool, to] = rest;
+    if (name !== "review-own-tasks" || (to !== "on" && to !== "off")) throw new Refusal("the option is: review-own-tasks <tool> on|off");
+    if (!actor(at).owner) throw new Refusal("changing an option is the owner's: it needs the owner's token");
+    setReviewOwnTasks(at.places, tool as Tool, to === "on");
+    say(`${tool} ${to === "on" ? "may" : "may not"} review its own tasks`);
   },
   move() {
     const at = context();

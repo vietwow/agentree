@@ -8,20 +8,22 @@ import { Refusal } from "../errors.ts";
 import { git, tryGit } from "../git.ts";
 import { DAEMON, ID_PATTERN, isWorker, KINDS, NEEDS, stamp, statusLine, type Kind, type Need, type Status, type Task } from "../task/model.ts";
 import { TASK_BRANCH, treeOf, type Places } from "./places.ts";
+import type { Run } from "./run.ts";
 import { dependenciesDone, isHeld as held, nextId, obstacles, overlaps } from "./rules.ts";
-import { beat as beatHold, claimOf, claims, createClaim, removeClaim, reviewOf, type Claim } from "./state.ts";
+import { beat as beatHold, claimOf, claims, createClaim, putClaim, removeClaim, reviewOf, type Claim } from "./state.ts";
 import { fromItsRead, readBoard, taskOf, writeTask, type Board, type Stored } from "./store.ts";
 
 /** A claim, or a review mark, not beaten for this long is stale. */
 export const STALE_AFTER_MS = 4 * 60 * 60 * 1000;
 
 /** Where a change runs and what time it is. */
-export type Context = { places: Places; now: () => Date };
+export type Context = { places: Places; now: () => Date; run?: Run };
 
 /** Who asks for a change: a worker by its name and its session, and whether it showed the owner's token. */
 export type Actor = { worker: string; session: string; owner: boolean };
 
-function worker(actor: Actor): string {
+/** The actor's name, refused when it is no worker's. */
+export function worker(actor: Actor): string {
   if (!isWorker(actor.worker))
     throw new Refusal(
       `"${actor.worker}" is no worker's name; it is <tool>/<model>, as codex/gpt-5 or person/owner, never a person's name or address`,
@@ -29,22 +31,24 @@ function worker(actor: Actor): string {
   return actor.worker;
 }
 
-function owner(actor: Actor, what: string) {
+/** Refuses what is the owner's alone to an actor without the owner's token. */
+export function owner(actor: Actor, what: string) {
   if (!actor.owner) throw new Refusal(`${what} is the owner's: it needs the owner's token`);
 }
 
-const tasks = (board: Board) => board.tasks.map((stored) => stored.task);
+export const tasks = (board: Board) => board.tasks.map((stored) => stored.task);
 
 /** A task with a Log entry more. */
 const logged = (task: Task, by: string, at: string, text: string): Task => ({ ...task, log: [...task.log, { at, by, text: text.trim() }] });
 
 /** A task in another status, with the Log entry that records the change and what is said of it. */
-function moved(task: Task, to: Status, by: string, at: string, note = ""): Task {
+export function moved(task: Task, to: Status, by: string, at: string, note = ""): Task {
   const entry = [statusLine(task.fields.status, to), note.trim()].filter(Boolean).join("\n\n");
   return logged({ ...task, fields: { ...task.fields, status: to } }, by, at, entry);
 }
 
-function holding(context: Context, board: Board, id: string, actor: Actor): { stored: Stored; claim: Claim } {
+/** The task and the claim of the worker that holds it; any other is refused. */
+export function holding(context: Context, board: Board, id: string, actor: Actor): { stored: Stored; claim: Claim } {
   const stored = taskOf(board, id);
   const claim = claimOf(context.places, id);
   if (!held(stored.task) || !claim || claim.by !== actor.worker || claim.session !== actor.session)
@@ -181,8 +185,7 @@ export function claim(context: Context, actor: Actor, id: string, options: { own
           throw new Refusal(`${id} is not claimed: ${other} was claimed at the same moment and overlaps it`);
       }
       Object.assign(mine, treeFor(context.places, id, by));
-      removeClaim(context.places, id);
-      createClaim(context.places, id, mine);
+      putClaim(context.places, id, mine);
       const note = [
         `Claimed by ${by}; tree ${mine.tree}, branch ${mine.branch}, from ${mine.base.slice(0, 12)}.`,
         options.ownerTold ? "The owner told this worker to take it." : "",

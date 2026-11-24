@@ -20,7 +20,16 @@ export type Hold = {
 /** A claim also names the task's tree, its branch and the commit of `main` it was made at. */
 export type Claim = Hold & { tree: string; branch: string; base: string };
 
-type Kind = "claims" | "reviews";
+/** What a submit recorded: who built the task, and the commit its checks and its review are of. */
+export type Submission = { by: string; session: string; at: string; commit: string; base: string; tree: string; branch: string };
+
+/** One check of a task, as it ran. */
+export type CheckRun = { command: string; result: "passed" | "failed" | "timed-out"; tookMs: number; waitedMs: number; output: string };
+
+/** The checks of a task's last submission. */
+export type Checks = { commit: string; state: "queued" | "running" | "finished"; runs: CheckRun[] };
+
+type Kind = "claims" | "reviews" | "submissions" | "checks";
 
 const directory = (places: Places, kind: Kind) => join(places.state, kind);
 const fileOf = (places: Places, kind: Kind, id: string) => join(directory(places, kind), `${id}.json`);
@@ -47,7 +56,7 @@ function replace(file: string, value: unknown) {
 }
 
 /** Creates a hold that is not there yet; false when another worker created it first. */
-function create(places: Places, kind: Kind, id: string, value: Hold): boolean {
+function create(places: Places, kind: Kind, id: string, value: unknown): boolean {
   mkdirSync(directory(places, kind), { recursive: true });
   try {
     writeFileSync(fileOf(places, kind, id), `${JSON.stringify(value, null, 2)}\n`, { flag: "wx" });
@@ -67,6 +76,21 @@ export const reviewOf = (places: Places, id: string) => read<Hold>(places, "revi
 export const reviews = (places: Places) => all<Hold>(places, "reviews");
 export const createReview = (places: Places, id: string, mark: Hold) => create(places, "reviews", id, mark);
 export const removeReview = (places: Places, id: string) => rmSync(fileOf(places, "reviews", id), { force: true });
+
+/** Writes a record whole, in place of the one that was there. */
+function put(places: Places, kind: Kind, id: string, value: unknown) {
+  mkdirSync(directory(places, kind), { recursive: true });
+  replace(fileOf(places, kind, id), value);
+}
+
+export const putClaim = (places: Places, id: string, claim: Claim) => put(places, "claims", id, claim);
+
+export const submissionOf = (places: Places, id: string) => read<Submission>(places, "submissions", id);
+export const putSubmission = (places: Places, id: string, submission: Submission) => put(places, "submissions", id, submission);
+export const removeSubmission = (places: Places, id: string) => rmSync(fileOf(places, "submissions", id), { force: true });
+
+export const checksOf = (places: Places, id: string) => read<Checks>(places, "checks", id);
+export const putChecks = (places: Places, id: string, checks: Checks) => put(places, "checks", id, checks);
 
 /** Sets the beat of a claim or a review mark to a time. */
 export function beat(places: Places, kind: Kind, id: string, at: string) {

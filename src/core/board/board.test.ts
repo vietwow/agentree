@@ -1,37 +1,27 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, test } from "node:test";
 import { Refusal } from "../errors.ts";
 import { git, tryGit } from "../git.ts";
-import { answer, ask, beat, claim, create, log, move, promote, release, tick, type Actor, type Context, type NewTask } from "./actions.ts";
+import { answer, ask, beat, claim, create, log, move, promote, release, tick, type Context, type NewTask } from "./actions.ts";
 import { init } from "./init.ts";
 import { BOARD_BRANCH, boardOf } from "./places.ts";
 import { lintProblems } from "./rules.ts";
 import { claimOf, ownerToken } from "./state.ts";
 import { readBoard, taskOf } from "./store.ts";
+import { CODEX, CURSOR, OWNER, project, type Project } from "./testing.ts";
 
-const OWNER: Actor = { worker: "person/owner", session: "", owner: true };
-const CODEX: Actor = { worker: "codex/gpt-5", session: "s-codex", owner: false };
-const CURSOR: Actor = { worker: "cursor/composer-2", session: "s-cursor", owner: false };
-
+let at: Project;
 let home: string;
 let context: Context;
-let clock: number;
 
 beforeEach(() => {
-  home = realpathSync(mkdtempSync(join(tmpdir(), "agentree-")));
-  const root = join(home, "project");
-  git(home, "init", "--quiet", "--initial-branch=main", root);
-  writeFileSync(join(root, "README.md"), "# A project\n");
-  git(root, "add", "README.md");
-  git(root, "commit", "--quiet", "-m", "Start");
-  clock = Date.parse("2026-11-24T10:00:00Z");
-  context = { places: init(root, { firstCommit: false }).places, now: () => new Date((clock += 1000)) };
+  at = project();
+  ({ home, context } = at);
 });
 
-afterEach(() => rmSync(home, { recursive: true, force: true }));
+afterEach(() => at.remove());
 
 const written: Partial<NewTask> = { context: "Why.", doneWhen: "- It works.", outOfScope: "The rest.", checks: ["pnpm test"] };
 const build = (title: string, more: Partial<NewTask> = {}) => create(context, OWNER, { title, kind: "build", priority: 2, ...written, ...more });
@@ -133,7 +123,7 @@ test("a release gives the task back with its tree kept; the owner releases only 
   build("The core");
   const { claim: hold } = claim(context, CODEX, "T-0001");
   refused(() => release(context, OWNER, "T-0001", "It stopped."), /its holder releases it, or the owner once its claim is stale/);
-  clock += 5 * 60 * 60 * 1000;
+  at.advance(5 * 60 * 60 * 1000);
   const task = release(context, OWNER, "T-0001", "No beat for five hours.");
   assert.equal(task.fields.status, "ready");
   assert.equal(claimOf(context.places, "T-0001"), undefined);
