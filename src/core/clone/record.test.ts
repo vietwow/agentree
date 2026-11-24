@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { compare, elementsOf, report, type Element, type PartRecord } from "./record.ts";
+import { compare, differenceOf, elementsOf, report, type Element, type PartRecord } from "./record.ts";
 
 const element = (id: string, more: Partial<Element> = {}): Element => ({
   id,
@@ -88,4 +88,24 @@ test("the colours and the font are compared only when they are the reference's t
   );
   const excepted = compare(base, built, { colours: true, font: true, exceptions: { "shell/rail": "The rail is the project's own by ADR 0003." } });
   assert.deepEqual([...new Set(excepted.differences.map((each) => each.id))], ["shell", "shell/rail/link[Home]"]);
+});
+
+test("the difference of a state from its base, applied to the base, is the state", () => {
+  const shown = [
+    base[0]!,
+    { ...base[2]!, style: { ...base[2]!.style, color: "rgb(1, 2, 3)" }, attrs: {} },
+    element("shell/overlay[menu]/menu", { role: "menu" }),
+  ];
+  const difference = differenceOf(base, shown);
+  assert.deepEqual(
+    difference.map((each) => [each.change, each.id]),
+    [
+      ["modified", "shell/rail/link[Home]"],
+      ["added", "shell/overlay[menu]/menu"],
+      ["removed", "shell/rail"],
+    ],
+  );
+  assert.deepEqual(difference[0], { change: "modified", id: "shell/rail/link[Home]", attrs: {}, style: { color: "rgb(1, 2, 3)" } });
+  assert.deepEqual(elementsOf(record({ state: "menu", base: "base", elements: difference }), base), shown);
+  assert.deepEqual(differenceOf(base, base), []);
 });

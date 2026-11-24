@@ -63,6 +63,26 @@ export function elementsOf(record: PartRecord, base?: Element[]): Element[] {
   return [...kept, ...added];
 }
 
+/** What a state shows as a difference from its base: the elements that changed with only what changed, those the base lacks, and those it lost. */
+export function differenceOf(base: Element[], shown: Element[]): Changed[] {
+  const before = new Map(base.map((element) => [element.id, element]));
+  const after = new Set(shown.map((element) => element.id));
+  const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+  const changed = shown.flatMap((element): Changed[] => {
+    const was = before.get(element.id);
+    if (!was) return [{ change: "added", ...element }];
+    const style = Object.fromEntries(Object.entries(element.style).filter(([property, value]) => was.style[property] !== value));
+    const fields = Object.fromEntries(
+      (["tag", "role", "name", "text", "box", "attrs", "icon"] as const)
+        .filter((key) => !same(was[key], element[key]))
+        .map((key) => [key, element[key]]),
+    );
+    if (!Object.keys(style).length && !Object.keys(fields).length) return [];
+    return [{ change: "modified", id: element.id, ...fields, ...(Object.keys(style).length ? { style } : {}) }];
+  });
+  return [...changed, ...base.filter((element) => !after.has(element.id)).map((element): Changed => ({ change: "removed", id: element.id }))];
+}
+
 export type Difference = { id: string; what: string; expected: string; actual: string };
 
 export type Comparison = {

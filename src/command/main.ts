@@ -30,7 +30,10 @@ import { lintProblems, obstacles, unwritten } from "../core/board/rules.ts";
 import { setUpTree } from "../core/board/setup.ts";
 import { claims, ownerToken, setupOf } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
+import { comparePart } from "../clone/compare.ts";
+import { CONFIG_FILE, configOf } from "../core/board/config.ts";
 import { prepareIconRun } from "../core/clone/icons.ts";
+import { git } from "../core/git.ts";
 import { Refusal } from "../core/errors.ts";
 import { projects, register } from "../core/machine/projects.ts";
 import { loadInWords } from "../daemon/load.ts";
@@ -84,6 +87,7 @@ const USAGE = `Usage: agentree <subcommand> [options]
   mcp                                   the board's MCP server on standard input and output, for this repository
   hook <tool> <event>                   what a tool's hook tells the board; its JSON on standard input
   doctor                                what of this project's setup is there, and what is missing
+  compare <part> [--state <state>]      read the project's page of a part in a browser and compare it with its record
   grab-icons --page <address> --where <steps> --set <name> [--range <words>] [--colour <words>] [--names <words>] [--committed]
                                         make the folder of a run that fetches a set of drawings, and its card; it fetches nothing
   agent [T-NNNN] [--role build|review] -- <a tool's headless command>
@@ -110,6 +114,7 @@ const { values, positionals } = parseArgs({
     name: { type: "string" },
     tools: { type: "string" },
     goal: { type: "string" },
+    state: { type: "string" },
     page: { type: "string" },
     where: { type: "string" },
     set: { type: "string" },
@@ -422,6 +427,18 @@ const COMMANDS: Record<string, () => unknown> = {
   serve() {
     const daemon = startDaemon({ ...(values.port ? { port: Number(values.port) } : {}), ui: join(import.meta.dirname, "../../ui/dist") });
     say(`agentree serves ${projects().length} ${projects().length === 1 ? "project" : "projects"}. Open:\n  ${daemon.address}`);
+  },
+  async compare() {
+    const part = rest[0];
+    if (!part) throw new Refusal("name the part to compare, as: agentree compare shell");
+    const places = boardOf(process.cwd());
+    const config = configOf(places).clone;
+    if (!config) throw new Refusal(`the project's part (${CONFIG_FILE}) has no "clone": this project reproduces no interface`);
+    // The records and the page are those of where the command is run: a task's tree, or the main checkout.
+    const root = git(process.cwd(), "rev-parse", "--show-toplevel");
+    const { comparison, text } = await comparePart(root, config, part, values.state ?? "base");
+    say(text);
+    if (comparison.differences.length || comparison.missing.length) process.exitCode = 1;
   },
   "grab-icons"() {
     const at = context();
