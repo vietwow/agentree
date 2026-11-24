@@ -156,6 +156,7 @@ export function createApp(daemon: Daemon) {
       tasks: board.tasks.map((stored) => taskView(board.places, stored.task)),
       details: Object.fromEntries(board.tasks.map((stored) => [stored.task.fields.id, taskDetailView(board, stored.task, now)])),
       activity: activityView(board),
+      numbers: numbersView(board, now),
       milestones: milestonesView(board),
       facts: readMemory(board.places).facts,
       documents: documentsView(board.places),

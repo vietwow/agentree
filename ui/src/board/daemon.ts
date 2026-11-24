@@ -10,7 +10,7 @@ import { toast } from "../design/components/toast.ts";
 import type { ActivityEntry } from "./activity.ts";
 import type { AgentSession, Doc, Fact, Milestone, Slots, ToolSetup } from "./model.ts";
 import { PROJECT_COLORS, type Project } from "./projects.ts";
-import { TOOL_LABEL, type Task, type TaskDetail, type Tool } from "./task.ts";
+import { TOOL_LABEL, type Status, type Task, type TaskDetail, type Tool } from "./task.ts";
 
 type Area = { path: string; name: string; files: number };
 
@@ -21,12 +21,21 @@ export type Board = {
   tasks: Task[];
   details: ReadonlyMap<string, TaskDetail>;
   activity: ActivityEntry[];
+  numbers: Numbers;
   milestones: Milestone[];
   facts: Fact[];
   docs: Doc[];
   areas: Area[];
   sessions: AgentSession[];
   tools: ToolSetup[];
+};
+
+/** How the work of a project runs, read from its Logs and from what its checks recorded. */
+type Numbers = {
+  timeIn: { status: Status; tasks: number; medianMs: number; longestMs: number }[];
+  reviews: { accepted: number; rejected: number; rejectedShare: number };
+  wait: { runs: number; medianMs: number; longestMs: number };
+  failing: { command: string; runs: number; failed: number }[];
 };
 
 const ICONS: Record<string, LucideIcon> = { layers: Layers, "building-2": Building2, palette: Palette, folder: Folder };
@@ -67,6 +76,7 @@ function boardOf(sent: Sent): Board {
     tasks: sent.tasks,
     details: new Map(Object.entries(sent.details as Record<string, Sent>).map(([id, detail]) => [id, detailOf(detail)])),
     activity: sent.activity,
+    numbers: sent.numbers,
     milestones: sent.milestones,
     facts: (sent.facts as Sent[]).map((fact) => ({ ...fact, by: toolOf(fact.by), task: fact.task || undefined }) as Fact),
     docs: sent.documents,

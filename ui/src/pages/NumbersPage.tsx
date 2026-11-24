@@ -1,12 +1,12 @@
 import { CalendarDays, ListTodo, Wrench } from "lucide-react";
 import { Fragment, useMemo, useState } from "react";
-import { detail } from "../board/daemon.ts";
-import { TOOL_LABEL, type Session, type Task, type Tokens, type Tool } from "../board/task.ts";
+import { board, detail } from "../board/daemon.ts";
+import { STATUS_LABEL, TOOL_LABEL, type Session, type Task, type Tokens, type Tool } from "../board/task.ts";
 import { Page, PageHeader } from "../design/components/Page.tsx";
 import { ProgressBar } from "../design/components/ProgressBar.tsx";
 import { Segmented } from "../design/components/Segmented.tsx";
 import { SummaryCards } from "../design/components/SummaryCards.tsx";
-import { shortDate } from "../design/format/time.ts";
+import { duration, shortDate } from "../design/format/time.ts";
 import { ToolMark } from "../ui/ToolMark.tsx";
 
 type By = "tool" | "task" | "day";
@@ -73,6 +73,9 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
     return by === "day" ? list.sort((a, b) => b.day!.getTime() - a.day!.getTime()) : list.sort((a, b) => b.sum.cost - a.sum.cost);
   }, [sessions, by]);
   const top = Math.max(...rows.map((r) => r.sum.cost), 0.01);
+  const { timeIn, reviews, wait, failing } = board().numbers;
+  const decided = reviews.accepted + reviews.rejected;
+  const inReview = timeIn.find((each) => each.status === "review");
 
   const label = (r: (typeof rows)[number]) =>
     by === "tool" ? (
@@ -92,7 +95,8 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
   return (
     <Page layout="flush">
       <PageHeader title="Numbers">
-        The tokens and cost each tool reports, summed over tools, tasks and days. What a tool does not report is not known, never estimated.
+        The tokens and cost each tool reports, summed over tools, tasks and days. What a tool does not report is not known, never estimated. Below
+        them, how the work runs, read from the Logs and from the checks of each task's last submission.
       </PageHeader>
       <div className="@container pt-0 px-(--gutter) pb-4">
         <SummaryCards
@@ -198,6 +202,62 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
           ))}
         </div>
       )}
+      <div className="@container pt-6 px-(--gutter) pb-4">
+        <SummaryCards
+          cards={[
+            {
+              label: "Reviews that reject",
+              value: decided ? `${Math.round(reviews.rejectedShare * 100)}%` : "None",
+              note: decided ? `${reviews.rejected} of ${decided} reviews` : "no review is decided yet",
+              tone: "neutral",
+            },
+            {
+              label: "Time in review",
+              value: inReview ? duration(inReview.medianMs, { short: true }) : "None",
+              note: inReview
+                ? `the middle of ${inReview.tasks} tasks · longest ${duration(inReview.longestMs, { short: true })}`
+                : "no task was in review",
+              tone: "neutral",
+            },
+            {
+              label: "Wait for a slot",
+              value: wait.runs ? duration(wait.medianMs, { short: true }) : "None",
+              note: wait.runs ? `the middle of ${wait.runs} checks · longest ${duration(wait.longestMs, { short: true })}` : "no check has run",
+              tone: "neutral",
+            },
+            {
+              label: "Checks that fail",
+              value: failing.length,
+              unit: "commands",
+              note: failing[0] ? `most often: ${failing[0].command}` : "in each task's last submission",
+              tone: failing.length ? "bad" : "neutral",
+            },
+          ]}
+        />
+      </div>
+      <div className="tbl-wrap flex-initial">
+        <table className="tbl w-full" aria-label="Time in each status">
+          <thead>
+            <tr>
+              {["Status", "Tasks that were in it", "The middle time", "The longest"].map((h, i) => (
+                <th key={h} className={i === 0 ? "sticky w-80" : ""} scope="col">
+                  <div className="thi">{h}</div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {timeIn.map((each) => (
+              <tr key={each.status}>
+                <td className="sticky">{STATUS_LABEL[each.status]}</td>
+                <td className="num">{each.tasks}</td>
+                <td className="num">{duration(each.medianMs, { short: true })}</td>
+                <td className="num">{duration(each.longestMs, { short: true })}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </Page>
   );
 }
