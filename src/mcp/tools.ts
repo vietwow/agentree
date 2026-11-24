@@ -12,6 +12,12 @@ import { obstacles } from "../core/board/rules.ts";
 import { reportSession } from "../core/board/sessions.ts";
 import { claimOf, claims } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
+import { comparePart } from "../clone/compare.ts";
+import { CONFIG_FILE, configOf } from "../core/board/config.ts";
+import { prepareIconRun } from "../core/clone/icons.ts";
+import type { Element } from "../core/clone/record.ts";
+import { writeRecord } from "../core/clone/records.ts";
+import { partTasks } from "../core/clone/tasks.ts";
 import { Refusal } from "../core/errors.ts";
 import { renderTask } from "../core/task/file.ts";
 import { KINDS, NEEDS, stamp, STATUSES, type Kind, type Need } from "../core/task/model.ts";
@@ -337,6 +343,115 @@ export function boardServer(board: Board): McpServer {
     "Put a proposed fact of memory in force; not one you proposed.",
     ...acting({ fact: text("The fact's name, as `recall` gives it.") }, ["fact"]),
     (args, actor) => `"${acceptFact(context, actor, args.fact).title}" is in force.`,
+  );
+
+  // A project that reproduces an interface.
+  const cloneOf = () => {
+    const clone = configOf(places).clone;
+    if (!clone) throw new Refusal(`the project's part (${CONFIG_FILE}) has no "clone": this project reproduces no interface`);
+    return clone;
+  };
+  /** The tree of a task the session holds: a record is written, and a page compared, only there. */
+  const held = (task: string, actor: Actor) => {
+    const hold = claimOf(places, task);
+    if (!hold || hold.session !== actor.session) throw new Refusal(`${task} is not held by this session: claim it first`);
+    return hold.tree;
+  };
+  tool(
+    "part",
+    "For a project that reproduces an interface: write the two tasks of a part, its measure and its build, from their templates.",
+    ...acting(
+      {
+        part: text("The part's name, in small letters, as shell."),
+        priority: { type: "integer", description: "1 is taken first." },
+        parent: TASK,
+        writes: list("The paths the build task writes."),
+      },
+      ["part", "priority"],
+    ),
+    (args, actor) => {
+      const { measure, build } = partTasks(context, actor, {
+        part: args.part,
+        priority: args.priority,
+        ...(args.parent ? { parent: args.parent } : {}),
+        writes: args.writes ?? [],
+      });
+      return `${measure.fields.id} measures the ${args.part} and is ${measure.fields.status}; ${build.fields.id} builds it once that is done.`;
+    },
+  );
+  tool(
+    "record",
+    "Write the reader's reading of the reference as a record, in the tree of the measure task you hold. A record is written once.",
+    ...acting(
+      {
+        task: TASK,
+        part: text("The part's name."),
+        state: text("The state's name; `base`, the part at rest, when left out."),
+        base: text("The state this one differs from; `base` when left out."),
+        source: text("The address the reading was made at."),
+        viewport: text("The viewport, as 1440x900."),
+        theme: text("light or dark."),
+        elements: text("The JSON text `window.__agentree.capture(...)` gave, unchanged."),
+        notMeasured: list("What was not read, each as `<id>: <the reason>`."),
+      },
+      ["task", "part", "source", "viewport", "elements"],
+    ),
+    (args, actor) => {
+      const [width, height] = String(args.viewport).split("x").map(Number);
+      const { record } = writeRecord(
+        held(args.task, actor),
+        cloneOf(),
+        {
+          part: args.part,
+          state: args.state || "base",
+          ...(args.base ? { base: args.base } : {}),
+          source: args.source,
+          viewport: { width: width!, height: height! },
+          theme: args.theme || "light",
+          elements: JSON.parse(args.elements) as Element[],
+          notMeasured: ((args.notMeasured ?? []) as string[]).map((each) => {
+            const at = each.indexOf(": ");
+            if (at < 1) throw new Refusal("what was not measured names an element and why, as `shell/menu: it opens only for an administrator`");
+            return { id: each.slice(0, at), reason: each.slice(at + 2) };
+          }),
+        },
+        context.now(),
+      );
+      return `${record.part}, ${record.state}: ${record.elements.length} ${record.base ? `elements that differ from ${record.base}` : "elements"} recorded.`;
+    },
+  );
+  tool(
+    "compare",
+    "Read the page of a part in the tree of the task you hold, in a browser of agentree's own, and compare it with its record.",
+    ...acting({ task: TASK, part: text("The part's name."), state: text("The state; `base` when left out.") }, ["task", "part"]),
+    async (args, actor) => (await comparePart(held(args.task, actor), cloneOf(), args.part, args.state || "base")).text,
+  );
+  tool(
+    "grabIcons",
+    "Make the folder of a run that fetches a set of drawings, and its card. It fetches nothing: the owner starts that session.",
+    ...acting(
+      {
+        page: text("The address of the place that shows the icons."),
+        where: text("The screen, and the steps that make them show."),
+        set: text("The set's short name."),
+        range: text("Which icons; every one when left out."),
+        colour: text("How colour is kept."),
+        names: text("How files are named."),
+      },
+      ["page", "where", "set"],
+    ),
+    (args, actor) => {
+      const { folder, task } = prepareIconRun(context, actor, {
+        page: args.page,
+        where: args.where,
+        set: args.set,
+        ...(args.range ? { range: args.range } : {}),
+        ...(args.colour ? { colour: args.colour } : {}),
+        ...(args.names ? { names: args.names } : {}),
+        committed: configOf(places).clone?.drawings === "committed",
+      });
+      return `${task.fields.id} asks for the set. Its run's folder: ${folder}. Tell the owner to open a tool that can drive Chrome there and to have it follow AGENTS.md.`;
+    },
   );
   return server;
 }

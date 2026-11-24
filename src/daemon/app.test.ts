@@ -135,6 +135,26 @@ test("the board's tools are served as MCP at a project's address: a session clai
     [refused.isError, refused.content[0].text],
     [true, "Refused: T-0001 is not held by cursor/composer-2: it is in-progress, held by codex/gpt-5"],
   );
+  const noClone = await tool("part", { part: "shell", priority: 2 });
+  assert.deepEqual([noClone.isError, /has no "clone"/.test(noClone.content[0].text)], [true, true]);
+  writeFileSync(
+    join(context.places.root, "agentree.config.json"),
+    JSON.stringify({ clone: { records: "parity", url: "http://127.0.0.1:1", colours: "own", font: "own", parts: {} } }),
+  );
+  assert.equal(
+    (await tool("part", { part: "shell", priority: 2 })).content[0].text,
+    "T-0002 measures the shell and is ready; T-0003 builds it once that is done.",
+  );
+  const reading = {
+    task: "T-0001",
+    part: "shell",
+    source: "https://app.example.com/",
+    viewport: "1440x900",
+    elements: JSON.stringify([{ id: "shell", tag: "div", role: "", name: "", text: "", style: {}, attrs: {} }]),
+  };
+  assert.equal((await tool("record", reading)).content[0].text, "shell, base: 1 elements recorded.");
+  assert.ok(existsSync(join(context.places.trees, "T-0001/parity/shell/base.json")));
+  assert.match((await tool("record", { ...reading, task: "T-0002" })).content[0].text, /^Refused: T-0002 is not held by this session/);
   assert.match((await tool("run", { task: "T-0001", command: "pwd" })).content[0].text, /^The command passed\.\n\n.+\/project-trees\/T-0001$/);
   assert.equal((await app.request("/mcp/project", { method: "POST", headers: { host: "127.0.0.1:4517" } })).status, 401);
   assert.deepEqual(
