@@ -1315,14 +1315,21 @@ it serves pages to a browser and marks an element with its record's id
 in `data-record`, whatever it is built or tested with. An interface
 that is no web page is not compared.
 
-The comparison runs on the host, not in the daemon's container: the
-image is Alpine's, and Playwright's browsers are not supported on a
-system of the musl library
+The daemon's image is Alpine's, and Playwright's browsers are not
+supported on a system of the musl library
 ([Playwright, Docker](https://playwright.dev/docs/docker), read on
-2026-11-24). In the container the command says that it has no browser.
-A build task's check `agentree compare <part>` is therefore the
-worker's and the reviewer's to run on the host, until the image has a
-browser.
+2026-11-24); Debian's images of Node have git 2.47 at most, below the
+2.48 a tree's relative links need (trixie and bookworm, looked at on
+2026-11-24). So the browser runs in a container of its own beside the
+daemon's, Playwright's image of the version of `playwright` in
+`package.json`, as a Playwright server; the compose file starts it in
+the daemon's network, so that a page the daemon serves at its loopback
+address is the same page to the browser. `AGENTREE_BROWSER` names the
+server's address, and the comparison connects to it; without it, as on
+the host, the comparison starts a browser of its own. A project whose
+commands run in a container of its own image has no `agentree` there:
+its comparisons run in the daemon's container, which the project's
+part does not name an image for.
 
 What the project's part (`agentree.config.json`) says under `clone`:
 the reference's address, viewport and theme; `records`, the directory
@@ -1946,7 +1953,12 @@ The numbers of [Performance](#performance) were counted in the origin's
   loaded unpacked.
 - The comparison was tried on 2026-11-24 on a page of five elements
   made for the test, at rest and in one state under the pointer; on no
-  project's page and against no record of a real reference.
+  project's page and against no record of a real reference. In the
+  containers of the compose file it was tried the same day, with Docker
+  29.9.3: a record written and compared in the daemon's container
+  through the browser's, on a page of two elements, and a changed width
+  told. Not tried there: a project's application started by `serve`
+  and read at its address.
 - The queue's reading of processes on Linux, and everything on Windows.
 - The engineering standard's template: the origin's rules were read and
   sorted into what is general and what is the origin's; which tool of

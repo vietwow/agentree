@@ -21,13 +21,24 @@ const SETTLES_MS = 400;
 
 type Reads = { url: string; viewport: { width: number; height: number }; theme: string; steps?: CloneStep[] };
 
-/** A browser of agentree's own; a machine without one is told how to get it. */
+/**
+ * A browser of agentree's own. `AGENTREE_BROWSER` names a Playwright server to
+ * reach it at, as the daemon's container does: its own system has no
+ * browser, and one runs in a container beside it. Without it the browser is
+ * started here; a machine that has none is told how to get it.
+ */
 async function browser() {
+  const { chromium } = await import("playwright");
+  const server = process.env.AGENTREE_BROWSER;
   try {
-    const { chromium } = await import("playwright");
-    return await chromium.launch();
+    return server ? await chromium.connect(server) : await chromium.launch();
   } catch (error) {
-    throw new Refusal(`no browser to compare with: ${(error as Error).message.split("\n")[0]}. Install it with: npx playwright install chromium`);
+    const said = (error as Error).message.split("\n")[0];
+    throw new Refusal(
+      server
+        ? `no browser answers at ${server} (AGENTREE_BROWSER): ${said}`
+        : `no browser to compare with: ${said}. Install it with: npx playwright install chromium`,
+    );
   }
 }
 

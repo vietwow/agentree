@@ -18,6 +18,22 @@ services:
       # The daemon starts a project's commands as containers of the project's image.
       - /var/run/docker.sock:/var/run/docker.sock
     working_dir: ${AGENTREE_PROJECTS}
+    environment:
+      # The browser `agentree compare` reads a page with: the container below, at the daemon's own loopback address.
+      AGENTREE_BROWSER: ws://127.0.0.1:3000/
+
+  # The browser of the comparisons. The daemon's image is Alpine's, where Playwright's browsers do not run; this one
+  # shares the daemon's network, so that a page the daemon serves at its loopback address is the same page here.
+  # Its version is the version of `playwright` in package.json: a server answers only a client of its own version.
+  browser:
+    image: mcr.microsoft.com/playwright:v1.65.1-noble
+    restart: unless-stopped
+    network_mode: service:agentree
+    init: true
+    ipc: host
+    user: pwuser
+    working_dir: /home/pwuser
+    command: npx -y playwright@1.65.1 run-server --port 3000 --host 127.0.0.1
 
 volumes:
   # The machine's list of projects, its token and its queue.

@@ -27,8 +27,8 @@ records, `agentree compare`, the extension that carries records
 (`extension/`, loaded unpacked in Chrome) and the run that fetches
 drawings. Beyond the first version: the numbers of a project, notices,
 landing in batches, review on the diff, a bound on trees and the
-release of stale claims. Not built yet: the comparison inside the
-daemon's container (it runs on the host).
+release of stale claims. With the compose file, the comparison's
+browser runs in a container beside the daemon's.
 
 ```sh
 pnpm install

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -111,4 +112,34 @@ test("a page that differs is told each value that differs, and a state without i
     /names no steps that show the state tasks-hover/,
   );
   await assert.rejects(comparePart(root, config(page(true)), "shell", "open"), /has no record of the state open/);
+});
+
+test("the comparison reads its page through a Playwright server when one is named, as the daemon's container does", { skip: skip() }, async (t) => {
+  const port = 3000 + Math.floor(Math.random() * 2000);
+  const server = spawn(
+    process.execPath,
+    [join(import.meta.dirname, "../../node_modules/playwright/cli.js"), "run-server", "--port", String(port), "--host", "127.0.0.1"],
+    {
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
+  // The server ends at once, and its pipes with it: a process that stays would keep the test's own from ending.
+  t.after(async () => {
+    delete process.env.AGENTREE_BROWSER;
+    const ended = new Promise((resolve) => server.once("exit", resolve));
+    server.kill("SIGKILL");
+    await ended;
+  });
+  await new Promise<void>((resolve, reject) => {
+    const listens = (said: Buffer) => /Listening on/.test(String(said)) && resolve();
+    server.stdout.on("data", listens);
+    server.stderr.on("data", listens);
+    server.on("exit", () => reject(new Error("the server ended before it listened")));
+    setTimeout(() => reject(new Error("the server did not listen within a minute")), 60_000).unref();
+  });
+  process.env.AGENTREE_BROWSER = `ws://127.0.0.1:${port}/`;
+  const rest = await comparePart(root, config(page(true)), "shell");
+  assert.deepEqual([rest.comparison.differences, rest.comparison.missing], [[], []]);
+  process.env.AGENTREE_BROWSER = "ws://127.0.0.1:1/";
+  await assert.rejects(comparePart(root, config(page(true)), "shell"), /no browser answers at ws:\/\/127\.0\.0\.1:1\/ \(AGENTREE_BROWSER\)/);
 });
