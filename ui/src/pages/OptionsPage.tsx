@@ -16,7 +16,7 @@ const NOTICES = {
 
 /** What the owner sets: each tool's switch for its own tasks, on the open project; the bounds of the queue and the directory of projects, on this machine. */
 export function OptionsPage() {
-  const { tools, project } = board();
+  const { tools, project, options } = board();
   const { bounds } = slots();
   const [asked, setAsked] = useState<Machine>();
   const [lowest, setLowest] = useState(String(bounds.lowest));
@@ -94,6 +94,23 @@ export function OptionsPage() {
                   Save the bounds
                 </Button>
               </div>
+            </PanelBody>
+          </Panel>
+          <Panel title="Stale claims" note={`on ${project.name}`}>
+            <PanelBody className="flex flex-col gap-2.5 text-sm">
+              <p className="muted">
+                A claim whose worker was not heard from for 30 minutes is stale. It waits for you to release it, or the daemon releases it: the tree,
+                its commits and the Log stay for the next worker.
+              </p>
+              <label className="flex items-center gap-2 justify-between cursor-pointer">
+                <span>The daemon releases a stale claim</span>
+                <input
+                  type="checkbox"
+                  className="toggle"
+                  checked={options.releaseStale}
+                  onChange={() => void send(`/api/projects/${project.id}/options`, { releaseStale: !options.releaseStale })}
+                />
+              </label>
             </PanelBody>
           </Panel>
           <Panel title="Notices" note="this browser's">

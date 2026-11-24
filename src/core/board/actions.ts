@@ -24,6 +24,7 @@ import { configOf } from "./config.ts";
 import { TASK_BRANCH, treeOf, type Places } from "./places.ts";
 import type { Run } from "./run.ts";
 import { dependenciesDone, isHeld as held, nextId, obstacles, overlaps } from "./rules.ts";
+import { readOptions } from "./options.ts";
 import { beat as beatHold, claimOf, claims, createClaim, putClaim, putSetup, removeClaim, reviewOf, type Claim } from "./state.ts";
 import { fromItsRead, readBoard, taskOf, writeTask, type Board, type Stored } from "./store.ts";
 
@@ -321,4 +322,26 @@ export function release(context: Context, actor: Actor, id: string, why: string,
     removeClaim(context.places, id);
     return task;
   });
+}
+
+/** Releases every claim that went stale, as the daemon, when the project's option says so; the tasks it released. */
+export function releaseStale(context: Context): string[] {
+  if (!readOptions(context.places).releaseStale) return [];
+  const released: string[] = [];
+  for (const [id, hold] of claims(context.places)) {
+    if (!isStale(hold, context.now())) continue;
+    try {
+      release(
+        context,
+        { worker: DAEMON, session: "", owner: true },
+        id,
+        `Released by the daemon: ${hold.by} has not been heard from since ${hold.beat}. The tree, its commits and this Log stay for the next worker.`,
+      );
+      released.push(id);
+    } catch (error) {
+      // A claim its holder released or submitted meanwhile is no longer stale.
+      if (!(error instanceof Refusal)) throw error;
+    }
+  }
+  return released;
 }

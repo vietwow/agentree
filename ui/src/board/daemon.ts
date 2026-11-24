@@ -22,6 +22,8 @@ export type Board = {
   details: ReadonlyMap<string, TaskDetail>;
   activity: ActivityEntry[];
   numbers: Numbers;
+  /** What the owner set on the project. */
+  options: { releaseStale: boolean };
   milestones: Milestone[];
   facts: Fact[];
   docs: Doc[];
@@ -77,6 +79,7 @@ function boardOf(sent: Sent): Board {
     details: new Map(Object.entries(sent.details as Record<string, Sent>).map(([id, detail]) => [id, detailOf(detail)])),
     activity: sent.activity,
     numbers: sent.numbers,
+    options: sent.options,
     milestones: sent.milestones,
     facts: (sent.facts as Sent[]).map((fact) => ({ ...fact, by: toolOf(fact.by), task: fact.task || undefined }) as Fact),
     docs: sent.documents,

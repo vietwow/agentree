@@ -1474,6 +1474,11 @@ Proposed beyond what was asked, in the order of what they buy:
 1. **Recovery.** A claim not beaten is marked stale on the board; the
    owner, or an option, releases it. Its tree, its commits and its Log
    stay for the next worker.
+   The option is `release-stale` in the board's options, off unless
+   the owner sets it (`agentree option release-stale on`, or the
+   Options page): the daemon then releases each stale claim on its
+   next look, and writes in the task's Log since when its worker was
+   not heard from.
 2. **Numbers.** From the Logs and the queue: the time a task spends in
    each status, the share rejected, the wait for a slot, the checks that
    fail most; and the tokens of a session where its tool reports them.

@@ -4,6 +4,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
+import { releaseStale } from "../core/board/actions.ts";
 import { configOf } from "../core/board/config.ts";
 import { readBoard } from "../core/board/store.ts";
 import { machineHome, placesOfProject, projects } from "../core/machine/projects.ts";
@@ -49,6 +50,8 @@ function watch(events: Events, queue: Queue, now: () => Date) {
         runWaitingSetups(id, { places: placesOfProject(id), now }, queue).catch((error: unknown) => console.error(error));
         runWaitingLandings(id, { places: placesOfProject(id), now }, queue).catch((error: unknown) => console.error(error));
         const print = fingerprint(id);
+        // A claim whose worker went quiet is given back, when the project's option says so.
+        releaseStale({ places: placesOfProject(id), now });
         if (seen.has(id) && seen.get(id) !== print) {
           events.emit({ project: id, what: "board" });
           removeLeftVolumes(id, { places: placesOfProject(id), now });

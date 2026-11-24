@@ -10,7 +10,7 @@ import { getCookie, setCookie } from "hono/cookie";
 import { streamSSE } from "hono/streaming";
 import { answer, create, move, promote, release, tick, type Actor, type Context, type NewTask } from "../core/board/actions.ts";
 import { acceptFact, editFact, readMemory, remember, type NewFact } from "../core/board/memory.ts";
-import { readOptions, setReviewOwnTasks } from "../core/board/options.ts";
+import { readOptions, setReleaseStale, setReviewOwnTasks } from "../core/board/options.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
 import { existsSync } from "node:fs";
 import { CONFIG_FILE, configOf } from "../core/board/config.ts";
@@ -160,6 +160,7 @@ export function createApp(daemon: Daemon) {
       details: Object.fromEntries(board.tasks.map((stored) => [stored.task.fields.id, taskDetailView(board, stored.task, now)])),
       activity: activityView(board),
       numbers: numbersView(board, now),
+      options: readOptions(board.places),
       milestones: milestonesView(board),
       facts: readMemory(board.places).facts,
       documents: documentsView(board.places),
@@ -252,8 +253,9 @@ export function createApp(daemon: Daemon) {
     return request.json(fact);
   });
   app.post("/api/projects/:project/options", async (request) => {
-    const body = (await request.req.json()) as { tool: Tool; reviewOwnTasks: boolean };
-    setReviewOwnTasks(contextOf(request).places, body.tool, body.reviewOwnTasks === true);
+    const body = (await request.req.json()) as { tool?: Tool; reviewOwnTasks?: boolean; releaseStale?: boolean };
+    if (body.tool) setReviewOwnTasks(contextOf(request).places, body.tool, body.reviewOwnTasks === true);
+    if (body.releaseStale !== undefined) setReleaseStale(contextOf(request).places, body.releaseStale === true);
     changed(request);
     return request.json(readOptions(contextOf(request).places));
   });

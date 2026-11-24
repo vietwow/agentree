@@ -24,7 +24,7 @@ import {
 import { reportedBy, TOOL_OF_COMMAND } from "../core/board/headless.ts";
 import { onHook } from "../core/board/hooks.ts";
 import { accept, check, commit, land, reject, review, scope, submit, waitingToLand } from "../core/board/lifecycle.ts";
-import { setReviewOwnTasks } from "../core/board/options.ts";
+import { setReleaseStale, setReviewOwnTasks } from "../core/board/options.ts";
 import { boardOf } from "../core/board/places.ts";
 import { lintProblems, obstacles, unwritten } from "../core/board/rules.ts";
 import { setUpTree } from "../core/board/setup.ts";
@@ -82,6 +82,7 @@ const USAGE = `Usage: agentree <subcommand> [options]
   reject T-NNNN < findings.md           ready again, with the findings
   land [T-NNNN]                         land an accepted task on main, or each that waits, in turn
   option review-own-tasks <tool> on|off (the owner's)
+  option release-stale on|off          whether the daemon releases a claim that went stale (the owner's)
   move T-NNNN backlog|ready|dropped     (the owner's)
   promote                               make ready every backlog task that waits for nothing (the owner's)
   lint                                  what is wrong on the board
@@ -109,63 +110,76 @@ AGENTREE_SESSION, or by the id its tool gives. The owner's commands need
 AGENTREE_OWNER_TOKEN.
 `;
 
-const { values, positionals } = parseArgs({
-  args: process.argv.slice(2),
-  allowPositionals: true,
-  options: {
-    "first-commit": { type: "boolean" },
-    "owner-told": { type: "boolean" },
-    backlog: { type: "boolean" },
-    blocked: { type: "boolean" },
-    undo: { type: "boolean" },
-    drop: { type: "boolean" },
-    "no-wait": { type: "boolean" },
-    message: { type: "string", short: "m" },
-    name: { type: "string" },
-    tools: { type: "string" },
-    goal: { type: "string" },
-    state: { type: "string" },
-    base: { type: "string" },
-    to: { type: "string" },
-    clone: { type: "string" },
-    colours: { type: "string" },
-    font: { type: "string" },
-    source: { type: "string" },
-    viewport: { type: "string" },
-    theme: { type: "string" },
-    "not-measured": { type: "string", multiple: true },
-    page: { type: "string" },
-    where: { type: "string" },
-    set: { type: "string" },
-    range: { type: "string" },
-    colour: { type: "string" },
-    names: { type: "string" },
-    committed: { type: "boolean" },
-    stack: { type: "string", multiple: true },
-    role: { type: "string" },
-    anyway: { type: "boolean" },
-    desc: { type: "string" },
-    port: { type: "string" },
-    title: { type: "string" },
-    kind: { type: "string" },
-    priority: { type: "string" },
-    parent: { type: "string" },
-    rfc: { type: "string" },
-    step: { type: "string" },
-    question: { type: "string" },
-    context: { type: "string" },
-    "done-when": { type: "string" },
-    "out-of-scope": { type: "string" },
-    "depends-on": { type: "string", multiple: true },
-    writes: { type: "string", multiple: true },
-    appends: { type: "string", multiple: true },
-    needs: { type: "string", multiple: true },
-    check: { type: "string", multiple: true },
-    subtask: { type: "string", multiple: true },
-    choice: { type: "string", multiple: true },
-    help: { type: "boolean", short: "h" },
-  },
-});
+/** The options as Node reads them; what it cannot read is said in a line, with the way to give a value that begins with a dash. */
+function given() {
+  try {
+    return parseArgs({
+      args: process.argv.slice(2),
+      allowPositionals: true,
+      options: {
+        "first-commit": { type: "boolean" },
+        "owner-told": { type: "boolean" },
+        backlog: { type: "boolean" },
+        blocked: { type: "boolean" },
+        undo: { type: "boolean" },
+        drop: { type: "boolean" },
+        "no-wait": { type: "boolean" },
+        message: { type: "string", short: "m" },
+        name: { type: "string" },
+        tools: { type: "string" },
+        goal: { type: "string" },
+        state: { type: "string" },
+        base: { type: "string" },
+        to: { type: "string" },
+        clone: { type: "string" },
+        colours: { type: "string" },
+        font: { type: "string" },
+        source: { type: "string" },
+        viewport: { type: "string" },
+        theme: { type: "string" },
+        "not-measured": { type: "string", multiple: true },
+        page: { type: "string" },
+        where: { type: "string" },
+        set: { type: "string" },
+        range: { type: "string" },
+        colour: { type: "string" },
+        names: { type: "string" },
+        committed: { type: "boolean" },
+        stack: { type: "string", multiple: true },
+        role: { type: "string" },
+        anyway: { type: "boolean" },
+        desc: { type: "string" },
+        port: { type: "string" },
+        title: { type: "string" },
+        kind: { type: "string" },
+        priority: { type: "string" },
+        parent: { type: "string" },
+        rfc: { type: "string" },
+        step: { type: "string" },
+        question: { type: "string" },
+        context: { type: "string" },
+        "done-when": { type: "string" },
+        "out-of-scope": { type: "string" },
+        "depends-on": { type: "string", multiple: true },
+        writes: { type: "string", multiple: true },
+        appends: { type: "string", multiple: true },
+        needs: { type: "string", multiple: true },
+        check: { type: "string", multiple: true },
+        subtask: { type: "string", multiple: true },
+        choice: { type: "string", multiple: true },
+        help: { type: "boolean", short: "h" },
+      },
+    });
+  } catch (error) {
+    if (!(error instanceof TypeError) || !String((error as { code?: string }).code).startsWith("ERR_PARSE_ARGS")) throw error;
+    process.stderr.write(
+      `agentree: ${error.message.split("\n")[0]} A value that begins with "-" is given as --option=<value>. \`agentree --help\` lists the options.\n`,
+    );
+    process.exit(1);
+  }
+}
+
+const { values, positionals } = given();
 
 const [subcommand, ...rest] = positionals;
 const say = (text: string) => process.stdout.write(`${text}\n`);
@@ -436,8 +450,13 @@ const COMMANDS: Record<string, () => unknown> = {
   option() {
     const at = context();
     const [name, tool, to] = rest;
-    if (name !== "review-own-tasks" || (to !== "on" && to !== "off")) throw new Refusal("the option is: review-own-tasks <tool> on|off");
     if (!actor(at).owner) throw new Refusal("changing an option is the owner's: it needs the owner's token");
+    if (name === "release-stale" && (tool === "on" || tool === "off")) {
+      setReleaseStale(at.places, tool === "on");
+      return say(tool === "on" ? "the daemon releases a claim that went stale" : "a stale claim is the owner's to release");
+    }
+    if (name !== "review-own-tasks" || (to !== "on" && to !== "off"))
+      throw new Refusal("the option is: review-own-tasks <tool> on|off, or release-stale on|off");
     setReviewOwnTasks(at.places, tool as Tool, to === "on");
     say(`${tool} ${to === "on" ? "may" : "may not"} review its own tasks`);
   },
