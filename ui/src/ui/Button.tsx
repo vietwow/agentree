@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ComponentProps, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   tone?: "primary" | "secondary";
@@ -14,20 +14,6 @@ export function Button({ tone = "secondary", icon, trailing, className = "", chi
       {icon}
       <span>{children}</span>
       {trailing}
-    </button>
-  );
-}
-
-export function IconButton({ label, className = "", children, ...rest }: ComponentProps<"button"> & { label: string }) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      className={`relative inline-flex size-9 shrink-0 items-center justify-center rounded-(--radius-sm) border border-line-strong bg-float text-ink-2 shadow-sm transition-colors hover:bg-(--hover) hover:text-ink ${className}`}
-      {...rest}
-    >
-      {children}
     </button>
   );
 }

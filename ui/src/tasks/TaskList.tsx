@@ -106,15 +106,16 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
       return next;
     });
 
-  const sortBy = (f: SortKey) =>
-    onView({ ...v, sort: v.sort.f === f ? { f, dir: v.sort.dir > 0 ? -1 : 1 } : { f, dir: 1 } });
+  const sortBy = (f: SortKey) => onView({ ...v, sort: v.sort.f === f ? { f, dir: v.sort.dir > 0 ? -1 : 1 } : { f, dir: 1 } });
   const arrow = (f: SortKey) => (v.sort.f === f ? ic(v.sort.dir > 0 ? ArrowUp : ArrowDown, 11) : null);
 
-  if (!all.length)
-    return <Empty icon={ListChecks} title="No tasks here" text="No task matches the search and filters." />;
+  if (!all.length) return <Empty icon={ListChecks} title="No tasks here" text="No task matches the search and filters." />;
 
   const groupHead = (g: Group) => {
-    const opt = v.group === "parent" ? { name: g.key === "none" ? "No parent" : (PARENT_TITLES[g.key] ?? g.key) } : optLabel(v.group as never, g.key, `P${g.key}`);
+    const opt =
+      v.group === "parent"
+        ? { name: g.key === "none" ? "No parent" : (PARENT_TITLES[g.key] ?? g.key) }
+        : optLabel(v.group as never, g.key, `P${g.key}`);
     return { html: "html" in opt ? opt.html : undefined, name: opt.name };
   };
 
@@ -185,13 +186,7 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
             {ic(GripVertical, 14)}
           </div>
           <div className="c-check">
-            <input
-              type="checkbox"
-              className="check"
-              checked={sel.has(t.id)}
-              onChange={() => toggleSel(t.id)}
-              aria-label={`Select ${t.title}`}
-            />
+            <input type="checkbox" className="check" checked={sel.has(t.id)} onChange={() => toggleSel(t.id)} aria-label={`Select ${t.title}`} />
           </div>
           <div className="ttl" data-opens-task onClick={() => onOpen(t.id)}>
             {parts.total ? (
@@ -399,7 +394,7 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
 }
 
 /** gr8r's task menu, with the actions agentree has: a person moves a task only between Backlog and Ready. */
-export function TaskMenu({
+function TaskMenu({
   task: t,
   starred,
   onOpen,

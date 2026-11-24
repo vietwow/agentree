@@ -1,38 +1,13 @@
-export const STATUSES = [
-  "backlog",
-  "ready",
-  "in-progress",
-  "checking",
-  "review",
-  "accepted",
-  "done",
-  "blocked",
-  "dropped",
-] as const;
+export const STATUSES = ["backlog", "ready", "in-progress", "checking", "review", "accepted", "done", "blocked", "dropped"] as const;
 export type Status = (typeof STATUSES)[number];
 
-export const KINDS = [
-  "build",
-  "fix",
-  "measure",
-  "research",
-  "review",
-  "decision",
-  "assets",
-] as const;
+export const KINDS = ["build", "fix", "measure", "research", "review", "decision", "assets"] as const;
 export type Kind = (typeof KINDS)[number];
 
-export const TOOLS = [
-  "claude-code",
-  "claude-desktop",
-  "cursor",
-  "codex",
-  "antigravity",
-  "person",
-] as const;
+export const TOOLS = ["claude-code", "claude-desktop", "cursor", "codex", "antigravity", "person"] as const;
 export type Tool = (typeof TOOLS)[number];
 
-export type Holder = {
+type Holder = {
   tool: Tool;
   model: string;
   since: Date;
@@ -47,13 +22,13 @@ export type Checks = {
   queuePlace?: number;
 };
 
-export type Question = {
+type Question = {
   askedAt: Date;
   answeredAt?: Date;
 };
 
 /** A step of a task, shown as gr8r-studio's: a title and a done mark. */
-export type Subtask = { id: string; title: string; done: boolean };
+type Subtask = { id: string; title: string; done: boolean };
 
 export type Task = {
   id: string;

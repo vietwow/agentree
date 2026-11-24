@@ -13,9 +13,9 @@ export type PaletteItem = {
   run: () => void;
 };
 
-export type PaletteGroup = { name: string; items: PaletteItem[] };
+type PaletteGroup = { name: string; items: PaletteItem[] };
 
-export type PaletteMode = "cmd" | "search";
+type PaletteMode = "cmd" | "search";
 type Scope = "all" | "tasks" | "projects";
 
 type Props = {
@@ -48,8 +48,7 @@ function mark(text: string, q: string): ReactNode {
   );
 }
 
-const has = (item: PaletteItem, q: string) =>
-  item.name.toLowerCase().includes(q) || (item.r ?? "").toLowerCase().includes(q);
+const has = (item: PaletteItem, q: string) => item.name.toLowerCase().includes(q) || (item.r ?? "").toLowerCase().includes(q);
 
 export function Palette({ mode: start, idle, commands, tasks, projects, suggested, onClose }: Props) {
   const [mode, setMode] = useState(start);
@@ -70,8 +69,7 @@ export function Palette({ mode: start, idle, commands, tasks, projects, suggeste
     }
     const limit = scope === "all" ? 4 : 12;
     if (scope !== "projects") groups.push({ name: "Tasks", items: tasks.filter((t) => has(t, query)).slice(0, limit) });
-    if (scope !== "tasks")
-      groups.push({ name: "Projects", items: projects.filter((p) => has(p, query)).slice(0, limit) });
+    if (scope !== "tasks") groups.push({ name: "Projects", items: projects.filter((p) => has(p, query)).slice(0, limit) });
   }
   const shown = groups.filter((g) => g.items.length);
   const flat = shown.flatMap((g) => g.items);
@@ -180,7 +178,9 @@ export function Palette({ mode: start, idle, commands, tasks, projects, suggeste
                       {item.sub && <span className="sub">{item.sub}</span>}
                       <span className="r">
                         {item.r && <span className="mono">{item.r}</span>}
-                        {item.kbd?.split(" ").map((k) => <kbd key={k}>{k}</kbd>)}
+                        {item.kbd?.split(" ").map((k) => (
+                          <kbd key={k}>{k}</kbd>
+                        ))}
                       </span>
                     </div>
                   );

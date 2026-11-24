@@ -25,7 +25,7 @@ import { copy, toast } from "../ui/toast.ts";
 import { OwnerAvatar, OwnerMenu, type OwnerMenuProps } from "./OwnerMenu.tsx";
 import { HEAD_PAGES, PAGES, PAGE_INFO, PROJECT_PAGES, type Page } from "./pages.ts";
 
-export type PageCount = { count: number; old: boolean };
+type PageCount = { count: number; old: boolean };
 
 type Props = {
   page: Page;

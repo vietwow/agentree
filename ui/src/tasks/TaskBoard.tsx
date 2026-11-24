@@ -10,7 +10,7 @@ import { StatusIcon } from "../ui/StatusIcon.tsx";
 import { ToolMark, ToolStack } from "../ui/ToolMark.tsx";
 import { PERSON_MOVES } from "./TaskDrawer.tsx";
 
-export const COLUMNS = ["backlog", "ready", "in-progress", "checking", "review", "accepted", "done"] as const satisfies readonly Status[];
+const COLUMNS = ["backlog", "ready", "in-progress", "checking", "review", "accepted", "done"] as const satisfies readonly Status[];
 
 /** A person adds a task only where a task starts, and drags it only between those columns. */
 const ADDS: ReadonlySet<Status> = new Set(PERSON_MOVES);

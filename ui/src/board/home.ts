@@ -116,7 +116,7 @@ export function forecast(tasks: readonly Task[], now: Date, span: 12 | 24): Fore
 }
 
 /** The last fourteen days of a number, oldest first. */
-export type Spark = number[];
+type Spark = number[];
 
 function days(now: Date, n = 14): number[] {
   const end = startOfDay(now).getTime() + DAY;
@@ -192,5 +192,3 @@ export function toolsLive(sessions: readonly AgentSession[], tasks: readonly Tas
     return { tool, sessions: live.length, worked: tasks.filter((t) => t.holder?.tool === tool).length, what };
   });
 }
-
-export const HOUR_MS = HOUR;

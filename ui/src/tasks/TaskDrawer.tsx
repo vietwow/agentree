@@ -34,7 +34,7 @@ import { copy, toast } from "../ui/toast.ts";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { SubCheck } from "./SubCheck.tsx";
 import { SubtaskView } from "./SubtaskView.tsx";
-import { ChecksSection, LogSection, None, SessionsSection, TimeBox, TreeBox } from "./TaskPanel.tsx";
+import { ChecksSection, LogSection, None, SessionsSection, TimeBox, TreeBox } from "./DrawerSections.tsx";
 
 type Tab = "log" | "checks" | "sessions" | "files" | "memory";
 

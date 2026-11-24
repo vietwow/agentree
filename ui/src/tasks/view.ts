@@ -3,7 +3,7 @@ import { KINDS, STATUSES, TOOLS, type Task } from "../board/task.ts";
 
 export type Mode = "list" | "board" | "table";
 export type Field = "status" | "assignee" | "priority" | "labels" | "parent" | "created" | "updated";
-export type Filter = { f: Field; op: "is" | "not"; v: string[] };
+type Filter = { f: Field; op: "is" | "not"; v: string[] };
 export type SortKey = "manual" | "priority" | "title" | "status" | "assignee" | "created" | "updated";
 export type GroupKey = "status" | "priority" | "assignee" | "parent" | "none";
 export type Column = "title" | "status" | "priority" | "assignee" | "labels" | "deps" | "created" | "updated" | "parent";
@@ -85,7 +85,7 @@ export function fieldOpts(f: Field, tasks: readonly Task[]): Opt[] {
   }
 }
 
-export function matchF(t: Task, f: Filter, now: Date): boolean {
+function matchF(t: Task, f: Filter, now: Date): boolean {
   if (!f.v.length) return true;
   let hit: boolean;
   if (f.f === "labels") hit = f.v.some((v) => v === t.kind || v === `rfc:${t.rfc}`);
@@ -108,7 +108,7 @@ export function applyView(tasks: readonly Task[], v: View, order: (t: Task) => n
   return sortTasks(out, v.sort, order);
 }
 
-export function sortTasks(tasks: Task[], s: View["sort"], order: (t: Task) => number): Task[] {
+function sortTasks(tasks: Task[], s: View["sort"], order: (t: Task) => number): Task[] {
   const key: (t: Task) => string | number = {
     manual: order,
     priority: (t: Task) => t.priority,

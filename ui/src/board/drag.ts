@@ -20,7 +20,7 @@ let installed = false;
 
 const all = (selector: string) => [...document.querySelectorAll<HTMLElement>(selector)];
 
-export function clearDropMarks() {
+function clearDropMarks() {
   all(".drop-line").forEach((x) => x.remove());
   all(".over").forEach((x) => x.classList.remove("over"));
   all(".drop-before,.drop-after").forEach((x) => x.classList.remove("drop-before", "drop-after"));

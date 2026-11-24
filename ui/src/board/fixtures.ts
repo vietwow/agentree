@@ -48,9 +48,6 @@ const PARENTS = {
 
 export const PARENT_TITLES: Record<string, string> = PARENTS;
 
-/** The projects registered on this machine; the first is the one open. */
-export const PROJECTS: { name: string; open?: number }[] = [{ name: "agentree" }, { name: "aep", open: 41 }, { name: "icon-grab", open: 3 }];
-
 const ROWS: Row[] = [
   { id: "T-0031", title: PARENTS["T-0031"], status: "done", kind: "build", priority: 1, created: 29600, since: 20300, landed: 20300 },
   { id: "T-0001", title: PARENTS["T-0001"], status: "in-progress", kind: "build", priority: 1, created: 25600, since: 23040 },
@@ -1080,7 +1077,7 @@ export function fixtureFacts(now: Date): Fact[] {
 }
 
 /** A heavy run that holds a seat: a check or a command a worker ran through `agentree run`. */
-export type Run = {
+type Run = {
   task: string;
   by: Tool;
   what: "check" | "command";

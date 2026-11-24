@@ -27,10 +27,10 @@ export const PAGES = ["projects", "progress", "tasks", "slots", "review", "memor
 export const HEAD_PAGES = ["home", "inbox", "favorites"] as const;
 
 /** At the foot of the side bar. */
-export const FOOT_PAGES = ["options", "help"] as const;
+const FOOT_PAGES = ["options", "help"] as const;
 
 /** Pages only a project opened in the side bar lists. */
-export const PROJECT_ONLY = ["board"] as const;
+const PROJECT_ONLY = ["board"] as const;
 
 export type Page = (typeof PAGES)[number] | (typeof HEAD_PAGES)[number] | (typeof FOOT_PAGES)[number] | (typeof PROJECT_ONLY)[number];
 

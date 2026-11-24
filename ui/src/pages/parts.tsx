@@ -7,7 +7,7 @@ const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct
 const DAY = 24 * 60 * 60 * 1000;
 
 const midnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-export const diffDays = (a: Date, b: Date) => Math.round((midnight(a) - midnight(b)) / DAY);
+const diffDays = (a: Date, b: Date) => Math.round((midnight(a) - midnight(b)) / DAY);
 
 export function fmtDate(d: Date, now: Date, long = false) {
   return `${MON[d.getMonth()]} ${d.getDate()}${long || d.getFullYear() !== now.getFullYear() ? `, ${d.getFullYear()}` : ""}`;

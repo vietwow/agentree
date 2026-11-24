@@ -34,7 +34,7 @@ import { ToolMark } from "../ui/ToolMark.tsx";
 import { style } from "../pages/parts.tsx";
 import { FIELD_NAME, fieldOpts, type Column, type Field, type GroupKey, type SortKey, type View } from "./view.ts";
 
-export const FIELD_ICON: Record<Field, LucideIcon> = {
+const FIELD_ICON: Record<Field, LucideIcon> = {
   status: CircleDot,
   assignee: User,
   priority: SignalHigh,
@@ -54,7 +54,7 @@ const SORTS: [SortKey, string][] = [
   ["updated", "Last updated"],
 ];
 
-export const GROUPS: [GroupKey, string, LucideIcon][] = [
+const GROUPS: [GroupKey, string, LucideIcon][] = [
   ["status", "Status", CircleDot],
   ["priority", "Priority", SignalHigh],
   ["assignee", "Assignee", User],

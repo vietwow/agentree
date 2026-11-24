@@ -29,7 +29,7 @@ export type Project = {
 };
 
 /** The colours a project takes. */
-export const PROJECT_COLORS = {
+const PROJECT_COLORS = {
   indigo: "#5A67D8",
   blue: "#3B82C4",
   violet: "#8662C9",

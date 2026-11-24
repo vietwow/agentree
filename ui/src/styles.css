@@ -10,35 +10,15 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* The motion Tailwind names: `animate-appear`. A list staggers it with an inline animation-delay. */
-@theme {
-  --animate-slide-in: slide-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
-  --animate-slide-out: slide-out 200ms cubic-bezier(0.64, 0, 0.78, 0) forwards;
-  --animate-fade-in: fade-in 200ms ease-out;
-  --animate-fade-out: fade-out 200ms ease-in forwards;
-  /* An item's first appearance; a list staggers it with an inline animation-delay. */
-  --animate-appear: appear 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
 
-  @keyframes slide-in {
-    from {
-      transform: translateX(100%);
-    }
-  }
-  @keyframes slide-out {
-    to {
-      transform: translateX(100%);
-    }
-  }
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-  }
-  @keyframes fade-out {
-    to {
-      opacity: 0;
-    }
-  }
+/* An item's first appearance, as `animate-appear`; a list staggers it with an inline animation-delay. */
+@theme {
+  --animate-appear: appear 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
   @keyframes appear {
     from {
       opacity: 0;

@@ -1,7 +1,7 @@
 /*
  * The scales every size is taken from. Those in `@theme` are Tailwind's too
  * (`text-xs`, `rounded-md`, `shadow-sm`, `font-mono`); the rest are read
- * with `var()`.
+ * with `var()`. Spacing is Tailwind's 4-pixel step: `gap-2` in markup, `--spacing(2)` in a rule.
  */
 @theme static {
   --font-sans: "Geist Variable", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -37,17 +37,6 @@
 }
 
 :root {
-  /* Spacing, on a 4-pixel step. */
-  --s-1: 4px;
-  --s-2: 8px;
-  --s-3: 12px;
-  --s-4: 16px;
-  --s-5: 20px;
-  --s-6: 24px;
-  --s-8: 32px;
-  --s-10: 40px;
-  --s-12: 48px;
-
   /* Control heights. */
   --ctl-xs: 22px;
   --ctl-sm: 26px;
@@ -58,7 +47,6 @@
   --side-w: 252px;
   --side-row: 30px;
   --row-h: 40px;
-  --card-pad: 10px;
   --topbar-h: 46px;
   /* One horizontal content edge shared by breadcrumb, page headers, toolbars, lists, tables and boards. */
   --gutter: 24px;
