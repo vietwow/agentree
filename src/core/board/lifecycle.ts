@@ -5,6 +5,7 @@
  */
 import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { compareOf, partsOf } from "../clone/parts.ts";
 import { Refusal } from "../errors.ts";
 import { git, patchId, tryGit } from "../git.ts";
 import { runnerRuns, thisRunner, type Runner } from "../machine/runner.ts";
@@ -102,8 +103,17 @@ export function submit(context: Context, actor: Actor, id: string): { task: Task
     };
     putSubmission(context.places, id, submission);
     putChecks(context.places, id, { commit: submission.commit, state: "queued", runs: [] });
-    const note = `Submitted: committed as ${submission.commit.slice(0, 12)} on ${claim.branch}, from ${base.slice(0, 12)}.`;
-    return { task: writeTask(context.places, stored, moved(task, "checking", actor.worker, at, note), "submitted").task, submission };
+    // A project that reproduces an interface compares the parts the change can change: their comparisons join the task's checks.
+    const clone = configOf(context.places).clone;
+    const compared = clone && CHECKED_KINDS.includes(task.fields.kind) ? partsOf(clone, files) : [];
+    const added = compared.map(compareOf).filter((command) => !task.fields.checks.includes(command));
+    const checked = added.length ? { ...task, fields: { ...task.fields, checks: [...task.fields.checks, ...added] } } : task;
+    const note = `Submitted: committed as ${submission.commit.slice(0, 12)} on ${claim.branch}, from ${base.slice(0, 12)}.${
+      compared.length
+        ? ` Its change can change ${compared.join(", ")}: ${compared.length === 1 ? "its comparison is" : "their comparisons are"} among its checks.`
+        : ""
+    }`;
+    return { task: writeTask(context.places, stored, moved(checked, "checking", actor.worker, at, note), "submitted").task, submission };
   });
 }
 

@@ -24,6 +24,7 @@ import { configOf } from "./config.ts";
 import { TASK_BRANCH, treeOf, type Places } from "./places.ts";
 import type { Run } from "./run.ts";
 import { dependenciesDone, isHeld as held, nextId, obstacles, overlaps } from "./rules.ts";
+import { sharedBy } from "../clone/parts.ts";
 import { readOptions } from "./options.ts";
 import { roomForATree } from "./trees.ts";
 import { beat as beatHold, claimOf, claims, createClaim, putClaim, putSetup, removeClaim, reviewOf, type Claim } from "./state.ts";
@@ -185,6 +186,13 @@ export function claim(context: Context, actor: Actor, id: string, options: { own
     if (task.fields.status !== "ready") throw new Refusal(`${id} is ${task.fields.status}; a task is claimed while it is ready`);
     if (task.fields.needs.includes("owner") && !options.ownerTold && !actor.owner)
       throw new Refusal(`${id} needs the owner: it is claimed when the owner has told you to take it (--owner-told)`);
+    // A task that writes what every part of a cloned interface shares has every part compared at its submit: the owner says yes first.
+    const clone = configOf(context.places).clone;
+    const shared = clone ? sharedBy(clone, task.fields.writes) : [];
+    if (shared.length && !options.ownerTold && !actor.owner)
+      throw new Refusal(
+        `${id} writes what every part shares (${shared.join(", ")}): its submit compares all ${Object.keys(clone!.parts).length} parts. It is claimed when the owner has said yes to that (--owner-told)`,
+      );
     const against = obstacles(tasks(board), task);
     if (against.length) throw new Refusal(`${id} is not claimed: ${against.join("; ")}`);
     for (const [other, hold] of claims(context.places))

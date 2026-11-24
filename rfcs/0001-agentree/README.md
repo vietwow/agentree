@@ -1391,8 +1391,19 @@ selectors. The reader built here (`extension/reader.js`) is the
 general one: it reads every element under a root a session names, and
 needs no part definition. It does not have the origin's functions for
 overlays and for the focus; a state is recorded as the difference of
-two whole readings. A submit does not compare the parts a task's files
-can change by itself: the build task's check does.
+two whole readings.
+
+**Which parts a submit compares.** Under `clone`, a part names in
+`files` the paths it is built from, and `shared` names the paths every
+part is built from (the tokens, the shell, the shared components). A
+submit of a build or a fix reads the files its change touched: the
+comparison of each part one of them belongs to joins the task's checks,
+as `agentree compare <part>`, and every part's when one of them is
+shared; the entry of the submit names the parts. A task whose `writes`
+hold a shared path is claimed only with the owner's word
+(`--owner-told`), and the refusal names how many parts its submit will
+compare. A part that names no `files` is compared only by a task that
+names its comparison as a check, as the build task of the part does.
 
 ### The drawings
 

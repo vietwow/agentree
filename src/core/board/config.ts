@@ -52,8 +52,10 @@ export type CloneConfig = {
   /** Whether the colours and the font family are the project's own, or the reference's and compared too. */
   colours: "own" | "reference";
   font: "own" | "reference";
-  /** For each part: where its page is, and the steps that show each of its states. */
-  parts: Record<string, { path: string; states?: Record<string, CloneStep[]> }>;
+  /** For each part: where its page is, the steps that show each of its states, and the paths of the project whose change can change it. */
+  parts: Record<string, { path: string; states?: Record<string, CloneStep[]>; files?: string[] }>;
+  /** The paths every part is built from (tokens, the shell, shared components): a change of one can change every part. */
+  shared?: string[];
   /** The ids whose differences are exceptions, each with its stated reason; what is only not built yet is none. */
   exceptions?: Record<string, string>;
 };

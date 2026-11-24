@@ -25,9 +25,10 @@ heavy runs, the daemon with its API, its events and its landings of
 accepted tasks, and the cloning of an interface: the reader, the
 records, `agentree compare`, the extension that carries records
 (`extension/`, loaded unpacked in Chrome) and the run that fetches
-drawings. Not built yet: the comparison inside the daemon's container
-(it runs on the host), a submit that compares the parts by itself, and
-what the RFC lists after its first version beyond these.
+drawings. Beyond the first version: the numbers of a project, notices,
+landing in batches, review on the diff, a bound on trees and the
+release of stale claims. Not built yet: the comparison inside the
+daemon's container (it runs on the host).
 
 ```sh
 pnpm install
