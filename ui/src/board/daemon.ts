@@ -126,6 +126,11 @@ async function get<T>(path: string): Promise<T> {
   return read<T>(text);
 }
 
+/** What a task in review changed, a patch a file, and the comments on its lines. */
+export type Diff = { files: { path: string; patch: string }[]; comments: { file: string; line: number; text: string; by: string }[] };
+
+export const diffOf = (project: string, task: string) => get<Diff>(`/api/projects/${project}/tasks/${task}/diff`);
+
 /** Asks the daemon for a change and gives back its answer; what it refuses is said in a toast, in its own words, and nothing is given back. */
 export async function post<T>(path: string, body: unknown = {}): Promise<T | undefined> {
   const response = await fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).catch(

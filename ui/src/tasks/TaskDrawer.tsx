@@ -39,6 +39,7 @@ import { KIND_COLOR } from "../ui/colors.ts";
 import { PriorityIcon } from "../ui/PriorityIcon.tsx";
 import { StatusIcon } from "../ui/StatusIcon.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
+import { DiffReview } from "./DiffReview.tsx";
 import { ChecksSection, LogSection, None, SessionsSection, TimeBox, TreeBox } from "./DrawerSections.tsx";
 import { SubCheck } from "./SubCheck.tsx";
 import { SubtaskView } from "./SubtaskView.tsx";
@@ -298,6 +299,8 @@ export function TaskDrawer(props: Props) {
                   </div>
                 </div>
               </div>
+
+              {t.status === "review" && <DiffReview project={project.id} task={t.id} />}
 
               <div className="dsec">
                 <div className="dsec-h">
