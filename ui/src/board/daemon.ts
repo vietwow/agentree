@@ -100,16 +100,24 @@ async function get<T>(path: string): Promise<T> {
   return read<T>(text);
 }
 
-/** Asks the daemon for a change; what it refuses is said in a toast, in its own words. */
-export async function send(path: string, body: unknown = {}): Promise<boolean> {
+/** Asks the daemon for a change and gives back its answer; what it refuses is said in a toast, in its own words, and nothing is given back. */
+export async function post<T>(path: string, body: unknown = {}): Promise<T | undefined> {
   const response = await fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).catch(
     () => undefined,
   );
-  if (response?.ok) return true;
-  const said = response ? ((await response.json().catch(() => ({}))) as { error?: string }).error : undefined;
-  toast(said ?? "The daemon did not answer", { kind: "err", ms: 6000 });
-  return false;
+  const answer = response ? ((await response.json().catch(() => ({}))) as T & { error?: string }) : undefined;
+  if (response?.ok) return answer;
+  toast(answer?.error ?? "The daemon did not answer", { kind: "err", ms: 6000 });
+  return undefined;
 }
+
+/** Asks the daemon for a change; whether it was made. */
+export const send = async (path: string, body: unknown = {}): Promise<boolean> => (await post(path, body)) !== undefined;
+
+/** What the kickstart of a new project asks, and where on this machine new projects are made. */
+export type Machine = { projects: string | null; tools: Tool[]; stack: string[] };
+
+export const machine = () => get<Machine>("/api/machine");
 
 let current: Board | undefined;
 let currentSlots: Slots | undefined;

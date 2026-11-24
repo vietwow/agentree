@@ -14,6 +14,8 @@ const PAGES = [
   "Numbers",
   "Activity",
   "Favorites",
+  "Inbox",
+  "Options",
 ];
 const THEMES = ["light", "dark"] as const;
 const WIDTHS = [

@@ -7,6 +7,7 @@ import { existsSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { Refusal } from "../errors.ts";
 import { git, patchId, tryGit } from "../git.ts";
+import { thisRunner } from "../machine/runner.ts";
 import { CHECKED_KINDS, DAEMON, stamp, toolOf, type Task } from "../task/model.ts";
 import { holding, isStale, moved, tasks, worker, type Actor, type Context } from "./actions.ts";
 import { readOptions } from "./options.ts";
@@ -132,12 +133,12 @@ export function check(context: Context, id: string): Task {
   return settleChecks(context, id, runAll(context, task.fields.checks, tree));
 }
 
-/** The task whose checks are to run, and the tree they run in; its checks are marked as running. */
+/** The task whose checks are to run, and the tree they run in; its checks are marked as running, by this process. */
 export function checksToRun(context: Context, id: string): { task: Task; tree: string } {
   const { task } = taskOf(readBoard(context.places), id);
   const submission = submissionOf(context.places, id);
   if (task.fields.status !== "checking" || !submission) throw new Refusal(`${id} is ${task.fields.status}; its checks run while it is checking`);
-  putChecks(context.places, id, { commit: submission.commit, state: "running", runs: [] });
+  putChecks(context.places, id, { commit: submission.commit, state: "running", runs: [], runner: thisRunner() });
   return { task, tree: submission.tree };
 }
 
@@ -256,82 +257,128 @@ function whileNoOtherLands<T>(places: Places, landing: () => T): T {
 /** What a landing came to: the task on `main`, sent back to a worker, or back in review. */
 export type Landing = { task: Task; landed?: string; why?: string };
 
+/** How many times a landing checks its rebase again when `main` moved during the checks before. */
+export const LANDING_ATTEMPTS = 3;
+
+/**
+ * What a landing found before it takes the lock, on the `main` and the
+ * branch head it read: the commit to land, or where the task goes instead.
+ */
+type Plan = { head: string; tip: string } & (
+  | { to: "done"; target: string }
+  | { to: "ready"; why: string }
+  | { to: "review"; target: string; why: string }
+);
+
 /**
  * Lands an accepted task on the main checkout's branch, by a fast-forward
  * only. A change that `main` has moved past is rebased in a tree of the
  * lander's own and checked there: it lands when the rebase changed nothing
  * of the task's own diff, goes back to review when it did, and goes back to
- * a worker on a conflict or a failing check.
+ * a worker on a conflict or a failing check. The rebase and its checks run
+ * before the landing lock is taken, so that other landings go on meanwhile;
+ * under the lock the landing goes ahead only on the `main` and the branch
+ * head its checks ran on, and checks again when `main` moved, up to
+ * `LANDING_ATTEMPTS` times.
  */
 export function land(context: Context, id: string): Landing {
-  const { places } = context;
-  return whileNoOtherLands(places, () => {
-    const board = readBoard(places);
-    const stored = taskOf(board, id);
-    const submission = submissionOf(places, id);
-    if (stored.task.fields.status !== "accepted" || !submission)
-      throw new Refusal(`${id} is ${stored.task.fields.status}; a task lands once it is accepted`);
-    const settle = (to: "ready" | "review", why: string): Landing => {
-      const task = writeTask(places, stored, moved(stored.task, to, DAEMON, stamp(context.now()), why), `accepted to ${to}`).task;
-      if (to === "ready") {
-        removeSubmission(places, id);
-        tryGit(places.root, "worktree", "unlock", submission.tree);
-      }
-      return { task, why };
-    };
-    const head = git(places.root, "rev-parse", "HEAD");
-    const tip = git(places.root, "rev-parse", submission.branch);
-    if (tip !== submission.commit)
-      return settle(
-        "ready",
-        `Not landed: ${submission.branch} is at ${tip.slice(0, 12)}, not at the commit that was checked and reviewed, ${submission.commit.slice(0, 12)}.`,
+  for (let attempt = 1; ; attempt++) {
+    const plan = planLanding(context, id);
+    const landing = whileNoOtherLands(context.places, () => carryOut(context, id, plan));
+    if (landing) return landing;
+    if (attempt === LANDING_ATTEMPTS)
+      throw new Refusal(
+        `main moved while each of ${LANDING_ATTEMPTS} landings of ${id} checked its rebase: it is still accepted; land it again`,
       );
-    const outside = changedFiles(submission.tree, baseOf(places, submission.branch)).filter((file) => !inScope(stored.task, file));
-    if (outside.length) return settle("ready", `Not landed: its branch holds files outside its paths: ${outside.join(", ")}.`);
+  }
+}
 
-    let target = tip;
-    if (tryGit(places.root, "merge-base", "--is-ancestor", head, tip).status !== 0) {
-      const merged = tryGit(places.root, "merge-tree", "--write-tree", "--name-only", head, tip);
-      if (merged.status !== 0)
-        return settle(
-          "ready",
-          `Not landed: it conflicts with what landed since its base, in ${merged.stdout.split("\n").slice(1).filter(Boolean).join(", ")}. Rebase its branch in its tree, and submit again.`,
-        );
-      const tree = join(places.trees, `landing-${id}`);
-      git(places.root, "worktree", "add", "--quiet", "--detach", tree, tip);
-      try {
-        if (tryGit(tree, "rebase", "--quiet", head).status !== 0)
-          return settle("ready", "Not landed: its rebase on what landed since its base stopped. Rebase its branch in its tree, and submit again.");
-        target = git(tree, "rev-parse", "HEAD");
-        const runs = runAll(context, stored.task.fields.checks, tree);
-        if (runs.some((run) => run.result !== "passed"))
-          return settle("ready", `Not landed: rebased on ${head.slice(0, 12)}, its checks fail:\n\n${runs.map(lineOf).join("\n")}`);
-        if (patchId(places.root, submission.base, tip) !== patchId(places.root, head, target)) {
-          git(submission.tree, "reset", "--quiet", "--hard", target);
-          putSubmission(places, id, { ...submission, commit: target, base: head });
-          return settle(
-            "review",
-            `Rebased on ${head.slice(0, 12)} as ${target.slice(0, 12)}, and the rebase changed the task's own diff: it is reviewed again, as \`git diff ${head.slice(0, 12)} ${target.slice(0, 12)}\`.`,
-          );
-        }
-      } finally {
-        tryGit(places.root, "worktree", "remove", "--force", tree);
-      }
+/** The task a landing reads: accepted, with its submission; refused otherwise. */
+function acceptedOf(places: Places, id: string): { stored: Stored; submission: Submission } {
+  const stored = taskOf(readBoard(places), id);
+  const submission = submissionOf(places, id);
+  if (stored.task.fields.status !== "accepted" || !submission)
+    throw new Refusal(`${id} is ${stored.task.fields.status}; a task lands once it is accepted`);
+  return { stored, submission };
+}
+
+/** What landing a task would do on `main` as it is now; it writes nothing of the board. */
+function planLanding(context: Context, id: string): Plan {
+  const { places } = context;
+  const { stored, submission } = acceptedOf(places, id);
+  const head = git(places.root, "rev-parse", "HEAD");
+  const tip = git(places.root, "rev-parse", submission.branch);
+  const ready = (why: string): Plan => ({ head, tip, to: "ready", why });
+  if (tip !== submission.commit)
+    return ready(
+      `Not landed: ${submission.branch} is at ${tip.slice(0, 12)}, not at the commit that was checked and reviewed, ${submission.commit.slice(0, 12)}.`,
+    );
+  const outside = changedFiles(submission.tree, baseOf(places, submission.branch)).filter((file) => !inScope(stored.task, file));
+  if (outside.length) return ready(`Not landed: its branch holds files outside its paths: ${outside.join(", ")}.`);
+  if (tryGit(places.root, "merge-base", "--is-ancestor", head, tip).status === 0) return { head, tip, to: "done", target: tip };
+
+  const merged = tryGit(places.root, "merge-tree", "--write-tree", "--name-only", head, tip);
+  if (merged.status !== 0)
+    return ready(
+      `Not landed: it conflicts with what landed since its base, in ${merged.stdout.split("\n").slice(1).filter(Boolean).join(", ")}. Rebase its branch in its tree, and submit again.`,
+    );
+  // A name of its own for each process: two landings of one task may check at once, and the first to take the lock lands it.
+  const tree = join(places.trees, `landing-${id}-${process.pid}`);
+  git(places.root, "worktree", "add", "--quiet", "--detach", tree, tip);
+  try {
+    if (tryGit(tree, "rebase", "--quiet", head).status !== 0)
+      return ready("Not landed: its rebase on what landed since its base stopped. Rebase its branch in its tree, and submit again.");
+    const target = git(tree, "rev-parse", "HEAD");
+    const runs = runAll(context, stored.task.fields.checks, tree);
+    if (runs.some((run) => run.result !== "passed"))
+      return ready(`Not landed: rebased on ${head.slice(0, 12)}, its checks fail:\n\n${runs.map(lineOf).join("\n")}`);
+    if (patchId(places.root, submission.base, tip) !== patchId(places.root, head, target))
+      return {
+        head,
+        tip,
+        to: "review",
+        target,
+        why: `Rebased on ${head.slice(0, 12)} as ${target.slice(0, 12)}, and the rebase changed the task's own diff: it is reviewed again, as \`git diff ${head.slice(0, 12)} ${target.slice(0, 12)}\`.`,
+      };
+    return { head, tip, to: "done", target };
+  } finally {
+    tryGit(places.root, "worktree", "remove", "--force", tree);
+  }
+}
+
+/** Carries out a plan under the landing lock; nothing, and nothing written, when `main` or the branch moved since it was made. */
+function carryOut(context: Context, id: string, plan: Plan): Landing | undefined {
+  const { places } = context;
+  const { stored, submission } = acceptedOf(places, id);
+  if (git(places.root, "rev-parse", "HEAD") !== plan.head || git(places.root, "rev-parse", submission.branch) !== plan.tip) return undefined;
+  const settle = (to: "ready" | "review", why: string): Landing => {
+    const task = writeTask(places, stored, moved(stored.task, to, DAEMON, stamp(context.now()), why), `accepted to ${to}`).task;
+    if (to === "ready") {
+      removeSubmission(places, id);
+      tryGit(places.root, "worktree", "unlock", submission.tree);
     }
-    git(places.root, "merge", "--quiet", "--ff-only", target);
-    const landed = git(places.root, "rev-parse", "HEAD");
-    const at = stamp(context.now());
-    const note = `Landed on main as ${landed.slice(0, 12)}${target === tip ? "" : `, rebased from ${tip.slice(0, 12)}; the rebase changed nothing of its diff`}.`;
-    const task = writeTask(places, stored, moved(stored.task, "done", DAEMON, at, note), "landed").task;
-    removeSubmission(places, id);
-    removeClaim(places, id);
-    tryGit(places.root, "worktree", "unlock", submission.tree);
-    tryGit(places.root, "worktree", "remove", submission.tree);
-    tryGit(places.root, "branch", "--quiet", "-D", submission.branch);
-    removeSetup(places, id);
-    afterLanding(context, id, at);
-    return { task, landed };
-  });
+    return { task, why };
+  };
+  if (plan.to === "ready") return settle("ready", plan.why);
+  if (plan.to === "review") {
+    git(submission.tree, "reset", "--quiet", "--hard", plan.target);
+    putSubmission(places, id, { ...submission, commit: plan.target, base: plan.head });
+    return settle("review", plan.why);
+  }
+  const { tip, target } = plan;
+  git(places.root, "merge", "--quiet", "--ff-only", target);
+  const landed = git(places.root, "rev-parse", "HEAD");
+  const at = stamp(context.now());
+  const note = `Landed on main as ${landed.slice(0, 12)}${target === tip ? "" : `, rebased from ${tip.slice(0, 12)}; the rebase changed nothing of its diff`}.`;
+  const task = writeTask(places, stored, moved(stored.task, "done", DAEMON, at, note), "landed").task;
+  removeSubmission(places, id);
+  removeClaim(places, id);
+  tryGit(places.root, "worktree", "unlock", submission.tree);
+  tryGit(places.root, "worktree", "remove", submission.tree);
+  tryGit(places.root, "branch", "--quiet", "-D", submission.branch);
+  removeSetup(places, id);
+  afterLanding(context, id, at);
+  return { task, landed };
 }
 
 /** What a landing sets off: a parent whose parts are all done is done, and a backlog task that waited for this one alone is ready. */

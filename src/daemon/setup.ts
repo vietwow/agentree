@@ -9,6 +9,7 @@ import { existsSync } from "node:fs";
 import type { Context } from "../core/board/actions.ts";
 import { configOf } from "../core/board/config.ts";
 import { treeOf } from "../core/board/places.ts";
+import { runnerRuns, thisRunner } from "../core/machine/runner.ts";
 import { claims, putSetup, setupOf } from "../core/board/state.ts";
 import { askFor, taskOfVolume, volumePrefix } from "./asks.ts";
 import type { Queue } from "./queue.ts";
@@ -16,16 +17,25 @@ import type { Queue } from "./queue.ts";
 /** The trees whose setup runs now, by project and task. */
 const running = new Set<string>();
 
-/** Starts the setups that wait on a project; resolves when each one it started ended. */
+/**
+ * Starts the setups that wait on a project; resolves when each one it
+ * started ended. A setup left running by a process that ended waits again
+ * first, so that it runs to its end.
+ */
 export function runWaitingSetups(project: string, context: Context, queue: Queue): Promise<void> {
   const { places } = context;
+  for (const [id] of claims(places)) {
+    const setup = setupOf(places, id);
+    if (setup?.state === "running" && setup.runner && !running.has(`${project} ${id}`) && !runnerRuns(setup.runner))
+      putSetup(places, id, { state: "waiting", output: "" });
+  }
   const waiting = [...claims(places)].filter(([id]) => setupOf(places, id)?.state === "waiting" && !running.has(`${project} ${id}`));
   return Promise.all(
     waiting.map(async ([id, hold]) => {
       const key = `${project} ${id}`;
       running.add(key);
       try {
-        putSetup(places, id, { state: "running", output: "" });
+        putSetup(places, id, { state: "running", output: "", runner: thisRunner() });
         let output = "";
         for (const command of configOf(places).setup) {
           // A setup is heavy: an install takes the processors and the disk a check would.

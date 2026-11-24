@@ -14,9 +14,12 @@ import { AgentsPage } from "./pages/AgentsPage.tsx";
 import { DocumentsPage } from "./pages/DocumentsPage.tsx";
 import { FavoritesPage } from "./pages/FavoritesPage.tsx";
 import { HomePage } from "./pages/HomePage.tsx";
+import { InboxPage } from "./pages/InboxPage.tsx";
 import { LivePage } from "./pages/LivePage.tsx";
 import { MemoryPage } from "./pages/MemoryPage.tsx";
+import { NewProject } from "./pages/NewProject.tsx";
 import { NumbersPage } from "./pages/NumbersPage.tsx";
+import { OptionsPage } from "./pages/OptionsPage.tsx";
 import { PIcon } from "./pages/parts.tsx";
 import { ProgressPage } from "./pages/ProgressPage.tsx";
 import { ProjectsPage } from "./pages/ProjectsPage.tsx";
@@ -72,6 +75,7 @@ export function App({ projects: listed, board, onProject }: Props) {
   const [palette, setPalette] = useState<"cmd" | "search">();
   const [shortcuts, setShortcuts] = useState(false);
   const [newTask, setNewTask] = useState(false);
+  const [newProject, setNewProject] = useState(false);
   const [shownId, setShownId] = useState<string>();
   const [closing, setClosing] = useState(false);
   const [full, setFull] = useState(false);
@@ -202,7 +206,7 @@ export function App({ projects: listed, board, onProject }: Props) {
       } else if (event.key === "?") setShortcuts(true);
       else if (event.key === "[") toggleSide();
       else if (key === "n") setNewTask(true);
-      else if (key === "p") notBuilt("Creating a project");
+      else if (key === "p") setNewProject(true);
     };
     addEventListener("keydown", onKey);
     return () => removeEventListener("keydown", onKey);
@@ -242,7 +246,7 @@ export function App({ projects: listed, board, onProject }: Props) {
   });
   const commands: PaletteItem[] = [
     { key: "c-task", icon: ic(Plus, 15), name: "Create task", kbd: "N", run: () => setNewTask(true) },
-    { key: "c-proj", icon: ic(FolderPlus, 15), name: "Create project", kbd: "P", run: () => notBuilt("Creating a project") },
+    { key: "c-proj", icon: ic(FolderPlus, 15), name: "Create project", kbd: "P", run: () => setNewProject(true) },
     { key: "c-search", icon: ic(Search, 15), name: "Search workspace", kbd: "/", run: () => setTimeout(() => setPalette("search")) },
     ...goItems,
     {
@@ -289,7 +293,7 @@ export function App({ projects: listed, board, onProject }: Props) {
       inProject={isProjectPage}
       onProject={openProject}
       onReorder={reorder}
-      onNewProject={() => notBuilt("Creating a project")}
+      onNewProject={() => setNewProject(true)}
       onPalette={() => setPalette("cmd")}
       collapsed={collapsed && !menuOpen}
       onCollapse={toggleSide}
@@ -337,7 +341,7 @@ export function App({ projects: listed, board, onProject }: Props) {
   /** The pages built so far; any other shows that it is not built yet. */
   const views: Partial<Record<Page, () => ReactNode>> = {
     home: () => <HomePage project={current.name} tasks={tasks} activity={activity} now={now} onOpenTask={openTask} onAgents={() => go("agents")} />,
-    projects: () => <ProjectsPage projects={projects} now={now} onOpen={(id) => openProject(id, "board")} />,
+    projects: () => <ProjectsPage projects={projects} now={now} onOpen={(id) => openProject(id, "board")} onNew={() => setNewProject(true)} />,
     favorites: () => (
       <FavoritesPage
         projects={projects}
@@ -359,6 +363,8 @@ export function App({ projects: listed, board, onProject }: Props) {
     slots: () => <SlotsPage tasks={tasks} now={now} onOpenTask={openTask} />,
     memory: () => <MemoryPage now={now} onOpenTask={openTask} />,
     numbers: () => <NumbersPage tasks={tasks} now={now} onOpenTask={openTask} />,
+    inbox: () => <InboxPage tasks={tasks} now={now} onOpenTask={openTask} onMemory={() => go("memory")} />,
+    options: () => <OptionsPage />,
     tasks: tasksPage,
     board: tasksPage,
   };
@@ -376,7 +382,7 @@ export function App({ projects: listed, board, onProject }: Props) {
             onSearch={() => setPalette("cmd")}
             onNotices={() => go("inbox")}
             onNewTask={() => setNewTask(true)}
-            onNewProject={() => notBuilt("Creating a project")}
+            onNewProject={() => setNewProject(true)}
             onPlan={() => notBuilt("The planner")}
             owner={owner}
           />
@@ -433,6 +439,7 @@ export function App({ projects: listed, board, onProject }: Props) {
         />
       )}
       {newTask && <NewTask onClose={() => setNewTask(false)} />}
+      {newProject && <NewProject onClose={() => setNewProject(false)} onMade={(id) => openProject(id, "board")} />}
       {shortcuts && <Shortcuts onClose={() => setShortcuts(false)} />}
     </>
   );

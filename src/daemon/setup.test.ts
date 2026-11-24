@@ -6,7 +6,7 @@ import { afterEach, beforeEach, test } from "node:test";
 import { claim, create, log, release, type Context } from "../core/board/actions.ts";
 import { CONFIG_FILE } from "../core/board/config.ts";
 import { commit, submit } from "../core/board/lifecycle.ts";
-import { setupOf } from "../core/board/state.ts";
+import { putSetup, setupOf } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
 import { CODEX, OWNER, project, type Project } from "../core/board/testing.ts";
 import { git } from "../core/git.ts";
@@ -61,6 +61,16 @@ test("a new tree is set up by the daemon after its claim, and a check waits for 
   assert.equal(readFileSync(join(hold.tree, ".ready"), "utf8"), "ready\n");
   await runWaitingChecks("project", context, queue);
   assert.equal(taskOf(readBoard(context.places), "T-0001").task.fields.status, "review");
+});
+
+test("a setup left running by a process that ended runs again to its end", async () => {
+  configured({ setup: ["echo ready > .ready"] });
+  const { claim: hold } = claim(context, CODEX, "T-0001");
+  const ended = spawnSync("true").pid;
+  putSetup(context.places, "T-0001", { state: "running", output: "", runner: { pid: ended, since: new Date().toISOString() } });
+  await runWaitingSetups("project", context, queue);
+  assert.equal(setupOf(context.places, "T-0001")!.state, "done");
+  assert.equal(readFileSync(join(hold.tree, ".ready"), "utf8"), "ready\n");
 });
 
 test("a setup that fails says which command failed and what it said", async () => {

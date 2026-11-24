@@ -23,7 +23,6 @@ import {
 } from "../core/board/actions.ts";
 import { reportedBy, TOOL_OF_COMMAND } from "../core/board/headless.ts";
 import { onHook } from "../core/board/hooks.ts";
-import { init } from "../core/board/init.ts";
 import { accept, check, commit, land, reject, review, scope, submit, waitingToLand } from "../core/board/lifecycle.ts";
 import { setReviewOwnTasks } from "../core/board/options.ts";
 import { boardOf } from "../core/board/places.ts";
@@ -43,12 +42,13 @@ import { renderTask } from "../core/task/file.ts";
 import { endSession, reportSession } from "../core/board/sessions.ts";
 import { reportUse } from "../core/board/usage.ts";
 import { doctor } from "../core/init/doctor.ts";
-import { AGENT_TOOLS, setUp } from "../core/init/tools.ts";
+import { kickstart } from "../core/init/kickstart.ts";
 import { KINDS, stamp, STATUSES, TOOLS, type Kind, type Need, type Tool } from "../core/task/model.ts";
 
 const USAGE = `Usage: agentree <subcommand> [options]
 
-  init [--first-commit] [--tools <tool,...>]   make this repository's board, and set it up for the tools
+  init [--first-commit] [--tools <tool,...>] [--name <words>] [--desc <words>] [--goal <words>] [--stack <question>=<answer>]...
+                                        the kickstart: this repository's board, its part, each tool's part, its first card
   board                                 every task by status, and who holds it
   next                                  the ready tasks that can be claimed now, and why the others cannot
   show T-NNNN                           the task as its file holds it
@@ -106,6 +106,8 @@ const { values, positionals } = parseArgs({
     message: { type: "string", short: "m" },
     name: { type: "string" },
     tools: { type: "string" },
+    goal: { type: "string" },
+    stack: { type: "string", multiple: true },
     role: { type: "string" },
     anyway: { type: "boolean" },
     desc: { type: "string" },
@@ -170,18 +172,24 @@ function id(): string {
 
 const COMMANDS: Record<string, () => unknown> = {
   init() {
-    const { places, did } = init(process.cwd(), { firstCommit: values["first-commit"] ?? false });
-    say(did.length ? did.map((line) => `- ${line}`).join("\n") : "the board is there already; nothing changed");
-    say(`The board: ${places.board}\nThe owner's token: ${places.state}/owner-token`);
-    const tools = values.tools === undefined ? AGENT_TOOLS : (list([values.tools]) as Tool[]);
-    for (const tool of tools)
-      if (!(AGENT_TOOLS as readonly string[]).includes(tool))
-        throw new Refusal(`"${tool}" is no tool agentree sets a project up for: ${AGENT_TOOLS.join(", ")}`);
-    const report = setUp(places.root, tools);
-    if (report.did.length) say(`\nWritten into ${places.root} (commit them on main):\n${report.did.map((line) => `- ${line}`).join("\n")}`);
-    if (report.byHand.length) say(`\nLeft to you:\n${report.byHand.map((line) => `- ${line}`).join("\n")}`);
-    const project = register(places.root, new Date());
-    say(`\nThe project "${project.id}" of this machine. Run "agentree serve" for its board in the browser.`);
+    const stack = Object.fromEntries(
+      (values.stack ?? []).map((answer) => [answer.split("=")[0]!.trim(), answer.split("=").slice(1).join("=").trim()]),
+    );
+    const done = kickstart(process.cwd(), {
+      firstCommit: values["first-commit"] ?? false,
+      ...(values.tools === undefined ? {} : { tools: list([values.tools]) as Tool[] }),
+      ...(values.name ? { name: values.name } : {}),
+      ...(values.desc ? { desc: values.desc } : {}),
+      ...(values.goal ? { goal: values.goal } : {}),
+      stack,
+    });
+    const places = boardOf(process.cwd());
+    say(done.did.length ? done.did.map((line) => `- ${line}`).join("\n") : "the project is set up already; nothing changed");
+    say(`\nThe board: ${places.board}\nThe owner's token: ${places.state}/owner-token`);
+    if (done.byHand.length) say(`\nLeft to you:\n${done.byHand.map((line) => `- ${line}`).join("\n")}`);
+    say(
+      `\nThe project "${done.project.id}" of this machine. Commit what was written into ${places.root}, then run "agentree serve" for its board in the browser.`,
+    );
   },
   board() {
     const at = context();

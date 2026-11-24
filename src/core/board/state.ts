@@ -6,6 +6,7 @@
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import type { Runner } from "../machine/runner.ts";
 import type { Places } from "./places.ts";
 
 /** A claim, or a review mark: the worker, its session, and when it last said it was there. */
@@ -26,11 +27,11 @@ export type Submission = { by: string; session: string; at: string; commit: stri
 /** One check of a task, as it ran. */
 export type CheckRun = { command: string; result: "passed" | "failed" | "timed-out"; tookMs: number; waitedMs: number; output: string };
 
-/** The checks of a task's last submission. */
-export type Checks = { commit: string; state: "queued" | "running" | "finished"; runs: CheckRun[] };
+/** The checks of a task's last submission; while they run, the process that runs them. */
+export type Checks = { commit: string; state: "queued" | "running" | "finished"; runs: CheckRun[]; runner?: Runner };
 
-/** How the setup of a task's tree went: the commands that make it runnable, run at its claim. */
-export type Setup = { state: "waiting" | "running" | "done" | "failed"; output: string };
+/** How the setup of a task's tree went: the commands that make it runnable, run at its claim; while it runs, the process that runs it. */
+export type Setup = { state: "waiting" | "running" | "done" | "failed"; output: string; runner?: Runner };
 
 type Kind = "claims" | "reviews" | "submissions" | "checks" | "setups";
 

@@ -1,14 +1,16 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, test } from "node:test";
 import { claim, create, log, type Context } from "../core/board/actions.ts";
 import { CONFIG_FILE } from "../core/board/config.ts";
 import { commit, submit } from "../core/board/lifecycle.ts";
-import { checksOf, claimOf } from "../core/board/state.ts";
+import { checksOf, claimOf, putChecks } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
 import { CODEX, OWNER, project, type Project } from "../core/board/testing.ts";
 import { git } from "../core/git.ts";
+import { thisRunner } from "../core/machine/runner.ts";
 import { runWaitingChecks } from "./checks.ts";
 import { createQueue } from "./queue.ts";
 
@@ -66,6 +68,28 @@ test("the daemon runs the checks that wait, the heavy ones through the queue, an
       .map((decision) => decision.task),
     ["T-0001"],
   );
+});
+
+test("checks left running by a process that ended run again, and the task is settled", async () => {
+  submitted(["test -f src/a.txt"]);
+  const { commit: checked } = checksOf(context.places, "T-0001")!;
+  const ended = spawnSync("true").pid;
+  putChecks(context.places, "T-0001", { commit: checked, state: "running", runs: [], runner: { pid: ended, since: new Date().toISOString() } });
+  await runWaitingChecks("project", context, createQueue({ home: join(at.home, "machine") }));
+  assert.equal(statusOf("T-0001"), "review");
+  assert.deepEqual(
+    checksOf(context.places, "T-0001")!.runs.map((run) => run.result),
+    ["passed"],
+  );
+});
+
+test("checks that run in a process that still runs are left to it", async () => {
+  submitted(["test -f src/a.txt"]);
+  const { commit: checked } = checksOf(context.places, "T-0001")!;
+  putChecks(context.places, "T-0001", { commit: checked, state: "running", runs: [], runner: thisRunner() });
+  await runWaitingChecks("project", context, createQueue({ home: join(at.home, "machine") }));
+  assert.equal(statusOf("T-0001"), "checking");
+  assert.equal(checksOf(context.places, "T-0001")!.state, "running");
 });
 
 test("a check that fails in the daemon's queue gives the task back to its worker", async () => {

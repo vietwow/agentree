@@ -1,4 +1,5 @@
 /** A tree's setup run where no daemon runs it: each command of the project's part, in the tree, by the shell. */
+import { thisRunner } from "../machine/runner.ts";
 import type { Context } from "./actions.ts";
 import { configOf } from "./config.ts";
 import { runInShell } from "./run.ts";
@@ -9,7 +10,7 @@ export function setUpTree(context: Context, id: string): Setup | undefined {
   const { places } = context;
   const hold = claimOf(places, id);
   if (!hold || setupOf(places, id)?.state !== "waiting") return setupOf(places, id);
-  putSetup(places, id, { state: "running", output: "" });
+  putSetup(places, id, { state: "running", output: "", runner: thisRunner() });
   let said = "";
   for (const command of configOf(places).setup) {
     const ran = (context.run ?? runInShell)(command, hold.tree);

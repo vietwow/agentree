@@ -1,4 +1,21 @@
-import { ChevronRight, CircleCheck, CircleDot, Clock, Ellipsis, Folder, GitBranch, Link, Maximize2, MessageCircleQuestion, Minimize2, SignalHigh, Star, Tag, User, X } from "lucide-react";
+import {
+  ChevronRight,
+  CircleCheck,
+  CircleDot,
+  Clock,
+  Ellipsis,
+  Folder,
+  GitBranch,
+  Link,
+  Maximize2,
+  MessageCircleQuestion,
+  Minimize2,
+  SignalHigh,
+  Star,
+  Tag,
+  User,
+  X,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { send } from "../board/daemon.ts";
 import { toggleStar, useStars } from "../board/favorites.ts";

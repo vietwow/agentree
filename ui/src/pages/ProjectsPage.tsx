@@ -54,9 +54,9 @@ const STATUS_OPTIONS: ["all" | ProjectStatus, string][] = [
 
 const tone = (p: Project) => (p.status === "complete" ? "good" : p.status === "risk" ? "bad" : undefined);
 
-type Props = { projects: Project[]; now: Date; onOpen: (id: string) => void };
+type Props = { projects: Project[]; now: Date; onOpen: (id: string) => void; onNew: () => void };
 
-export function ProjectsPage({ projects, now, onOpen }: Props) {
+export function ProjectsPage({ projects, now, onOpen, onNew }: Props) {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<"all" | ProjectStatus>("all");
   const [sort, setSort] = useState<Sort>("recent");
@@ -226,7 +226,7 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
         title="Projects"
         actions={
           <>
-            <Button variant="primary" onClick={() => toast("Registering a project is not built yet", { kind: "info", ms: 2200 })}>
+            <Button variant="primary" onClick={onNew}>
               {ic(Plus, 14)}New project
             </Button>
           </>

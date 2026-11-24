@@ -14,6 +14,8 @@ import { readOptions, setReviewOwnTasks } from "../core/board/options.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
 import { Refusal } from "../core/errors.ts";
 import { editProject, placesOfProject, projectOf, projects } from "../core/machine/projects.ts";
+import { newProject, projectsDirectory, setProjectsDirectory, STACK_QUESTIONS } from "../core/init/kickstart.ts";
+import { AGENT_TOOLS } from "../core/init/tools.ts";
 import type { Bounds } from "../core/machine/queue.ts";
 import type { Tool } from "../core/task/model.ts";
 import { documentsView } from "../core/views/documents.ts";
@@ -80,6 +82,29 @@ export function createApp(daemon: Daemon) {
     if (/^\/(api|mcp)\//.test(request.req.path) && getCookie(request, COOKIE) !== daemon.token && bearer !== daemon.token)
       return request.json({ error: "this request carries no token of the daemon; open the address `agentree serve` printed" }, 401);
     return next();
+  });
+
+  // The machine: where new projects are made, and what the kickstart asks.
+  app.get("/api/machine", (request) => request.json({ projects: projectsDirectory() ?? null, tools: AGENT_TOOLS, stack: STACK_QUESTIONS }));
+  app.post("/api/machine", async (request) => {
+    setProjectsDirectory(String(((await request.req.json()) as { projects?: string }).projects ?? ""));
+    return request.json({ projects: projectsDirectory() });
+  });
+  // A new project: its folder under the directory of projects, and the kickstart in it with what the owner answered.
+  app.post("/api/projects", async (request) => {
+    const body = (await request.req.json()) as { name?: string; desc?: string; tools?: Tool[]; goal?: string; stack?: Record<string, string> };
+    const made = newProject(
+      String(body.name ?? ""),
+      {
+        ...(body.tools ? { tools: body.tools } : {}),
+        ...(body.desc ? { desc: body.desc } : {}),
+        ...(body.goal ? { goal: body.goal } : {}),
+        stack: body.stack ?? {},
+      },
+      daemon.now,
+    );
+    daemon.events.emit({ what: "projects" });
+    return request.json({ id: made.project.id, did: made.did, byHand: made.byHand }, 201);
   });
 
   // What the pages read.

@@ -602,15 +602,36 @@ What the owner does in the pages, each a request to the daemon: a new
 task (its title, kind, priority, parent, sections, paths and checks),
 an answer under a question that waits in the drawer, the release of a
 claim with no beat, a tool's switch for its own tasks, a fact edited,
-retired or put in force, the queue's number held fixed, and a waiting
-run moved first. Creating a project, the planner, and turning a
-subtask into a task or deleting it are not in the pages yet.
+retired or put in force, the queue's bounds and its number held fixed,
+a waiting run moved first, and a new project. The Inbox lists what
+waits for the owner on the open project: questions, claims with no
+beat, checks that failed, facts proposed. The Options page holds each
+tool's switch, the queue's bounds and the directory of projects. The
+planner, and turning a subtask into a task or deleting it, are not in
+the pages yet.
+
+"New project" asks what the kickstart takes, and the daemon makes the
+folder: the directory of projects when the machine has none yet (named
+once, kept in the machine's settings, or `AGENTREE_PROJECTS`), the
+name, a line of what it is, the tools, a first goal, and the stack's
+eight questions, each optional. `agentree init` takes the same as
+options (`--tools`, `--name`, `--desc`, `--goal`, `--stack
+<question>=<answer>`). The kickstart commits what it wrote only in a
+repository it began itself; the first goal becomes the first card, in
+the backlog, with the owner's answers about the stack in its Context.
+The question whether the project reproduces a site's interface is not
+asked yet.
 
 The checks of a submit run in the daemon: on each look it starts the
 checks of every task that is `checking` and whose checks wait, each
 command through the queue, and settles the task. `agentree submit`
 waits for them unless `--no-wait`, and runs them itself when no daemon
-answers. `agentree run [T-NNNN] -- <command>` asks the daemon to run a
+answers. While checks or a tree's setup run, their record names the
+process that runs them, by its id and the moment it started (which
+tells it from a later process given the same id); on each look the
+daemon puts back to wait a run whose process ended, a daemon that
+stopped or a command killed while it ran them, so a task never stays
+`checking` and a setup runs to its end. `agentree run [T-NNNN] -- <command>` asks the daemon to run a
 command in the main checkout or a task's tree and prints what it said;
 `agentree load` says the load, the runs, what is free and how many more
 workers to start now; `agentree wait T-NNNN` returns when the owner
