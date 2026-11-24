@@ -19,6 +19,7 @@ import { documentsView } from "../core/views/documents.ts";
 import { filesView } from "../core/views/files.ts";
 import { agentsView, milestonesView, projectView } from "../core/views/project.ts";
 import { activityView, taskDetailView, taskView } from "../core/views/tasks.ts";
+import { toolsView } from "../core/views/tools.ts";
 import type { Queue } from "./queue.ts";
 
 /** What changed, for the browser to read again: a project's board, or the machine's queue. */
@@ -85,6 +86,25 @@ export function createApp(daemon: Daemon) {
       unreadable: board.unreadable,
     });
   });
+  // Everything a project's pages show, in one read: a page reads no second address.
+  app.get("/api/projects/:project/snapshot", (request) => {
+    const board = readBoard(contextOf(request).places);
+    const now = daemon.now();
+    return request.json({
+      now: now.toISOString(),
+      project: projectView(projectOf(request.req.param("project")), board),
+      tasks: board.tasks.map((stored) => taskView(board.places, stored.task)),
+      details: Object.fromEntries(board.tasks.map((stored) => [stored.task.fields.id, taskDetailView(board, stored.task, now)])),
+      activity: activityView(board),
+      milestones: milestonesView(board),
+      facts: readMemory(board.places).facts,
+      documents: documentsView(board.places),
+      files: filesView(board),
+      sessions: agentsView(board.places, now),
+      tools: toolsView(board.places),
+      unreadable: board.unreadable,
+    });
+  });
   app.get("/api/projects/:project/tasks/:task", (request) => {
     const board = readBoard(contextOf(request).places);
     return request.json(taskDetailView(board, taskOf(board, request.req.param("task")).task, daemon.now()));
@@ -94,7 +114,7 @@ export function createApp(daemon: Daemon) {
   app.get("/api/projects/:project/documents", (request) => request.json(documentsView(contextOf(request).places)));
   app.get("/api/projects/:project/agents", (request) => {
     const { places } = contextOf(request);
-    return request.json({ sessions: agentsView(places, daemon.now()), options: readOptions(places) });
+    return request.json({ sessions: agentsView(places, daemon.now()), tools: toolsView(places), options: readOptions(places) });
   });
   app.get("/api/slots", (request) => request.json(daemon.queue.view()));
 

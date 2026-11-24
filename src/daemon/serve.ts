@@ -14,8 +14,9 @@ export const DEFAULT_PORT = 4517;
 const LOOK_MS = 1500;
 const SAMPLE_MS = 60_000;
 
-/** The token every request carries; written once, readable by the user alone. */
+/** The token every request carries; written once, readable by the user alone. `AGENTREE_TOKEN` names it instead, for a test. */
 export function machineToken(): string {
+  if (process.env.AGENTREE_TOKEN) return process.env.AGENTREE_TOKEN;
   const file = join(machineHome(), "token");
   if (!existsSync(file)) {
     mkdirSync(machineHome(), { recursive: true });
@@ -65,7 +66,9 @@ export function startDaemon(options: { port?: number; ui?: string } = {}) {
   const events = createEvents();
   const queue = createQueue({ home: machineHome(), onChange: () => events.emit({ what: "slots" }) });
   const origins = [`http://127.0.0.1:${port}`, `http://localhost:${port}`, ...(process.env.AGENTREE_DEV_ORIGIN?.split(",") ?? [])];
-  const app = createApp({ token, queue, events, now: () => new Date(), origins });
+  // `AGENTREE_NOW` holds the daemon's clock at one moment, for a test that compares pictures of its pages.
+  const fixed = process.env.AGENTREE_NOW ? new Date(process.env.AGENTREE_NOW) : undefined;
+  const app = createApp({ token, queue, events, now: () => fixed ?? new Date(), origins });
   if (options.ui && existsSync(options.ui)) {
     const root = relative(process.cwd(), options.ui) || ".";
     app.use("*", serveStatic({ root }));
