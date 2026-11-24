@@ -55,6 +55,7 @@ import { KINDS, stamp, STATUSES, TOOLS, type Kind, type Need, type Tool } from "
 const USAGE = `Usage: agentree <subcommand> [options]
 
   init [--first-commit] [--tools <tool,...>] [--name <words>] [--desc <words>] [--goal <words>] [--stack <question>=<answer>]...
+       [--clone <the reference's address> [--viewport <WxH>] [--theme light|dark] [--colours own|reference] [--font own|reference] [--committed]]
                                         the kickstart: this repository's board, its part, each tool's part, its first card
   board                                 every task by status, and who holds it
   next                                  the ready tasks that can be claimed now, and why the others cannot
@@ -124,6 +125,9 @@ const { values, positionals } = parseArgs({
     goal: { type: "string" },
     state: { type: "string" },
     base: { type: "string" },
+    clone: { type: "string" },
+    colours: { type: "string" },
+    font: { type: "string" },
     source: { type: "string" },
     viewport: { type: "string" },
     theme: { type: "string" },
@@ -217,6 +221,18 @@ const COMMANDS: Record<string, () => unknown> = {
       ...(values.desc ? { desc: values.desc } : {}),
       ...(values.goal ? { goal: values.goal } : {}),
       stack,
+      ...(values.clone
+        ? {
+            clone: {
+              reference: values.clone,
+              ...(values.viewport ? { viewport: values.viewport } : {}),
+              ...(values.theme ? { theme: values.theme } : {}),
+              ...(values.colours ? { colours: values.colours as "own" | "reference" } : {}),
+              ...(values.font ? { font: values.font as "own" | "reference" } : {}),
+              drawings: values.committed ? ("committed" as const) : ("machine" as const),
+            },
+          }
+        : {}),
     });
     const places = boardOf(process.cwd());
     say(done.did.length ? done.did.map((line) => `- ${line}`).join("\n") : "the project is set up already; nothing changed");
@@ -511,7 +527,7 @@ const COMMANDS: Record<string, () => unknown> = {
       ...(values.range ? { range: values.range } : {}),
       ...(values.colour ? { colour: values.colour } : {}),
       ...(values.names ? { names: values.names } : {}),
-      committed: values.committed ?? false,
+      committed: values.committed ?? configOf(at.places).clone?.drawings === "committed",
     });
     say(
       `${task.fields.id} asks for the set. Its run's folder holds nothing of this project:\n  ${folder}\nOpen a tool that can drive Chrome in that folder, and tell it to follow AGENTS.md.`,

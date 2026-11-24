@@ -29,6 +29,12 @@ export type ProjectConfig = {
 export type CloneStep = { click: string } | { hover: string } | { focus: string } | { press: string };
 
 export type CloneConfig = {
+  /** The reference, declared: the address of the interface that is reproduced, the viewport and the theme it is read at. */
+  reference?: string;
+  viewport?: { width: number; height: number };
+  theme?: string;
+  /** Whether the drawings fetched for the project stay on the machine or are committed with it. */
+  drawings?: "machine" | "committed";
   /** The directory of the records, a directory a part, from the repository's root. */
   records: string;
   /** The address the project's own application answers at while it is compared. */

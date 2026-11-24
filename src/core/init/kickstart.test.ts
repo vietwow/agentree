@@ -3,6 +3,8 @@ import { existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync } from "node:f
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, test } from "node:test";
+import { configOf } from "../board/config.ts";
+import { readMemory } from "../board/memory.ts";
 import { boardOf } from "../board/places.ts";
 import { readBoard } from "../board/store.ts";
 import { Refusal } from "../errors.ts";
@@ -77,4 +79,51 @@ test("the kickstart in a repository of the owner's changes nothing of it by a co
   assert.match(git(root, "status", "--porcelain"), /AGENTS\.md/);
   assert.deepEqual(kickstart(root, { tools: ["cursor"] }, now).did, []);
   assert.throws(() => kickstart(root, { tools: ["person"] }, now), /no tool agentree sets a project up for/);
+});
+
+test("a project that reproduces an interface declares its reference in its part, and holds the agreements about it as the owner's", () => {
+  const root = join(home, "clone");
+  git(home, "init", "--quiet", "--initial-branch=main", root);
+  const made = kickstart(
+    root,
+    {
+      tools: ["cursor"],
+      firstCommit: true,
+      clone: { reference: "https://app.example.com", viewport: "1280x800", font: "reference", drawings: "committed" },
+    },
+    now,
+  );
+  assert.ok(made.did.includes("declared the reference in agentree.config.json"));
+  assert.deepEqual(configOf(boardOf(root)).clone, {
+    reference: "https://app.example.com",
+    viewport: { width: 1280, height: 800 },
+    theme: "light",
+    colours: "own",
+    font: "reference",
+    drawings: "committed",
+    records: "parity",
+    url: "http://127.0.0.1:5173",
+    parts: {},
+  });
+  assert.equal(git(root, "status", "--porcelain"), "", "the project's part is committed with the rest of what the kickstart wrote");
+  const [fact] = readMemory(boardOf(root)).facts;
+  assert.deepEqual([fact!.kind, fact!.state, fact!.title, fact!.paths], ["agreement", "in-force", "The reference is read-only", ["parity/"]]);
+  assert.match(fact!.body, /The project reproduces the interface at https:\/\/app\.example\.com\./);
+  assert.deepEqual(
+    kickstart(root, { tools: ["cursor"], clone: { reference: "https://other.example.com" } }, now).did,
+    [],
+    "a reference that is declared is not declared again",
+  );
+  assert.equal(configOf(boardOf(root)).clone?.reference, "https://app.example.com");
+  const other = join(home, "other");
+  git(home, "init", "--quiet", "--initial-branch=main", other);
+  assert.throws(() => kickstart(other, { firstCommit: true, clone: { reference: "the app" } }, now), /named by its address/);
+  assert.throws(
+    () => kickstart(other, { firstCommit: true, clone: { reference: "https://a.example.com", viewport: "wide" } }, now),
+    /a viewport is a width and a height/,
+  );
+  assert.throws(
+    () => kickstart(other, { firstCommit: true, clone: { reference: "https://a.example.com", colours: "blue" as "own" } }, now),
+    /"own" or the "reference"'s/,
+  );
 });

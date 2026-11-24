@@ -18,7 +18,7 @@ import { treeOf } from "../core/board/places.ts";
 import { writeRecord, type Reading } from "../core/clone/records.ts";
 import { Refusal } from "../core/errors.ts";
 import { editProject, placesOfProject, projectOf, projects } from "../core/machine/projects.ts";
-import { newProject, projectsDirectory, setProjectsDirectory, STACK_QUESTIONS } from "../core/init/kickstart.ts";
+import { newProject, projectsDirectory, setProjectsDirectory, STACK_QUESTIONS, type CloneAnswers } from "../core/init/kickstart.ts";
 import { AGENT_TOOLS } from "../core/init/tools.ts";
 import type { Bounds } from "../core/machine/queue.ts";
 import type { Tool } from "../core/task/model.ts";
@@ -96,7 +96,14 @@ export function createApp(daemon: Daemon) {
   });
   // A new project: its folder under the directory of projects, and the kickstart in it with what the owner answered.
   app.post("/api/projects", async (request) => {
-    const body = (await request.req.json()) as { name?: string; desc?: string; tools?: Tool[]; goal?: string; stack?: Record<string, string> };
+    const body = (await request.req.json()) as {
+      name?: string;
+      desc?: string;
+      tools?: Tool[];
+      goal?: string;
+      stack?: Record<string, string>;
+      clone?: CloneAnswers;
+    };
     const made = newProject(
       String(body.name ?? ""),
       {
@@ -104,6 +111,7 @@ export function createApp(daemon: Daemon) {
         ...(body.desc ? { desc: body.desc } : {}),
         ...(body.goal ? { goal: body.goal } : {}),
         stack: body.stack ?? {},
+        ...(body.clone?.reference ? { clone: body.clone } : {}),
       },
       daemon.now,
     );
