@@ -1,2 +1,5 @@
 node_modules/
 dist/
+tests/visual/__screenshots__/
+test-results/
+playwright-report/

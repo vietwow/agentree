@@ -4,8 +4,7 @@ The web UI of agentree, on sample data (`src/board/fixtures.ts`): the
 pages ported from [gr8r-studio](https://github.com/gr8rstudio/gr8r-studio)
 (the side bar, Projects, Favorites, Activity, Tasks with its List, Board
 and Table, Progress as its Timeline, and the task drawer) and Slots,
-Review, Memory, Documents, Agents and Numbers in the same look. It reads no daemon, writes nothing, and has
-no tests yet.
+Review, Memory, Documents, Agents and Numbers in the same look. It reads no daemon and writes nothing.
 
 ## Running it
 
@@ -18,6 +17,21 @@ pnpm install
 pnpm dev        # http://127.0.0.1:5173
 pnpm build      # typecheck, then the build into dist/
 ```
+
+## Visual checks
+
+`tests/visual/` shoots every page, and the task drawer, in the light and
+dark themes at 1440 and 465 pixels wide, with the clock fixed and motion
+reduced, and compares each shot pixel by pixel with the one taken before:
+
+```sh
+npx playwright install chromium   # once
+pnpm test:visual:update           # take the shots a change is compared with
+pnpm test:visual                  # compare; the report is in playwright-report/
+```
+
+The shots depend on the machine's fonts and rendering, so each machine
+takes its own and none is committed.
 
 ## Where things are
 
