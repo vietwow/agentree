@@ -227,6 +227,7 @@ test("the doctor says what of a project's setup is there and what is missing", (
       'AGENTS.md has no section "Taking work"',
       "the skill agentree-coordinate is missing in one of .agents/skills and .claude/skills, or the two differ",
       "the skill agentree-plan is missing in one of .agents/skills and .claude/skills, or the two differ",
+      "the skill agentree-grab-icons is missing in one of .agents/skills and .claude/skills, or the two differ",
       "claude-code",
       "claude-desktop",
       "cursor",

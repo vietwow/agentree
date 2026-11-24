@@ -30,6 +30,7 @@ import { lintProblems, obstacles, unwritten } from "../core/board/rules.ts";
 import { setUpTree } from "../core/board/setup.ts";
 import { claims, ownerToken, setupOf } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
+import { prepareIconRun } from "../core/clone/icons.ts";
 import { Refusal } from "../core/errors.ts";
 import { projects, register } from "../core/machine/projects.ts";
 import { loadInWords } from "../daemon/load.ts";
@@ -83,6 +84,8 @@ const USAGE = `Usage: agentree <subcommand> [options]
   mcp                                   the board's MCP server on standard input and output, for this repository
   hook <tool> <event>                   what a tool's hook tells the board; its JSON on standard input
   doctor                                what of this project's setup is there, and what is missing
+  grab-icons --page <address> --where <steps> --set <name> [--range <words>] [--colour <words>] [--names <words>] [--committed]
+                                        make the folder of a run that fetches a set of drawings, and its card; it fetches nothing
   agent [T-NNNN] [--role build|review] -- <a tool's headless command>
                                         start a session of a tool, when the machine takes one more; its use is recorded
   demo <directory>                      make the sample projects there, and register them
@@ -107,6 +110,13 @@ const { values, positionals } = parseArgs({
     name: { type: "string" },
     tools: { type: "string" },
     goal: { type: "string" },
+    page: { type: "string" },
+    where: { type: "string" },
+    set: { type: "string" },
+    range: { type: "string" },
+    colour: { type: "string" },
+    names: { type: "string" },
+    committed: { type: "boolean" },
     stack: { type: "string", multiple: true },
     role: { type: "string" },
     anyway: { type: "boolean" },
@@ -412,6 +422,21 @@ const COMMANDS: Record<string, () => unknown> = {
   serve() {
     const daemon = startDaemon({ ...(values.port ? { port: Number(values.port) } : {}), ui: join(import.meta.dirname, "../../ui/dist") });
     say(`agentree serves ${projects().length} ${projects().length === 1 ? "project" : "projects"}. Open:\n  ${daemon.address}`);
+  },
+  "grab-icons"() {
+    const at = context();
+    const { folder, task } = prepareIconRun(at, actor(at), {
+      page: values.page ?? "",
+      where: values.where ?? "",
+      set: values.set ?? "",
+      ...(values.range ? { range: values.range } : {}),
+      ...(values.colour ? { colour: values.colour } : {}),
+      ...(values.names ? { names: values.names } : {}),
+      committed: values.committed ?? false,
+    });
+    say(
+      `${task.fields.id} asks for the set. Its run's folder holds nothing of this project:\n  ${folder}\nOpen a tool that can drive Chrome in that folder, and tell it to follow AGENTS.md.`,
+    );
   },
   async doctor() {
     const at = context();

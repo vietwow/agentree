@@ -14,6 +14,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 COPY src ./src
 COPY rfcs/0001-agentree/standard ./rfcs/0001-agentree/standard
+COPY seed/icon-grab ./seed/icon-grab
 COPY --from=ui /app/ui/dist ./ui/dist
 # The command by its name, for the daemon's own hooks and for `docker exec`.
 RUN ln -s /app/src/command/main.ts /usr/local/bin/agentree

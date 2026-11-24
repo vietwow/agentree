@@ -6,4 +6,4 @@ ui/test-results
 ui/playwright-report
 ui/tests
 .git
-seed
+seed/aep
