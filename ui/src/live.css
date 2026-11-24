@@ -23,7 +23,6 @@
     --l-wash-mid: 8%;
     --l-card-shadow: 0 1px 2px rgb(27 26 23 / 0.04), 0 6px 18px rgb(27 26 23 / 0.05);
     --l-pop-shadow: 0 14px 44px rgb(27 26 23 / 0.16);
-    --serif: "Newsreader Variable", "Iowan Old Style", Georgia, serif;
     max-width: 1680px;
     padding: 22px var(--gutter) 48px;
   }
@@ -111,7 +110,7 @@
   }
   .live .title-line h1 {
     margin: 12px 0 0;
-    font: 400 56px/1.05 var(--serif);
+    font: 400 56px/1.05 var(--font-serif);
     letter-spacing: -0.023em;
     color: var(--l-ink);
   }
@@ -119,7 +118,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font: 400 12px/1.3 var(--mono);
+    font: 400 12px/1.3 var(--font-mono);
     color: var(--l-meta);
     white-space: nowrap;
   }
@@ -147,7 +146,7 @@
     color: var(--l-muted);
   }
   .live-stats b {
-    font: 500 30px/1.1 var(--mono);
+    font: 500 30px/1.1 var(--font-mono);
     color: var(--l-ink);
   }
 
@@ -273,7 +272,7 @@
     margin: 0;
     padding: 0 2px 4px;
     text-align: center;
-    font: 600 11px/1.3 var(--font);
+    font: 600 11px/1.3 var(--font-sans);
     letter-spacing: 2px;
     text-transform: uppercase;
     color: color-mix(in srgb, var(--pc) 72%, var(--l-ink));
@@ -283,7 +282,7 @@
   }
   .org-label .hardlink {
     overflow: hidden;
-    font: 400 11px/1.3 var(--mono);
+    font: 400 11px/1.3 var(--font-mono);
     letter-spacing: 0;
     text-transform: none;
     text-overflow: ellipsis;
@@ -315,7 +314,7 @@
     grid-area: 1 / 1;
     align-items: center;
     min-width: 0;
-    font: 500 13px/1.3 var(--mono);
+    font: 500 13px/1.3 var(--font-mono);
     white-space: nowrap;
     color: var(--l-ink);
   }
@@ -341,7 +340,7 @@
     align-self: center;
     min-width: 0;
     overflow: hidden;
-    font: 400 12px/1.4 var(--mono);
+    font: 400 12px/1.4 var(--font-mono);
     white-space: nowrap;
     text-overflow: ellipsis;
     color: var(--l-meta);
@@ -406,7 +405,7 @@
     border-radius: 50%;
     background: var(--l-core);
     color: var(--l-core-ink);
-    font: 500 11px/1 var(--mono);
+    font: 500 11px/1 var(--font-mono);
     letter-spacing: 2px;
     text-indent: 2px;
   }
@@ -419,7 +418,7 @@
     border-radius: 999px;
     background: var(--l-surface);
     transform: translateX(-50%);
-    font: 400 10px/1.5 var(--mono);
+    font: 400 10px/1.5 var(--font-mono);
     white-space: nowrap;
     color: var(--l-meta);
   }
@@ -455,7 +454,7 @@
   .org-pop .id {
     display: flex;
     align-items: center;
-    font: 500 15px/1.3 var(--mono);
+    font: 500 15px/1.3 var(--font-mono);
     color: var(--l-ink);
   }
   .org-pop .id::before {
@@ -493,7 +492,7 @@
     cursor: pointer;
   }
   .org-pop .subs {
-    font: 400 12px/1.4 var(--mono);
+    font: 400 12px/1.4 var(--font-mono);
     color: var(--l-meta);
   }
   .org-pop .said {
@@ -511,7 +510,7 @@
     display: flex;
     justify-content: space-between;
     gap: 12px;
-    font: 500 12px/1.4 var(--mono);
+    font: 500 12px/1.4 var(--font-mono);
     color: var(--l-ink);
   }
   .org-pop .who time {
@@ -524,7 +523,7 @@
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-    font: 400 15px/1.4 var(--serif);
+    font: 400 15px/1.4 var(--font-serif);
     color: var(--l-ink);
     quotes: "\201C" "\201D";
   }
@@ -533,7 +532,7 @@
     padding: 4px 0 0;
     border: 0;
     background: none;
-    font: 600 14px/1.4 var(--font);
+    font: 600 14px/1.4 var(--font-sans);
     color: var(--l-ink);
     text-decoration: underline;
     text-underline-offset: 3px;

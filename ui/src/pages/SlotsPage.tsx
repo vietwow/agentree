@@ -22,9 +22,9 @@ const WHY: Record<Waiting["why"], { label: string; tone: string }> = {
 };
 
 const DECISION: Record<Slots["decisions"][number]["kind"], { icon: LucideIcon; color: string }> = {
-  start: { icon: Play, color: "var(--green)" },
-  hold: { icon: Pause, color: "var(--amber)" },
-  stop: { icon: ShieldAlert, color: "var(--red)" },
+  start: { icon: Play, color: "var(--good)" },
+  hold: { icon: Pause, color: "var(--warn)" },
+  stop: { icon: ShieldAlert, color: "var(--bad)" },
   add: { icon: Plus, color: "var(--accent)" },
   mark: { icon: Activity, color: "var(--violet)" },
 };
@@ -41,7 +41,7 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
 
   const taskRef = (id: string) => (
     <span className="row" style={{ gap: 8, minWidth: 0 }}>
-      <span className="key mono" style={{ fontSize: "var(--fs-xs)", color: "var(--text-3)" }}>
+      <span className="key mono" style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)" }}>
         {id}
       </span>
       <span className="obj trunc" data-opens-task onClick={() => onOpenTask(id)} style={{ fontWeight: 500, cursor: "pointer" }}>
@@ -100,12 +100,12 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
       <div className="panel" style={{ marginBottom: 16 }}>
         <div className="panel-h">
           <h2>Load, the last hour</h2>
-          <div className="acts" style={{ gap: 14, fontSize: "var(--fs-xs)", color: "var(--text-3)" }}>
+          <div className="acts" style={{ gap: 14, fontSize: "var(--text-xs)", color: "var(--ink-3)" }}>
             <Legend color="var(--accent)">Host</Legend>
-            <Legend color="var(--text-3)" dashed>
+            <Legend color="var(--ink-3)" dashed>
               Docker's machine
             </Legend>
-            <Legend color="var(--red)" dashed>
+            <Legend color="var(--bad)" dashed>
               Mark {pct(s.mark)}
             </Legend>
           </div>
@@ -129,10 +129,10 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                 </span>
                 <div className="grow" style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
                   {taskRef(r.task)}
-                  <code className="mono trunc" style={{ fontSize: "var(--fs-xs)", color: "var(--text-2)" }}>
+                  <code className="mono trunc" style={{ fontSize: "var(--text-xs)", color: "var(--ink-2)" }}>
                     {r.command}
                   </code>
-                  <span className="row faint" style={{ gap: 12, fontSize: "var(--fs-xs)", flexWrap: "wrap" }}>
+                  <span className="row faint" style={{ gap: 12, fontSize: "var(--text-xs)", flexWrap: "wrap" }}>
                     {by(r.by)}
                     <span>{r.what === "check" ? "A check" : "A command"}</span>
                     <span className="row" style={{ gap: 4 }}>
@@ -154,7 +154,7 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
             <div className="panel-h">
               <h2>Waiting</h2>
               <span className="cnt faint">{s.queue.length}</span>
-              <span className="acts faint" style={{ fontSize: "var(--fs-xs)" }}>
+              <span className="acts faint" style={{ fontSize: "var(--text-xs)" }}>
                 in the order they asked
               </span>
             </div>
@@ -165,10 +165,10 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                 </span>
                 <div className="grow" style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
                   {taskRef(w.task)}
-                  <code className="mono trunc" style={{ fontSize: "var(--fs-xs)", color: "var(--text-2)" }}>
+                  <code className="mono trunc" style={{ fontSize: "var(--text-xs)", color: "var(--ink-2)" }}>
                     {w.command}
                   </code>
-                  <span className="row faint" style={{ gap: 12, fontSize: "var(--fs-xs)", flexWrap: "wrap" }}>
+                  <span className="row faint" style={{ gap: 12, fontSize: "var(--text-xs)", flexWrap: "wrap" }}>
                     {by(w.by)}
                     <span>
                       costs {w.cost.cpu} {w.cost.cpu === 1 ? "processor" : "processors"}, {w.cost.memory} GB
@@ -178,7 +178,7 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                       waiting {minutes(w.since, now)} min
                     </span>
                   </span>
-                  <span className="row" style={{ gap: 8, fontSize: "var(--fs-xs)" }}>
+                  <span className="row" style={{ gap: 8, fontSize: "var(--text-xs)" }}>
                     <span className={`badge ${WHY[w.why].tone}`}>
                       <span className="dot" />
                       {WHY[w.why].label}
@@ -198,11 +198,11 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
           <div className="panel">
             <div className="panel-h">
               <h2>The bounds</h2>
-              <span className="acts faint" style={{ fontSize: "var(--fs-xs)" }}>
+              <span className="acts faint" style={{ fontSize: "var(--text-xs)" }}>
                 this machine's, not the repository's
               </span>
             </div>
-            <div className="panel-b" style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: "var(--fs-sm)" }}>
+            <div className="panel-b" style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: "var(--text-sm)" }}>
               <Bound name="Lowest number of runs" value={String(s.bounds.lowest)} />
               <Bound name="Highest number of runs" value={String(s.bounds.highest)} />
               <Bound name="Margin kept free" value={pct(s.bounds.margin)} />
@@ -260,7 +260,7 @@ function Legend({ color, dashed, children }: { color: string; dashed?: boolean; 
 function Use({ label, used, given, unit = "" }: { label: string; used: number; given: number; unit?: string }) {
   const share = used / given;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "var(--fs-2xs)", color: "var(--text-3)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "var(--text-2xs)", color: "var(--ink-3)" }}>
       <span className="row" style={{ justifyContent: "space-between" }}>
         <span>{label}</span>
         <span className="num">
@@ -308,12 +308,12 @@ function LoadChart({ s }: { s: Slots }) {
         ))}
         <g className="fx-reveal">
           <path d={area} fill="color-mix(in srgb, var(--accent) 10%, transparent)" />
-          <path d={line("vm")} fill="none" stroke="var(--text-3)" strokeWidth="1.5" strokeDasharray="4 3" vectorEffect="non-scaling-stroke" />
+          <path d={line("vm")} fill="none" stroke="var(--ink-3)" strokeWidth="1.5" strokeDasharray="4 3" vectorEffect="non-scaling-stroke" />
           <path d={line("host")} fill="none" stroke="var(--accent)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
         </g>
-        <line x1="0" x2={W} y1={y(s.mark)} y2={y(s.mark)} stroke="var(--red)" strokeDasharray="4 3" vectorEffect="non-scaling-stroke" />
+        <line x1="0" x2={W} y1={y(s.mark)} y2={y(s.mark)} stroke="var(--bad)" strokeDasharray="4 3" vectorEffect="non-scaling-stroke" />
       </svg>
-      <div className="row faint" style={{ justifyContent: "space-between", fontSize: "var(--fs-2xs)", marginTop: 6 }}>
+      <div className="row faint" style={{ justifyContent: "space-between", fontSize: "var(--text-2xs)", marginTop: 6 }}>
         <span>60 min ago</span>
         <span>30 min ago</span>
         <span>now</span>

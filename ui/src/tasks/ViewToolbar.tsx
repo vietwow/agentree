@@ -198,11 +198,7 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
               <span key={i} className="contents">
                 {i > 0 && <span>and</span>}
                 <span className="chip">
-                  <button
-                    type="button"
-                    onClick={pop.toggle(`fvals:${i}`)}
-                    style={{ display: "inline-flex", gap: 5, alignItems: "center" }}
-                  >
+                  <button type="button" onClick={pop.toggle(`fvals:${i}`)} style={{ display: "inline-flex", gap: 5, alignItems: "center" }}>
                     {ic(FIELD_ICON[f.f], 12)}
                     <b>{FIELD_NAME[f.f]}</b> {f.op === "not" ? "is not" : "is"} <span>{val}</span>
                   </button>
@@ -241,12 +237,7 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
                   <div key={i}>
                     <div className="frow">
                       <span className="conj">{i ? "and" : "Where"}</span>
-                      <select
-                        className="select"
-                        value={f.f}
-                        onChange={(e) => setFilter(i, { f: e.target.value as Field, v: [] })}
-                        aria-label="Field"
-                      >
+                      <select className="select" value={f.f} onChange={(e) => setFilter(i, { f: e.target.value as Field, v: [] })} aria-label="Field">
                         {(Object.keys(FIELD_NAME) as Field[]).map((k) => (
                           <option key={k} value={k}>
                             {FIELD_NAME[k]}
@@ -274,8 +265,8 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
                       <div
                         style={{
                           marginLeft: 50,
-                          border: "1px solid var(--border)",
-                          borderRadius: "var(--r)",
+                          border: "1px solid var(--line)",
+                          borderRadius: "var(--radius-md)",
                           padding: 4,
                           maxHeight: 200,
                           overflow: "auto",

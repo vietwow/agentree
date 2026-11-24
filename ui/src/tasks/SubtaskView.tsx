@@ -9,7 +9,19 @@ import { SubCheck } from "./SubCheck.tsx";
 const notBuilt = (what: string) => toast(`${what} is not built yet`, { kind: "info", ms: 2200 });
 
 /** gr8r-studio's subtask view, in place of the task drawer's body. */
-export function SubtaskView({ task: t, id, popped, onOpen, onClose }: { task: Task; id: string; popped?: string; onOpen: (id: string) => void; onClose: () => void }) {
+export function SubtaskView({
+  task: t,
+  id,
+  popped,
+  onOpen,
+  onClose,
+}: {
+  task: Task;
+  id: string;
+  popped?: string;
+  onOpen: (id: string) => void;
+  onClose: () => void;
+}) {
   const i = t.subtasks.findIndex((s) => s.id === id);
   const s = t.subtasks[i];
 
@@ -26,7 +38,7 @@ export function SubtaskView({ task: t, id, popped, onOpen, onClose }: { task: Ta
   if (!s) return null;
   return (
     <div className="subview">
-      <button type="button" className="pillbtn" onClick={onClose} style={{ margin: "-4px 0 14px -7px", fontSize: 12.5, color: "var(--text-2)" }}>
+      <button type="button" className="pillbtn" onClick={onClose} style={{ margin: "-4px 0 14px -7px", fontSize: 12.5, color: "var(--ink-2)" }}>
         {ic(ArrowLeft, 14)}
         <span className="trunc" style={{ maxWidth: 420 }}>
           {t.title}
@@ -36,7 +48,7 @@ export function SubtaskView({ task: t, id, popped, onOpen, onClose }: { task: Ta
         <span style={{ marginTop: 9, display: "flex" }}>
           <SubCheck id={s.id} done={s.done} title={s.title} round />
         </span>
-        <div className="ttl-edit" style={s.done ? { textDecoration: "line-through", color: "var(--text-3)" } : undefined}>
+        <div className="ttl-edit" style={s.done ? { textDecoration: "line-through", color: "var(--ink-3)" } : undefined}>
           {s.title}
         </div>
       </div>
@@ -44,9 +56,7 @@ export function SubtaskView({ task: t, id, popped, onOpen, onClose }: { task: Ta
         Subtask {i + 1} of {t.subtasks.length} · {s.done ? "Done" : "Open"}
       </div>
       <dl className="kv" style={{ marginTop: 16 }}>
-        <dt>
-          {ic(User, 14)}Assignee
-        </dt>
+        <dt>{ic(User, 14)}Assignee</dt>
         <dd>
           <span className={`pillbtn ${t.holder ? "" : "empty"}`}>
             {t.holder ? (
@@ -61,9 +71,7 @@ export function SubtaskView({ task: t, id, popped, onOpen, onClose }: { task: Ta
             )}
           </span>
         </dd>
-        <dt>
-          {ic(Folder, 14)}Parent
-        </dt>
+        <dt>{ic(Folder, 14)}Parent</dt>
         <dd>
           <button type="button" className="pillbtn" onClick={onClose}>
             <span className="mono faint" style={{ fontSize: 11 }}>
@@ -77,14 +85,26 @@ export function SubtaskView({ task: t, id, popped, onOpen, onClose }: { task: Ta
         <div className="dsec-h">
           <h3 id="s-note-l">Notes</h3>
         </div>
-        <textarea className="textarea" rows={4} readOnly placeholder="No notes. The task's worker writes them in the task's file." aria-labelledby="s-note-l" />
+        <textarea
+          className="textarea"
+          rows={4}
+          readOnly
+          placeholder="No notes. The task's worker writes them in the task's file."
+          aria-labelledby="s-note-l"
+        />
       </div>
       <div className="dsec row" style={{ gap: 6, flexWrap: "wrap" }}>
         <button type="button" className="btn btn-secondary btn-sm" onClick={() => notBuilt("Converting a subtask to a task")}>
           {ic(ArrowUpRight, 13)}Convert to task
         </button>
         <span className="sp" />
-        <button type="button" className="btn btn-sm btn-ghost" disabled={i === 0} onClick={() => onOpen(t.subtasks[i - 1]!.id)} aria-label="Previous subtask">
+        <button
+          type="button"
+          className="btn btn-sm btn-ghost"
+          disabled={i === 0}
+          onClick={() => onOpen(t.subtasks[i - 1]!.id)}
+          aria-label="Previous subtask"
+        >
           {ic(ChevronLeft, 14)}Previous
         </button>
         <button

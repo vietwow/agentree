@@ -54,7 +54,7 @@ const LEAD_TONE = {
   good: "text-good",
   warn: "text-warn",
   bad: "text-bad",
-  neutral: "text-ink-soft",
+  neutral: "text-ink-2",
 };
 
 export function StatCards({ stats, now }: { stats: Stats; now: Date }) {
@@ -66,17 +66,17 @@ export function SummaryCards({ cards }: { cards: Card[] }) {
   return (
     <div className="grid grid-cols-1 gap-3 @xl:grid-cols-2 @4xl:grid-cols-4">
       {cards.map((card) => (
-        <section key={card.label} className="flex min-w-0 flex-col rounded-card border border-line bg-panel p-1">
-          <div className="flex flex-col gap-2 rounded-inner border border-line bg-raised bg-lift px-3.5 pt-3 pb-3.5 shadow-lift">
-            <h2 className="truncate text-[11px] leading-4 font-semibold tracking-[0.06em] text-ink-soft uppercase">{card.label}</h2>
+        <section key={card.label} className="flex min-w-0 flex-col rounded-xl border border-line bg-tray p-1">
+          <div className="flex flex-col gap-2 rounded-lg border border-line bg-float bg-lift px-3.5 pt-3 pb-3.5 shadow-lift">
+            <h2 className="truncate text-2xs leading-4 font-semibold tracking-[0.06em] text-ink-2 uppercase">{card.label}</h2>
             <p className="flex items-baseline gap-1.5">
               <span className="text-[28px] leading-8 font-semibold tracking-tight tabular-nums">{card.value}</span>
               {card.trend === "up" && <ArrowUpRight size={16} aria-label="Up" className="self-start text-good" />}
               {card.trend === "down" && <ArrowDownRight size={16} aria-label="Down" className="self-start text-bad" />}
-              {card.unit && <span className="text-xs leading-4 text-ink-faint">{card.unit}</span>}
+              {card.unit && <span className="text-xs leading-4 text-ink-4">{card.unit}</span>}
             </p>
           </div>
-          <p className="flex min-w-0 items-center gap-1.5 px-2.5 pt-2 pb-1.5 text-xs leading-4 text-ink-faint">
+          <p className="flex min-w-0 items-center gap-1.5 px-2.5 pt-2 pb-1.5 text-xs leading-4 text-ink-4">
             {card.lead && (
               <span className={`inline-flex items-center gap-1 font-semibold ${LEAD_TONE[card.tone]}`}>
                 {card.tone === "good" && <Triangle size={8} aria-hidden className="fill-current" />}

@@ -17,7 +17,7 @@ export default defineConfig({
     reducedMotion: "reduce",
   },
   expect: {
-    toHaveScreenshot: { animations: "disabled", caret: "hide", maxDiffPixels: 0 },
+    toHaveScreenshot: { animations: "disabled", caret: "hide", maxDiffPixels: 0, threshold: 0 },
   },
   webServer: {
     command: `vite --port ${PORT} --strictPort`,

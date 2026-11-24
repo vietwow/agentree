@@ -82,7 +82,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
         <div className="c-meta">{badge(s.state)}</div>
         <div className="c-meta mono faint">{s.model}</div>
         <div className="c-meta">
-          <span className="row" style={{ gap: 5, whiteSpace: "nowrap", color: s.state === "stale" ? "var(--red)" : "var(--text-3)" }}>
+          <span className="row" style={{ gap: 5, whiteSpace: "nowrap", color: s.state === "stale" ? "var(--bad)" : "var(--ink-3)" }}>
             {ic(Clock, 13)}
             {timeAgo(s.ended ?? s.beat, now)}
           </span>
@@ -102,9 +102,9 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                 ...(a.state === "ended" ? { opacity: 0.6 } : {}),
               }}
             >
-              <div className="ttl" style={{ cursor: "default", fontSize: "var(--fs-sm)" }}>
+              <div className="ttl" style={{ cursor: "default", fontSize: "var(--text-sm)" }}>
                 <span className="row faint">{ic(CornerDownRight, 13)}</span>
-                <span className="mono" style={{ fontSize: "var(--fs-xs)" }}>
+                <span className="mono" style={{ fontSize: "var(--text-xs)" }}>
                   {a.kind}
                 </span>
               </div>
@@ -127,7 +127,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
     </div>
   );
 
-  const mark = (on: boolean) => <span style={{ color: on ? "var(--green)" : "var(--text-4)", display: "flex" }}>{ic(on ? Check : Minus, 14)}</span>;
+  const mark = (on: boolean) => <span style={{ color: on ? "var(--good)" : "var(--ink-4)", display: "flex" }}>{ic(on ? Check : Minus, 14)}</span>;
 
   return (
     <div className="page flush" style={{ overflowY: "auto" }}>
@@ -209,7 +209,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
         <div className="panel">
           <div className="panel-h">
             <h2>The tools</h2>
-            <span className="acts faint" style={{ fontSize: "var(--fs-xs)" }}>
+            <span className="acts faint" style={{ fontSize: "var(--text-xs)" }}>
               set up by agentree init
             </span>
           </div>
@@ -246,7 +246,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                       {t.hooks.length ? (
                         <span className="row" style={{ gap: 4, flexWrap: "wrap" }}>
                           {t.hooks.map((h) => (
-                            <span key={h} className="lbl mono" style={{ fontSize: "var(--fs-2xs)" }}>
+                            <span key={h} className="lbl mono" style={{ fontSize: "var(--text-2xs)" }}>
                               {h}
                             </span>
                           ))}

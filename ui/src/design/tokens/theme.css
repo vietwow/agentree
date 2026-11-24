@@ -1,0 +1,163 @@
+/*
+ * Tier 2: what each colour is for, in the light theme (`:root`) and the dark
+ * one (`.dark` on <html>). Rules and Tailwind utilities read only these.
+ */
+:root {
+  color-scheme: light;
+
+  /* Grounds, from the page down to what floats over it. */
+  --bg: var(--stone-25);
+  --bg-side: var(--stone-100);
+  --surface: var(--stone-0);
+  --surface-2: var(--stone-75);
+  --surface-3: var(--stone-150);
+  --sunken: var(--stone-50);
+  /* A recessed tray that raised cards sit in. */
+  --tray: var(--stone-75);
+  --card: var(--surface);
+  --float: var(--surface);
+  --hover: var(--surface-2);
+  --overlay: rgb(24 22 19 / 0.28);
+
+  /* Lines. */
+  --line: var(--stone-200);
+  --line-strong: var(--stone-250);
+  --divider: var(--stone-125);
+
+  /* Ink, from the strongest to the faintest, and on a solid ground. */
+  --ink: var(--stone-900);
+  --ink-2: var(--stone-700);
+  --ink-3: var(--stone-600);
+  --ink-4: var(--stone-500);
+  --ink-inv: var(--stone-0);
+
+  /* The accent marks focus, selection and links. */
+  --accent: var(--indigo-600);
+  --on-accent: var(--stone-0);
+  --accent-soft: color-mix(in srgb, var(--accent) 10%, transparent);
+  --accent-line: color-mix(in srgb, var(--accent) 38%, transparent);
+
+  /* The primary action, one per view. */
+  --primary: var(--stone-900);
+  --primary-hover: color-mix(in srgb, var(--primary) 86%, var(--on-primary));
+  --primary-pressed: color-mix(in srgb, var(--primary) 78%, var(--on-primary));
+  --on-primary: var(--stone-0);
+
+  /* Tones: what a state means. */
+  --good: var(--green-700);
+  --warn: var(--amber-700);
+  --bad: var(--red-600);
+  --info: var(--blue-600);
+  --good-soft: color-mix(in srgb, var(--good) 11%, transparent);
+  --warn-soft: color-mix(in srgb, var(--warn) 12%, transparent);
+  --bad-soft: color-mix(in srgb, var(--bad) 10%, transparent);
+  --info-soft: color-mix(in srgb, var(--info) 10%, transparent);
+
+  /* Categories: colours that tell kinds apart and mean nothing more. */
+  --violet: var(--violet-600);
+  --teal: var(--teal-600);
+  --rose: var(--rose-600);
+  --orange: var(--orange-600);
+  --gray: var(--stone-450);
+
+  /* A box that stands a little off its tray: a lit top edge, a darker foot. */
+  --lift-top: var(--stone-0);
+  --lift-bottom: #f5f6f6;
+  --lift-highlight: rgb(255 255 255 / 0.9);
+  --lift-edge: rgb(16 16 14 / 0.07);
+  --lift-shade: rgb(16 16 14 / 0.06);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --bg: var(--zinc-925);
+  --bg-side: var(--zinc-950);
+  --surface: var(--zinc-925);
+  --surface-2: var(--zinc-800);
+  --surface-3: var(--zinc-775);
+  --sunken: var(--zinc-900);
+  --tray: var(--zinc-875);
+  --card: var(--zinc-875);
+  --float: var(--zinc-850);
+  --hover: var(--zinc-725);
+  --overlay: rgb(0 0 0 / 0.6);
+
+  --line: var(--zinc-700);
+  --line-strong: var(--zinc-650);
+  --divider: var(--zinc-750);
+
+  --ink: var(--zinc-50);
+  --ink-2: var(--zinc-300);
+  --ink-3: var(--zinc-400);
+  --ink-4: var(--zinc-500);
+  --ink-inv: var(--zinc-925);
+
+  --accent: var(--indigo-300);
+  --on-accent: #12131c;
+
+  --primary: var(--gold-350);
+  --primary-top: var(--gold-300);
+  --primary-top-hover: var(--gold-200);
+  --primary-hover: var(--gold-250);
+  --primary-pressed: var(--gold-500);
+  --primary-disabled: var(--gold-800);
+  --on-primary: var(--gold-ink);
+  --on-primary-disabled: var(--gold-900);
+
+  --good: var(--green-400);
+  --warn: var(--amber-400);
+  --bad: var(--red-400);
+  --info: var(--blue-400);
+
+  --violet: var(--violet-400);
+  --teal: var(--teal-400);
+  --rose: var(--rose-300);
+  --orange: var(--orange-400);
+  --gray: var(--zinc-450);
+  --pc-mix: 72%;
+
+  --lift-top: var(--zinc-800);
+  --lift-bottom: var(--zinc-875);
+  --lift-highlight: rgb(255 255 255 / 0.06);
+  --lift-edge: rgb(0 0 0 / 0.7);
+  --lift-shade: rgb(0 0 0 / 0.45);
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-card: 0 0 0 1px var(--line);
+  --shadow-pop: 0 16px 40px -10px rgb(0 0 0 / 0.6), 0 0 0 1px var(--line-strong);
+  --shadow-drag: 0 18px 40px -10px rgb(0 0 0 / 0.7), 0 0 0 1px var(--line-strong);
+  --shadow-primary: none;
+}
+
+/* Tailwind's colour utilities, one for each token of this tier: `text-ink-2`, `bg-tray`, `border-line`. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-sunken: var(--sunken);
+  --color-tray: var(--tray);
+  --color-card: var(--card);
+  --color-float: var(--float);
+  --color-hover: var(--hover);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-divider: var(--divider);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-ink-inv: var(--ink-inv);
+  --color-accent: var(--accent);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-teal: var(--teal);
+  --color-violet: var(--violet);
+}

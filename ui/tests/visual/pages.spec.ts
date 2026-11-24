@@ -44,7 +44,7 @@ for (const theme of THEMES) {
       for (const w of WIDTHS) {
         await page.setViewportSize({ width: w.width, height: w.height });
         await page.waitForTimeout(300);
-        await expect(page).toHaveScreenshot(`${name}-${theme}-${w.name}.png`);
+        await expect.soft(page).toHaveScreenshot(`${name}-${theme}-${w.name}.png`);
       }
     });
   }
@@ -55,6 +55,6 @@ for (const theme of THEMES) {
     await page.waitForTimeout(800);
     await page.setViewportSize({ width: 1440, height: 1600 });
     await page.waitForTimeout(300);
-    await expect(page).toHaveScreenshot(`Drawer-${theme}-wide.png`);
+    await expect.soft(page).toHaveScreenshot(`Drawer-${theme}-wide.png`);
   });
 }

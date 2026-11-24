@@ -146,7 +146,7 @@ export function TaskDrawer(props: Props) {
             data-tip={starred ? "Unfavorite" : "Favorite"}
             aria-pressed={starred}
             aria-label="Favorite"
-            style={starred ? { color: "var(--amber)" } : undefined}
+            style={starred ? { color: "var(--warn)" } : undefined}
           >
             {ic(Star, 15)}
           </button>
@@ -380,7 +380,7 @@ export function TaskDrawer(props: Props) {
                         </div>
                         <div className="txt">{q.text}</div>
                         {q.answer ? (
-                          <div className="txt" style={{ marginTop: 6, color: "var(--text-2)" }}>
+                          <div className="txt" style={{ marginTop: 6, color: "var(--ink-2)" }}>
                             <b>You</b> {q.answer}
                           </div>
                         ) : (

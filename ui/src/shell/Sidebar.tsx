@@ -91,7 +91,7 @@ export function Sidebar(props: Props) {
     const c = counts[key];
     if (!c || c.count === 0) return undefined;
     return (
-      <span className="ct" style={c.old ? { color: "var(--red)" } : undefined} title={c.old ? "Something here has waited long" : undefined}>
+      <span className="ct" style={c.old ? { color: "var(--bad)" } : undefined} title={c.old ? "Something here has waited long" : undefined}>
         {c.count}
       </span>
     );
@@ -102,7 +102,7 @@ export function Sidebar(props: Props) {
       <div className="side-top">
         <div className="row" style={{ gap: 2 }}>
           <div className="ws grow">
-            <span className="ws-logo" style={{ background: "var(--color-primary)", color: "var(--color-on-primary)" }}>
+            <span className="ws-logo" style={{ background: "var(--ink)", color: "var(--ink-inv)" }}>
               {ic(TreeDeciduous, 13)}
             </span>
             <span className="ws-name trunc">agentree</span>
@@ -152,7 +152,7 @@ export function Sidebar(props: Props) {
           {...tip("Profile")}
         >
           <OwnerAvatar size="sm" presence />
-          <span className="trunc" style={{ color: "var(--text)", fontWeight: 500 }}>
+          <span className="trunc" style={{ color: "var(--ink)", fontWeight: 500 }}>
             Owner
           </span>
           <span className="ct">{ic(ChevronsUpDown, 13)}</span>

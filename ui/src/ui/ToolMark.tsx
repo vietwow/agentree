@@ -12,7 +12,7 @@ const MARKS: Record<Tool, { letter: string; className: string }> = {
 };
 
 const SIZES = {
-  32: "size-8 text-[11px]",
+  32: "size-8 text-2xs",
   24: "size-6 text-[9px]",
   20: "size-5 text-[8px]",
 };
@@ -23,7 +23,7 @@ export function ToolMark({ tool, size = 32 }: { tool?: Tool; size?: 20 | 24 | 32
       <span
         role="img"
         aria-label="Not held"
-        className={`inline-flex shrink-0 rounded-full border border-dashed border-line-strong bg-panel dark:border-ink-faint ${SIZES[size]}`}
+        className={`inline-flex shrink-0 rounded-full border border-dashed border-line-strong bg-tray dark:border-ink-4 ${SIZES[size]}`}
       />
     );
   }
@@ -33,7 +33,7 @@ export function ToolMark({ tool, size = 32 }: { tool?: Tool; size?: 20 | 24 | 32
       role="img"
       aria-label={TOOL_LABEL[tool]}
       title={TOOL_LABEL[tool]}
-      className={`inline-flex shrink-0 items-center justify-center rounded-full leading-none font-semibold ring-1 ring-black/5 dark:rounded-[6px] dark:ring-line-strong ${SIZES[size]} ${mark.className}`}
+      className={`inline-flex shrink-0 items-center justify-center rounded-full leading-none font-semibold ring-1 ring-black/5 dark:rounded-sm dark:ring-line-strong ${SIZES[size]} ${mark.className}`}
     >
       {tool === "person" ? <User size={size === 32 ? 16 : 12} aria-hidden /> : mark.letter}
     </span>
@@ -45,7 +45,7 @@ export function ToolStack({ tools }: { tools: Tool[] }) {
   return (
     <span className="inline-flex shrink-0 items-center -space-x-1.5">
       {tools.map((tool) => (
-        <span key={tool} className="inline-flex rounded-full ring-2 ring-raised dark:rounded-[7px]">
+        <span key={tool} className="inline-flex rounded-full ring-2 ring-float dark:rounded-[7px]">
           <ToolMark tool={tool} size={20} />
         </span>
       ))}

@@ -241,7 +241,7 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
               );
             })}
             <tr>
-              <td className="sticky cellbtn" colSpan={cols.length} style={{ color: "var(--text-3)" }} onClick={() => onNotBuilt("Creating a task")}>
+              <td className="sticky cellbtn" colSpan={cols.length} style={{ color: "var(--ink-3)" }} onClick={() => onNotBuilt("Creating a task")}>
                 <span className="row" style={{ gap: 6 }}>
                   {ic(Plus, 14)}New task
                 </span>

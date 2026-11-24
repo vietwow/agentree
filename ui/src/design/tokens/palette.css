@@ -1,0 +1,70 @@
+/*
+ * Tier 1: the raw colours. Nothing outside `design/tokens/theme.css` reads
+ * these; a rule asks for what a colour is for (`--ink-2`, `--good`), never
+ * which colour it is. Stone is the light theme's warm grey, zinc the dark
+ * theme's cool one; each hue has a deep step for light backgrounds and a
+ * pale one for dark backgrounds.
+ */
+:root {
+  --stone-0: #ffffff;
+  --stone-25: #fbfaf8;
+  --stone-50: #f7f6f3;
+  --stone-75: #f6f5f2;
+  --stone-100: #f4f3f0;
+  --stone-125: #f0eeea;
+  --stone-150: #eeede9;
+  --stone-200: #e9e7e2;
+  --stone-250: #dad7d0;
+  --stone-400: #a19d95;
+  --stone-450: #8a867e;
+  --stone-500: #8c8880;
+  --stone-600: #6b6760;
+  --stone-700: #57544e;
+  --stone-900: #1d1c1a;
+
+  --zinc-50: #f4f4f5;
+  --zinc-300: #b8b8be;
+  --zinc-400: #93939a;
+  --zinc-450: #8f8b84;
+  --zinc-500: #6e6e75;
+  --zinc-650: #44444b;
+  --zinc-700: #333339;
+  --zinc-725: #2a2a2f;
+  --zinc-750: #26262a;
+  --zinc-775: #232326;
+  --zinc-800: #1a1a1d;
+  --zinc-850: #161618;
+  --zinc-875: #131315;
+  --zinc-900: #0f0f11;
+  --zinc-925: #0b0b0c;
+  --zinc-950: #09090a;
+
+  --indigo-600: #4b5bd6;
+  --indigo-300: #8e9af3;
+  --green-700: #25754b;
+  --green-400: #5cba86;
+  --amber-700: #8f5e0e;
+  --amber-400: #d8a443;
+  --red-600: #b23c30;
+  --red-400: #e57d70;
+  --blue-600: #3570c4;
+  --blue-400: #72a5ea;
+  --violet-600: #7652c2;
+  --violet-400: #a98deb;
+  --teal-600: #1e8580;
+  --teal-400: #58c0b6;
+  --rose-600: #bc4270;
+  --rose-300: #e68aab;
+  --orange-600: #c0612b;
+  --orange-400: #e3925f;
+
+  /* The dark theme's primary action: a muted gold. */
+  --gold-200: #dab781;
+  --gold-250: #d8b37b;
+  --gold-300: #d7b075;
+  --gold-350: #d3a969;
+  --gold-500: #be985f;
+  --gold-800: #615138;
+  --gold-900: #352d23;
+  --gold-ink: #0d0e12;
+}

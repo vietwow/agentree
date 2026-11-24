@@ -74,7 +74,7 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
       <div key={f.file} className="contents">
         <div className={`trow ${isOpen ? "sel" : ""}`} style={{ ...style({ "--cols": COLS }), paddingLeft: ROW_INSET }}>
           <div className="ttl" onClick={() => setOpen(isOpen ? undefined : f.file)} aria-expanded={isOpen}>
-            <span className="row" style={{ color: "var(--text-3)" }}>
+            <span className="row" style={{ color: "var(--ink-3)" }}>
               {ic(KIND_ICON[f.kind], 14)}
             </span>
             <span className="tt">{f.title}</span>
@@ -82,7 +82,7 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
           <div className="c-meta" style={{ minWidth: 0, overflow: "hidden", gap: 4 }}>
             {f.paths.length ? (
               f.paths.map((p) => (
-                <span key={p} className="lbl mono" style={{ fontSize: "var(--fs-2xs)" }}>
+                <span key={p} className="lbl mono" style={{ fontSize: "var(--text-2xs)" }}>
                   {p}
                 </span>
               ))
@@ -112,7 +112,7 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
             </span>
           </div>
           <div className="c-meta">
-            <span className="row" style={{ gap: 5, whiteSpace: "nowrap", color: "var(--text-3)" }}>
+            <span className="row" style={{ gap: 5, whiteSpace: "nowrap", color: "var(--ink-3)" }}>
               {ic(Clock, 13)}
               {timeAgo(f.at, now)}
             </span>
@@ -155,11 +155,11 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
                         key={p}
                         className="mono"
                         style={{
-                          fontSize: "var(--fs-2xs)",
+                          fontSize: "var(--text-2xs)",
                           padding: "1px 5px",
                           borderRadius: 4,
                           background: "var(--surface-2)",
-                          color: "var(--text-2)",
+                          color: "var(--ink-2)",
                         }}
                       >
                         {p}
@@ -261,7 +261,7 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
                   >
                     {ic(closed[g.key] ? ChevronRight : ChevronDown, 13)}
                   </button>
-                  <span className="row" style={{ color: "var(--text-2)" }}>
+                  <span className="row" style={{ color: "var(--ink-2)" }}>
                     {ic(g.icon, 14)}
                   </span>
                   <span>{g.name}</span>

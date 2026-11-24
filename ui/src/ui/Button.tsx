@@ -24,7 +24,7 @@ export function IconButton({ label, className = "", children, ...rest }: Compone
       type="button"
       aria-label={label}
       title={label}
-      className={`relative inline-flex size-9 shrink-0 items-center justify-center rounded-(--r-sm) border border-line-strong bg-raised text-ink-soft shadow-card transition-colors hover:bg-(--hover) hover:text-ink ${className}`}
+      className={`relative inline-flex size-9 shrink-0 items-center justify-center rounded-(--radius-sm) border border-line-strong bg-float text-ink-2 shadow-sm transition-colors hover:bg-(--hover) hover:text-ink ${className}`}
       {...rest}
     >
       {children}

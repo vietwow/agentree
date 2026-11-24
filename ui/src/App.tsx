@@ -501,11 +501,11 @@ function NotBuilt({ page, note }: { page: Page; note?: string }) {
   const { label, icon: Icon } = PAGE_INFO[page];
   return (
     <div className="flex h-full min-h-64 flex-col items-center justify-center gap-2 text-center">
-      <span className="inline-flex size-10 items-center justify-center rounded-card bg-fill text-ink-soft">
+      <span className="inline-flex size-10 items-center justify-center rounded-xl bg-surface-2 text-ink-2">
         <Icon size={20} aria-hidden />
       </span>
-      <p className="text-sm leading-5 font-medium">{label} is not built yet</p>
-      <p className="max-w-sm text-xs leading-4 text-ink-faint">
+      <p className="text-md leading-5 font-medium">{label} is not built yet</p>
+      <p className="max-w-sm text-xs leading-4 text-ink-4">
         {note ?? "These pages are built one at a time, on sample data, to settle the look of the UI."}
       </p>
     </div>

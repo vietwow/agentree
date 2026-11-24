@@ -69,7 +69,7 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
           ))}
         </div>
         <span className="sp" />
-        <span className="faint mono" style={{ fontSize: "var(--fs-xs)" }}>
+        <span className="faint mono" style={{ fontSize: "var(--text-xs)" }}>
           rfcs/ · docs/adr/
         </span>
       </div>
@@ -96,12 +96,12 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
                 style={d.id === openId ? { background: "var(--accent-soft)" } : undefined}
                 aria-current={d.id === openId ? "true" : undefined}
               >
-                <span className="row" style={{ color: "var(--text-3)", marginTop: 2 }}>
+                <span className="row" style={{ color: "var(--ink-3)", marginTop: 2 }}>
                   {ic(d.kind === "RFC" ? BookOpen : FileText, 15)}
                 </span>
                 <div className="grow" style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
                   <span className="row" style={{ gap: 8, minWidth: 0 }}>
-                    <span className="mono faint" style={{ fontSize: "var(--fs-xs)", whiteSpace: "nowrap", flexShrink: 0 }}>
+                    <span className="mono faint" style={{ fontSize: "var(--text-xs)", whiteSpace: "nowrap", flexShrink: 0 }}>
                       {d.kind} {d.number}
                     </span>
                     <span
@@ -109,13 +109,13 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
                       style={{
                         fontWeight: 500,
                         textDecoration: d.status === "superseded" ? "line-through" : undefined,
-                        color: d.status === "superseded" ? "var(--text-3)" : undefined,
+                        color: d.status === "superseded" ? "var(--ink-3)" : undefined,
                       }}
                     >
                       {d.title}
                     </span>
                   </span>
-                  <span className="row faint" style={{ gap: 8, fontSize: "var(--fs-xs)" }}>
+                  <span className="row faint" style={{ gap: 8, fontSize: "var(--text-xs)" }}>
                     <span className={`badge ${STATUS[d.status].tone}`}>
                       <span className="dot" />
                       {STATUS[d.status].label}
@@ -135,13 +135,13 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
           style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 248px", gap: 24, alignItems: "start", padding: "20px 24px 24px" }}
         >
           <div style={{ minWidth: 0 }}>
-            <div className="row faint" style={{ gap: 8, fontSize: "var(--fs-xs)", marginBottom: 6 }}>
+            <div className="row faint" style={{ gap: 8, fontSize: "var(--text-xs)", marginBottom: 6 }}>
               <span className="mono">{doc.path}</span>
             </div>
             <h2 style={{ margin: "0 0 8px", fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em" }}>
               {doc.kind} {doc.number}: {doc.title}
             </h2>
-            <div className="row" style={{ gap: 10, fontSize: "var(--fs-xs)", marginBottom: 16, flexWrap: "wrap" }}>
+            <div className="row" style={{ gap: 10, fontSize: "var(--text-xs)", marginBottom: 16, flexWrap: "wrap" }}>
               <span className={`badge ${STATUS[doc.status].tone}`}>
                 <span className="dot" />
                 {STATUS[doc.status].label}
@@ -161,12 +161,12 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
               )}
             </div>
 
-            <div key={doc.id} style={{ fontSize: "var(--fs)", lineHeight: 1.65 }}>
+            <div key={doc.id} style={{ fontSize: "var(--text-base)", lineHeight: 1.65 }}>
               {doc.sections.map((s) => (
                 <section key={s.h} id={slug(s.h)} className="fx-stagger" style={{ marginBottom: 18 }}>
                   <h3 style={{ fontSize: 15, lineHeight: "26px", fontWeight: 600, margin: "0 0 2px" }}>{s.h}</h3>
                   {s.body.map((p) => (
-                    <p key={p} style={{ margin: "0 0 6px", color: "var(--text-2)" }}>
+                    <p key={p} style={{ margin: "0 0 6px", color: "var(--ink-2)" }}>
                       <MdText s={p} />
                     </p>
                   ))}

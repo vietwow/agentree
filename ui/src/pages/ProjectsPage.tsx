@@ -324,7 +324,7 @@ export function ProjectCard({
             <b className="trunc" style={{ fontWeight: 600, fontSize: 14 }}>
               {p.name}
             </b>
-            {starred && <span style={{ color: "var(--amber)" }}>{ic(Star, 12)}</span>}
+            {starred && <span style={{ color: "var(--warn)" }}>{ic(Star, 12)}</span>}
             {p.private && (
               <span className="faint" data-tip="Private project">
                 {ic(Lock, 12)}
@@ -357,7 +357,7 @@ export function ProjectCard({
         <span className="sp" />
         <ToolStack tools={p.tools.slice(0, 3)} />
       </div>
-      {more(p, { background: "var(--surface)", boxShadow: "0 0 0 1px var(--border)" })}
+      {more(p, { background: "var(--surface)", boxShadow: "0 0 0 1px var(--line)" })}
     </div>
   );
 }

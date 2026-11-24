@@ -5,10 +5,10 @@ export type ProjectStatus = "planning" | "active" | "risk" | "hold" | "complete"
 
 export const PROJECT_STATUS: Record<ProjectStatus, { name: string; color: string }> = {
   planning: { name: "Planning", color: "var(--gray)" },
-  active: { name: "In Progress", color: "var(--blue)" },
-  risk: { name: "At Risk", color: "var(--red)" },
-  hold: { name: "On Hold", color: "var(--amber)" },
-  complete: { name: "Completed", color: "var(--green)" },
+  active: { name: "In Progress", color: "var(--info)" },
+  risk: { name: "At Risk", color: "var(--bad)" },
+  hold: { name: "On Hold", color: "var(--warn)" },
+  complete: { name: "Completed", color: "var(--good)" },
 };
 
 /** A repository registered on this machine, with its board's counts. */

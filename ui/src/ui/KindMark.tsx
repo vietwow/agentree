@@ -30,7 +30,7 @@ export function KindMark({ kind }: { kind: Kind }) {
       role="img"
       aria-label={KIND_LABEL[kind]}
       title={KIND_LABEL[kind]}
-      className={`inline-flex size-8 shrink-0 items-center justify-center rounded-full ring-1 ring-black/5 dark:rounded-control dark:ring-0 ${className}`}
+      className={`inline-flex size-8 shrink-0 items-center justify-center rounded-full ring-1 ring-black/5 dark:rounded-md dark:ring-0 ${className}`}
     >
       <Icon size={16} aria-hidden />
     </span>

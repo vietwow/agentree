@@ -136,7 +136,7 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
           ))}
         </div>
         <span className="sp" />
-        <span className="faint" style={{ fontSize: "var(--fs-xs)" }}>
+        <span className="faint" style={{ fontSize: "var(--text-xs)" }}>
           Costs are the tools' own estimates, as they report them.
         </span>
       </div>
@@ -198,7 +198,7 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
                   <td
                     className="num"
                     title={[...r.sum.why].join(" · ") || undefined}
-                    style={{ color: r.sum.unknown ? "var(--amber)" : "var(--text-3)" }}
+                    style={{ color: r.sum.unknown ? "var(--warn)" : "var(--ink-3)" }}
                   >
                     {r.sum.unknown ? `${r.sum.unknown} of ${r.sum.sessions}` : "None"}
                   </td>
@@ -209,7 +209,7 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
         </table>
       </div>
       {total.why.size > 0 && (
-        <div style={{ padding: "12px var(--gutter) 24px", fontSize: "var(--fs-xs)", color: "var(--text-3)" }}>
+        <div style={{ padding: "12px var(--gutter) 24px", fontSize: "var(--text-xs)", color: "var(--ink-3)" }}>
           {[...total.why].map((w) => (
             <p key={w} style={{ margin: "2px 0" }}>
               Not known: {w}

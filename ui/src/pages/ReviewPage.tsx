@@ -64,19 +64,19 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
     if (stage === "reviewing") return <span className="faint">After the review</span>;
     if (stage === "rejected")
       return (
-        <span className="row" style={{ gap: 5, color: "var(--text-2)" }}>
+        <span className="row" style={{ gap: 5, color: "var(--ink-2)" }}>
           {ic(Undo2, 13)}Back to its worker
         </span>
       );
     if (stage === "landed")
       return (
-        <span className="row" style={{ gap: 5, color: "var(--green)" }}>
+        <span className="row" style={{ gap: 5, color: "var(--good)" }}>
           {ic(GitMerge, 13)}On main
         </span>
       );
     const place = queue.findIndex((r) => r.t.id === t.id);
     return (
-      <span className="row" style={{ gap: 5, color: place === 0 ? "var(--amber)" : "var(--text-2)" }}>
+      <span className="row" style={{ gap: 5, color: place === 0 ? "var(--warn)" : "var(--ink-2)" }}>
         {ic(GitMerge, 13)}
         {place === 0 ? "Next to land" : `${place + 1} in the queue`}
       </span>
@@ -122,7 +122,7 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
             </span>
           </div>
           <div className="c-meta num">
-            <span className="row" style={{ gap: 5, color: t.checks.failed ? "var(--red)" : "var(--green)" }}>
+            <span className="row" style={{ gap: 5, color: t.checks.failed ? "var(--bad)" : "var(--good)" }}>
               {ic(ShieldCheck, 13)}
               {t.checks.passed}/{t.checks.total}
             </span>
@@ -131,15 +131,15 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
             <span className="row" style={{ gap: 5 }}>
               {ic(FileDiff, 13)}
               <span>{diff.length}</span>
-              <span style={{ color: "var(--green)" }}>+{added}</span>
-              <span style={{ color: "var(--red)" }}>−{removed}</span>
+              <span style={{ color: "var(--good)" }}>+{added}</span>
+              <span style={{ color: "var(--bad)" }}>−{removed}</span>
             </span>
           </div>
           <div className="c-meta" style={{ minWidth: 0, overflow: "hidden", whiteSpace: "nowrap" }}>
             {landing(r)}
           </div>
           <div className="c-meta" style={{ minWidth: 0, overflow: "hidden" }}>
-            <span className="row" style={{ gap: 5, whiteSpace: "nowrap", color: late ? "var(--red)" : "var(--text-3)" }}>
+            <span className="row" style={{ gap: 5, whiteSpace: "nowrap", color: late ? "var(--bad)" : "var(--ink-3)" }}>
               {ic(Clock, 13)}
               {timeAgo(at, now)}
             </span>
@@ -149,7 +149,7 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
           <div className="subrows">
             {d.review.findings.map((f) => (
               <div key={f} className="subrow" style={{ paddingLeft: ROW_INSET + 30 }}>
-                <span className="row" style={{ color: stage === "rejected" ? "var(--red)" : "var(--amber)" }}>
+                <span className="row" style={{ color: stage === "rejected" ? "var(--bad)" : "var(--warn)" }}>
                   {ic(CircleAlert, 13)}
                 </span>
                 <span>{f}</span>

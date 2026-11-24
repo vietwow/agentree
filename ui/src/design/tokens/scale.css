@@ -1,0 +1,82 @@
+/*
+ * The scales every size is taken from. Those in `@theme` are Tailwind's too
+ * (`text-xs`, `rounded-md`, `shadow-sm`, `font-mono`); the rest are read
+ * with `var()`.
+ */
+@theme static {
+  --font-sans: "Geist Variable", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-serif: "Newsreader Variable", "Iowan Old Style", Georgia, serif;
+
+  --text-*: initial;
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-xs--line-height: calc(1 / 0.75);
+  --text-sm: 12.5px;
+  --text-base: 13.5px;
+  --text-md: 14.5px;
+  --text-lg: 16px;
+  --text-xl: 19px;
+  --text-2xl: 23px;
+
+  --radius-*: initial;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+
+  --shadow-*: initial;
+  --shadow-sm: 0 1px 2px rgb(28 25 20 / 0.05);
+  --shadow-card: 0 1px 2px rgb(28 25 20 / 0.04), 0 0 0 1px var(--line);
+  --shadow-pop: 0 12px 32px -8px rgb(28 25 20 / 0.16), 0 2px 6px -2px rgb(28 25 20 / 0.06), 0 0 0 1px var(--line);
+  --shadow-drag: 0 16px 36px -10px rgb(28 25 20 / 0.28), 0 0 0 1px var(--line-strong);
+  --shadow-primary: 0 1px 2px rgb(16 16 14 / 0.2), 0 6px 14px rgb(16 16 14 / 0.22);
+  --shadow-lift: inset 0 1px 0 var(--lift-highlight), 0 1px 0 var(--lift-edge), 0 1px 3px var(--lift-shade);
+  --shadow-lift-hover: inset 0 1px 0 var(--lift-highlight), 0 2px 0 var(--lift-edge), 0 6px 14px var(--lift-shade);
+}
+
+:root {
+  /* Spacing, on a 4-pixel step. */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+
+  /* Control heights. */
+  --ctl-xs: 22px;
+  --ctl-sm: 26px;
+  --ctl-md: 30px;
+  --ctl-lg: 36px;
+
+  /* The frame. */
+  --side-w: 252px;
+  --side-row: 30px;
+  --row-h: 40px;
+  --card-pad: 10px;
+  --topbar-h: 46px;
+  /* One horizontal content edge shared by breadcrumb, page headers, toolbars, lists, tables and boards. */
+  --gutter: 24px;
+
+  /* Motion. */
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur: 140ms;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --gutter: 16px;
+  }
+}
+@media (max-width: 640px) {
+  :root {
+    --topbar-h: 50px;
+  }
+}

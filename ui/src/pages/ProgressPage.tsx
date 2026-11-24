@@ -272,7 +272,7 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
                     onClick={() => onOpenTask(r.t.id)}
                   >
                     <StatusIcon status={r.t.status} size={12} />
-                    <span className="trunc grow" style={r.t.status === "done" ? { color: "var(--text-3)" } : undefined}>
+                    <span className="trunc grow" style={r.t.status === "done" ? { color: "var(--ink-3)" } : undefined}>
                       {r.t.title}
                     </span>
                     {r.t.subtasks.length > 0 && (
@@ -402,11 +402,11 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
                       const path = `M${sx} ${sy} C ${first}, ${lead - reach} ${y2}, ${lead} ${y2} L ${x2 - 1} ${y2}`;
                       return (
                         <Fragment key={`${d}-${t.id}`}>
-                          <path d={path} fill="none" stroke="var(--text-3)" strokeWidth="1.3" strokeDasharray={x2 < x1 ? "3 3" : undefined} />
+                          <path d={path} fill="none" stroke="var(--ink-3)" strokeWidth="1.3" strokeDasharray={x2 < x1 ? "3 3" : undefined} />
                           <path
                             d={`M${x2 - 6} ${y2 - 3.5} L${x2 - 1} ${y2} L${x2 - 6} ${y2 + 3.5}`}
                             fill="none"
-                            stroke="var(--text-3)"
+                            stroke="var(--ink-3)"
                             strokeWidth="1.3"
                             strokeLinecap="round"
                             strokeLinejoin="round"

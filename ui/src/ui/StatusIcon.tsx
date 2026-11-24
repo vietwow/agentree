@@ -9,7 +9,7 @@ import { STATUS_LABEL, type Status } from "../board/task.ts";
  */
 /** Each status's colour, for whatever else draws a status. */
 export const STATUS_COLOR: Record<Status, string> = {
-  backlog: "var(--ink-faint)",
+  backlog: "var(--ink-4)",
   ready: "#8b6cd9",
   "in-progress": "#e07b39",
   checking: "var(--warn)",
@@ -17,7 +17,7 @@ export const STATUS_COLOR: Record<Status, string> = {
   accepted: "var(--teal)",
   done: "var(--good)",
   blocked: "var(--bad)",
-  dropped: "var(--ink-faint)",
+  dropped: "var(--ink-4)",
 };
 
 const LOOK: Record<Status, { share: number; dashed?: boolean; tick?: boolean }> = {
@@ -76,7 +76,7 @@ export function StatusIcon({ status, size = 14 }: { status: Status; size?: 12 | 
           d="M4.5 7.2 6.2 8.8 9.5 5.4"
           pathLength={1}
           fill="none"
-          stroke="var(--sheet)"
+          stroke="var(--surface)"
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
