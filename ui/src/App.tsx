@@ -17,7 +17,9 @@ import { HomePage } from "./pages/HomePage.tsx";
 import { InboxPage } from "./pages/InboxPage.tsx";
 import { LivePage } from "./pages/LivePage.tsx";
 import { MemoryPage } from "./pages/MemoryPage.tsx";
+import { HelpPage } from "./pages/HelpPage.tsx";
 import { NewProject } from "./pages/NewProject.tsx";
+import { PlanGoal } from "./tasks/PlanGoal.tsx";
 import { NumbersPage } from "./pages/NumbersPage.tsx";
 import { OptionsPage } from "./pages/OptionsPage.tsx";
 import { PIcon } from "./pages/parts.tsx";
@@ -49,7 +51,6 @@ function savedOrder(): string[] {
   }
 }
 
-const notBuilt = (what: string) => toast(`${what} is not built yet`, { kind: "info", ms: 2200 });
 
 type Props = {
   /** The machine's projects, and the board of the open one. */
@@ -76,6 +77,7 @@ export function App({ projects: listed, board, onProject }: Props) {
   const [shortcuts, setShortcuts] = useState(false);
   const [newTask, setNewTask] = useState(false);
   const [newProject, setNewProject] = useState(false);
+  const [planning, setPlanning] = useState(false);
   const [shownId, setShownId] = useState<string>();
   const [closing, setClosing] = useState(false);
   const [full, setFull] = useState(false);
@@ -385,6 +387,7 @@ export function App({ projects: listed, board, onProject }: Props) {
     numbers: () => <NumbersPage tasks={tasks} now={now} onOpenTask={openTask} />,
     inbox: () => <InboxPage tasks={tasks} now={now} onOpenTask={openTask} onMemory={() => go("memory")} />,
     options: () => <OptionsPage />,
+    help: () => <HelpPage />,
     tasks: tasksPage,
     board: tasksPage,
   };
@@ -403,7 +406,7 @@ export function App({ projects: listed, board, onProject }: Props) {
             onNotices={() => go("inbox")}
             onNewTask={() => setNewTask(true)}
             onNewProject={() => setNewProject(true)}
-            onPlan={() => notBuilt("The planner")}
+            onPlan={() => setPlanning(true)}
             owner={owner}
           />
           <div className={`content ${fxRoute ? "fx-route" : ""}`} id="main-content" tabIndex={-1}>
@@ -460,6 +463,7 @@ export function App({ projects: listed, board, onProject }: Props) {
       )}
       {newTask && <NewTask onClose={() => setNewTask(false)} />}
       {newProject && <NewProject onClose={() => setNewProject(false)} onMade={(id) => openProject(id, "board")} />}
+      {planning && <PlanGoal project={project} onClose={() => setPlanning(false)} onOpenTask={openTask} />}
       {shortcuts && <Shortcuts onClose={() => setShortcuts(false)} />}
     </>
   );
@@ -473,9 +477,7 @@ function NotBuilt({ page, note }: { page: Page; note?: string }) {
         <Icon size={20} aria-hidden />
       </span>
       <p className="text-md leading-5 font-medium">{label} is not built yet</p>
-      <p className="max-w-sm text-xs leading-4 text-ink-4">
-        {note ?? "These pages are built one at a time, on sample data, to settle the look of the UI."}
-      </p>
+      <p className="max-w-sm text-xs leading-4 text-ink-4">{note ?? "This page has nothing to show yet."}</p>
     </div>
   );
 }
