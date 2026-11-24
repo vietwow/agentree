@@ -1,9 +1,8 @@
 import type { ActivityEntry } from "./activity.ts";
 import type { AgentSession } from "./fixtures.ts";
 import { TOOL_LABEL, type Task, type Tool } from "./task.ts";
-
-const MINUTE = 60 * 1000;
-const DAY = 24 * 60 * MINUTE;
+import { DAY, MINUTE } from "../design/format/time.ts";
+import { count } from "../design/format/text.ts";
 
 /** A live session of a tool, drawn as a card around the project. */
 export type Seat = {
@@ -35,16 +34,14 @@ export type LiveBoard = {
   stats: { sessions: number; working: number; tools: number; today: number };
 };
 
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
-
 function doing(s: AgentSession, now: Date): string {
   const live = s.subagents.filter((a) => !a.ended);
   const reviews = live.filter((a) => a.kind === "agentree-reviewer").length;
   const workers = live.filter((a) => a.kind === "agentree-worker").length;
   if (s.state === "asking") return `asking you on ${s.task}`;
   if (s.state === "stale") return `no beat for ${Math.round((now.getTime() - s.beat.getTime()) / MINUTE)} min`;
-  if (reviews) return `reviewing ${plural(reviews, "task")}`;
-  if (workers) return `directing ${plural(workers, "worker")}`;
+  if (reviews) return `reviewing ${count(reviews, "task")}`;
+  if (workers) return `directing ${count(workers, "worker")}`;
   if (s.state === "checking") return `checking ${s.task}`;
   if (s.state === "reviewing") return `reviewing ${s.task}`;
   return s.task ? `building ${s.task}` : (s.note ?? "working");
@@ -78,7 +75,7 @@ export function liveBoard(sessions: readonly AgentSession[], tasks: readonly Tas
     return {
       tool,
       label: TOOL_LABEL[tool],
-      note: `${[...new Set(of.map((s) => s.model))].join(" · ")} · ${plural(of.length, "session")}`,
+      note: `${[...new Set(of.map((s) => s.model))].join(" · ")} · ${count(of.length, "session")}`,
       seats: of,
     };
   });

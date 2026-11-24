@@ -1,5 +1,6 @@
 import { PARENT_TITLES } from "../board/fixtures.ts";
 import { KINDS, STATUSES, TOOLS, type Task } from "../board/task.ts";
+import { DAY } from "../design/format/time.ts";
 
 export type Mode = "list" | "board" | "table";
 export type Field = "status" | "assignee" | "priority" | "labels" | "parent" | "created" | "updated";
@@ -18,7 +19,6 @@ export type View = {
   colW: Partial<Record<Column, number>>;
 };
 
-const DAY = 24 * 60 * 60 * 1000;
 const KEY = "agentree.tasks.view";
 
 export const NEW_VIEW: View = {

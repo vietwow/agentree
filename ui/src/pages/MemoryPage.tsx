@@ -16,11 +16,11 @@ import {
 import { useMemo, useState } from "react";
 import { fixtureFacts, type Fact } from "../board/fixtures.ts";
 import { TOOL_LABEL } from "../board/task.ts";
-import { timeAgo } from "../format/time.ts";
 import { ic } from "../ui/ic.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { SummaryCards } from "../tasks/StatCards.tsx";
 import { Empty, MdText, style } from "./parts.tsx";
+import { Ago } from "../design/components/Ago.tsx";
 
 const COLS = "minmax(300px,1fr) 220px 110px 170px 120px 96px";
 const ROW_INSET = 44;
@@ -114,7 +114,7 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
           <div className="c-meta">
             <span className="row" style={{ gap: 5, whiteSpace: "nowrap", color: "var(--ink-3)" }}>
               {ic(Clock, 13)}
-              {timeAgo(f.at, now)}
+              <Ago at={f.at} now={now} />
             </span>
           </div>
         </div>

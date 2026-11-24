@@ -3,8 +3,9 @@ import type { ActivityEntry } from "../board/activity.ts";
 import { fixtureAgents } from "../board/fixtures.ts";
 import { liveBoard, saidBy, type Region, type Seat } from "../board/live.ts";
 import type { Task } from "../board/task.ts";
-import { timeAgo } from "../format/time.ts";
 import { reducedMotion } from "../design/motion.ts";
+import { count } from "../design/format/text.ts";
+import { Ago } from "../design/components/Ago.tsx";
 
 const CW = 200;
 const PITCH = 67;
@@ -46,14 +47,18 @@ function layout(regions: Region[], w: number) {
   return { h, cx, cy, regions: placed.map((p) => ({ ...p, at: pos(p.slot, p.n) })) };
 }
 
-function Ago({ at, prefix = "" }: { at: Date; prefix?: string }) {
-  const [, tick] = useState(0);
+/** "updated 12s ago", ticking each second. */
+function Updated({ at }: { at: Date }) {
+  const [now, setNow] = useState(() => new Date());
   useEffect(() => {
-    const t = setInterval(() => tick((n) => n + 1), 1000);
+    const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
-  const s = Math.max(1, Math.round((Date.now() - at.getTime()) / 1000));
-  return <>{prefix + (s < 60 ? `${s} s ago` : `${Math.round(s / 60)} min ago`)}</>;
+  return (
+    <>
+      updated <Ago at={at} now={now} seconds />
+    </>
+  );
 }
 
 export function LivePage({
@@ -161,7 +166,7 @@ export function LivePage({
         <div className="title-line">
           <h1>Live fleet viewer</h1>
           <span className="live-pulse">
-            <Ago at={updated} prefix="updated " />
+            <Updated at={updated} />
           </span>
         </div>
         <div className="live-stats">
@@ -305,7 +310,7 @@ export function LivePage({
           <span className="gate-pill">
             {board.landed ? (
               <>
-                <span>landed {board.landed.id}</span> · <time dateTime={board.landed.at.toISOString()}>{timeAgo(board.landed.at, now)}</time>
+                <span>landed {board.landed.id}</span> · <Ago at={board.landed.at} now={now} />
               </>
             ) : seats.length ? (
               "nothing landed yet"
@@ -338,13 +343,13 @@ export function LivePage({
                 </>
               )}
             </p>
-            <p className="subs">{seat.subs ? `${seat.subs} subagent${seat.subs === 1 ? "" : "s"}` : "no subagent"}</p>
+            <p className="subs">{seat.subs ? `${count(seat.subs, "subagent")}` : "no subagent"}</p>
             <ol className="said">
               {saidBy(seat, board.pulses, activity).map((m) => (
                 <li key={`${m.at.getTime()}-${m.who}`}>
                   <p className="who">
                     <span>{m.who}</span>
-                    <time dateTime={m.at.toISOString()}>{timeAgo(m.at, now)}</time>
+                    <Ago at={m.at} now={now} />
                   </p>
                   <q>{m.text}</q>
                 </li>

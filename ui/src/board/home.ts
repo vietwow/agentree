@@ -2,9 +2,8 @@ import type { ActivityEntry } from "./activity.ts";
 import { FILE_AREAS, fixtureDetail, type AgentSession } from "./fixtures.ts";
 import { isStale, openQuestions, startOfDay, totals } from "./summary.ts";
 import type { Status, Task, Tool } from "./task.ts";
-
-const HOUR = 3_600_000;
-const DAY = 24 * HOUR;
+import { DAY, HOUR } from "../design/format/time.ts";
+import { count } from "../design/format/text.ts";
 
 /** A file of an area as the board marks it; "main" is a file no task holds, checks, landed or wants. */
 export type FileMark = "main" | "landed" | "held" | "checking" | "wanted";
@@ -181,12 +180,8 @@ export function toolsLive(sessions: readonly AgentSession[], tasks: readonly Tas
     const what = asking
       ? `Asking you on ${asking.task}`
       : reviews
-        ? `Reviewing ${reviews} task${reviews === 1 ? "" : "s"}`
-        : [
-            `${live.length} session${live.length === 1 ? "" : "s"}`,
-            workers && `${workers} worker${workers === 1 ? "" : "s"}`,
-            live.some((s) => s.state === "stale") && "1 stale",
-          ]
+        ? `Reviewing ${count(reviews, "task")}`
+        : [`${count(live.length, "session")}`, workers && `${count(workers, "worker")}`, live.some((s) => s.state === "stale") && "1 stale"]
             .filter(Boolean)
             .join(", ");
     return { tool, sessions: live.length, worked: tasks.filter((t) => t.holder?.tool === tool).length, what };

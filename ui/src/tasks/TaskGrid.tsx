@@ -2,7 +2,8 @@ import { ArrowDown, ArrowUp, Check, Plus, SearchX } from "lucide-react";
 import { useRef, type PointerEvent as ReactPointerEvent } from "react";
 import { PARENT_TITLES } from "../board/fixtures.ts";
 import { STATUS_LABEL, TOOL_LABEL, type Status, type Task } from "../board/task.ts";
-import { Empty, fmtDate } from "../pages/parts.tsx";
+import { Empty } from "../pages/parts.tsx";
+import { shortDate } from "../design/format/time.ts";
 import { ic } from "../ui/ic.tsx";
 import { Pop, usePop } from "../ui/Pop.tsx";
 import { PriorityIcon } from "../ui/PriorityIcon.tsx";
@@ -164,13 +165,13 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
       case "created":
         return (
           <td key={c} className="num muted">
-            {fmtDate(t.createdAt, now)}
+            {shortDate(t.createdAt, now)}
           </td>
         );
       case "updated":
         return (
           <td key={c} className="num muted">
-            {fmtDate(new Date(updatedAt(t)), now)}
+            {shortDate(new Date(updatedAt(t)), now)}
           </td>
         );
       case "parent":

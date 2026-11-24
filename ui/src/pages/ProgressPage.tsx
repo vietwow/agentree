@@ -9,15 +9,14 @@ import { ic } from "../ui/ic.tsx";
 import { Select } from "../ui/Select.tsx";
 import { STATUS_COLOR, StatusIcon } from "../ui/StatusIcon.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
-import { Empty, fmtDate, style } from "./parts.tsx";
+import { Empty, style } from "./parts.tsx";
 import { SummaryCards } from "../tasks/StatCards.tsx";
+import { DAY, HOUR, monthName, shortDate } from "../design/format/time.ts";
+import { plural } from "../design/format/text.ts";
 
 type Zoom = "hour" | "week" | "month";
 type Group = "status" | "assignee" | "parent" | "none";
 
-const HOUR = 60 * 60 * 1000;
-const DAY = 24 * HOUR;
-const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MONL = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const RH = 36;
 
@@ -117,7 +116,7 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
   const top: { label: string; n: number }[] = [];
   for (let i = 0; i < n; i++) {
     const d = at(i);
-    const label = zoom === "hour" ? `${MON[d.getMonth()]} ${d.getDate()}` : `${MONL[d.getMonth()]} ${d.getFullYear()}`;
+    const label = zoom === "hour" ? `${monthName(d)} ${d.getDate()}` : `${MONL[d.getMonth()]} ${d.getFullYear()}`;
     if (top.at(-1)?.label === label) top.at(-1)!.n++;
     else top.push({ label, n: 1 });
   }
@@ -155,7 +154,7 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
     return pts.map((pt, i) => {
       const room = (pts[i + 1] ? pts[i + 1]!.x : Infinity) - pt.x - 24;
       const name = pt.list[0]!.name + (pt.list.length > 1 ? ` +${pt.list.length - 1}` : "");
-      const tip = `${pt.list.map((m) => m.name).join(" · ")} · ${fmtDate(pt.list[0]!.at, now)}`;
+      const tip = `${pt.list.map((m) => m.name).join(" · ")} · ${shortDate(pt.list[0]!.at, now)}`;
       return (
         <div key={i} className="ms-w" style={{ left: pt.x - 6, top: y + 9 }} data-tip={tip} tabIndex={0} aria-label={`Milestone: ${tip}`}>
           <span className="ms" />
@@ -207,7 +206,7 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
             {
               label: "Done over the whole",
               value: `${done}/${counted.length}`,
-              unit: counted.length === 1 ? "task" : "tasks",
+              unit: plural(counted.length, "task"),
               lead: `${share}%`,
               note: "landed on main",
               tone: "good",
@@ -215,21 +214,21 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
             {
               label: "Accepted",
               value: tasks.filter((t) => t.status === "accepted").length,
-              unit: tasks.filter((t) => t.status === "accepted").length === 1 ? "task" : "tasks",
+              unit: plural(tasks.filter((t) => t.status === "accepted").length, "task"),
               note: "beside done, not in it",
               tone: "neutral",
             },
             {
               label: "In review",
               value: tasks.filter((t) => t.status === "review").length,
-              unit: tasks.filter((t) => t.status === "review").length === 1 ? "task" : "tasks",
+              unit: plural(tasks.filter((t) => t.status === "review").length, "task"),
               note: "beside done, not in it",
               tone: "neutral",
             },
             {
               label: "Done by kind",
               value: kinds.length,
-              unit: kinds.length === 1 ? "kind" : "kinds",
+              unit: plural(kinds.length, "kind"),
               note: kinds
                 .map((k) => {
                   const of = counted.filter((t) => t.kind === k);
@@ -308,7 +307,7 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
                       const d = at(i * 7);
                       return (
                         <div key={i} style={{ width: dw * 7 }}>
-                          {MON[d.getMonth()]} {d.getDate()}
+                          {monthName(d)} {d.getDate()}
                         </div>
                       );
                     })

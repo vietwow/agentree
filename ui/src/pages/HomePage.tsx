@@ -8,6 +8,7 @@ import { STATUS_LABEL, TOOL_LABEL, type Task } from "../board/task.ts";
 import { ic } from "../ui/ic.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { style } from "./parts.tsx";
+import { duration } from "../design/format/time.ts";
 
 type Props = {
   tasks: readonly Task[];
@@ -78,11 +79,6 @@ function clock(at: Date, short = false) {
   if (short) return `${h}${pm ? "p" : "a"}`;
   const m = at.getMinutes();
   return `${h}${m ? `:${String(m).padStart(2, "0")}` : ""} ${pm ? "PM" : "AM"}`;
-}
-
-function since(at: Date, now: Date) {
-  const m = Math.round((now.getTime() - at.getTime()) / 60_000);
-  return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
 }
 
 function Panel({ className = "", children }: { className?: string; children: ReactNode }) {
@@ -339,7 +335,7 @@ export function HomePage({ tasks, activity, now, onOpenTask, onAgents }: Props) 
               icon={GitPullRequest}
               label="In review"
               value={String(k.review.n)}
-              sub={k.review.oldest ? `Oldest ${since(k.review.oldest, now)}` : "None waits"}
+              sub={k.review.oldest ? `Oldest ${duration(now.getTime() - k.review.oldest.getTime(), { short: true })}` : "None waits"}
               spark={k.review.spark}
               tone="red"
             />

@@ -1,5 +1,6 @@
 import { Building2, Folder, Layers, Palette, type LucideIcon } from "lucide-react";
 import type { Task, Tool } from "./task.ts";
+import { DAY } from "../design/format/time.ts";
 
 export type ProjectStatus = "planning" | "active" | "risk" | "hold" | "complete";
 
@@ -39,8 +40,6 @@ const PROJECT_COLORS = {
   green: "#3D8E5F",
   slate: "#6B7280",
 } as const;
-
-const DAY = 24 * 60 * 60 * 1000;
 
 export function fixtureProjects(tasks: readonly Task[], now: Date): Project[] {
   const ago = (days: number) => new Date(now.getTime() - days * DAY);

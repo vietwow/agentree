@@ -10,6 +10,7 @@ import {
   type TaskDetail,
   type Tool,
 } from "./task.ts";
+import { MINUTE } from "../design/format/time.ts";
 
 /**
  * Sample tasks for the first page, until the daemon serves the board.
@@ -573,8 +574,6 @@ export function fixtureTasks(now: Date): Task[] {
     landedAt: row.landed === undefined ? undefined : ago(now, row.landed),
   }));
 }
-
-const MINUTE = 60_000;
 
 /** Where each breakdown's work is, so a task's paths follow its parent. */
 const AREAS: Record<string, string> = {

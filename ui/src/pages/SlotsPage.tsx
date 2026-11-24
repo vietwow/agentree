@@ -2,11 +2,13 @@ import { Activity, Hourglass, Pause, Play, Plus, ShieldAlert, Timer, type Lucide
 import { useMemo } from "react";
 import { fixtureSlots, type Slots, type Waiting } from "../board/fixtures.ts";
 import { TOOL_LABEL, type Task, type Tool } from "../board/task.ts";
-import { timeAgo } from "../format/time.ts";
 import { ic } from "../ui/ic.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { ProgBar } from "./parts.tsx";
 import { SummaryCards } from "../tasks/StatCards.tsx";
+import { plural } from "../design/format/text.ts";
+import { Ago } from "../design/components/Ago.tsx";
+import { MINUTE } from "../design/format/time.ts";
 
 type Props = {
   tasks: Task[];
@@ -30,7 +32,7 @@ const DECISION: Record<Slots["decisions"][number]["kind"], { icon: LucideIcon; c
 };
 
 const pct = (n: number) => `${Math.round(n * 100)}%`;
-const minutes = (from: Date, now: Date) => Math.max(1, Math.round((now.getTime() - from.getTime()) / 60000));
+const minutes = (from: Date, now: Date) => Math.max(1, Math.round((now.getTime() - from.getTime()) / MINUTE));
 
 /** The heavy runs of the machine: what runs in each seat, what waits and why, and why the queue decided as it did. */
 export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
@@ -74,7 +76,7 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
             {
               label: "Running",
               value: s.runs.length,
-              unit: s.runs.length === 1 ? "run" : "runs",
+              unit: plural(s.runs.length, "run"),
               note: `between ${s.bounds.lowest} and ${s.bounds.highest}, by what fits`,
               tone: "neutral",
             },
@@ -234,7 +236,7 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                       )}{" "}
                       <span className="muted">{d.text}</span>
                     </div>
-                    <time dateTime={d.at.toISOString()}>{timeAgo(d.at, now)}</time>
+                    <Ago at={d.at} now={now} />
                   </div>
                 );
               })}

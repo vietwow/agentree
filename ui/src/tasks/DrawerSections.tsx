@@ -1,7 +1,8 @@
 import { CircleCheck, CircleX, Clock, FolderTree, GitBranch, GitCommitHorizontal, LoaderCircle, Server } from "lucide-react";
 import type { ReactNode } from "react";
 import { STATUS_LABEL, TOOL_LABEL, type CheckRun, type Session, type Status, type Task, type TaskDetail } from "../board/task.ts";
-import { duration, fullTime, timeAgo } from "../format/time.ts";
+import { compact, money } from "../design/format/number.ts";
+import { ago, duration, fullTime, timeAgo } from "../design/format/time.ts";
 import { Badge } from "../ui/Badge.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { ChecksBar } from "./ChecksBar.tsx";
@@ -182,9 +183,6 @@ function Stat({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-const money = new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" });
-const compact = new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 });
-
 export function SessionsSection({ sessions, now }: { sessions: Session[]; now: Date }) {
   if (sessions.length === 0) {
     return (
@@ -246,7 +244,7 @@ export function SessionsSection({ sessions, now }: { sessions: Session[]; now: D
                 <div key={label} className="flex flex-col bg-tray px-2 py-1.5">
                   <dt className="text-2xs leading-4 text-ink-4">{label}</dt>
                   <dd className="text-[13px] leading-5 font-semibold tabular-nums" title={value.toLocaleString()}>
-                    {compact.format(value)}
+                    {compact(value)}
                   </dd>
                 </div>
               ))}
@@ -259,7 +257,7 @@ export function SessionsSection({ sessions, now }: { sessions: Session[]; now: D
           {s.costUsd !== undefined && (
             <p className="flex items-center justify-between text-xs leading-4">
               <span className="text-ink-4">Cost, as the tool reports it</span>
-              <span className="font-semibold text-ink tabular-nums">{money.format(s.costUsd)}</span>
+              <span className="font-semibold text-ink tabular-nums">{money(s.costUsd)}</span>
             </p>
           )}
         </section>
@@ -276,7 +274,7 @@ function Cost({ value }: { value: number | null | undefined }) {
         Not known
       </span>
     );
-  return <span className="text-[13px] leading-5 font-semibold tabular-nums">{money.format(value)}</span>;
+  return <span className="text-[13px] leading-5 font-semibold tabular-nums">{money(value)}</span>;
 }
 
 /** The Log draws in from the top: a node, its text, then the rail down to the next. */
@@ -312,8 +310,12 @@ export function LogSection({ detail, now }: { detail: TaskDetail; now: Date }) {
           </span>
           <span className="flex min-w-0 flex-col animate-appear" style={{ animationDelay: `${i * LOG_STEP_MS + 80}ms` }}>
             <span className="text-[13px] leading-5 text-ink">{entry.text}</span>
-            <time dateTime={entry.at.toISOString()} title={fullTime(entry.at)} className="text-xs leading-4 text-ink-4">
-              {entry.who === "daemon" ? "The daemon" : TOOL_LABEL[entry.who]} · {timeAgo(entry.at, now)}
+            <time
+              dateTime={entry.at.toISOString()}
+              title={`${timeAgo(entry.at, now)} · ${fullTime(entry.at)}`}
+              className="text-xs leading-4 text-ink-4"
+            >
+              {entry.who === "daemon" ? "The daemon" : TOOL_LABEL[entry.who]} · {ago(entry.at, now)}
             </time>
           </span>
         </li>

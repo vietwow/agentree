@@ -24,7 +24,7 @@ import { useTicks } from "../board/ticks.ts";
 import type { Project } from "../board/projects.ts";
 import { isStale, openQuestions, partsOf } from "../board/summary.ts";
 import { KIND_LABEL, STATUS_LABEL, TOOL_LABEL, type Status, type Task, type TaskDetail } from "../board/task.ts";
-import { timeAgo } from "../format/time.ts";
+import { timeAgo } from "../design/format/time.ts";
 import { ProgBar, style } from "../pages/parts.tsx";
 import { ic } from "../ui/ic.tsx";
 import { KIND_COLOR } from "../ui/KindMark.tsx";
@@ -36,6 +36,7 @@ import { ToolMark } from "../ui/ToolMark.tsx";
 import { SubCheck } from "./SubCheck.tsx";
 import { SubtaskView } from "./SubtaskView.tsx";
 import { ChecksSection, LogSection, None, SessionsSection, TimeBox, TreeBox } from "./DrawerSections.tsx";
+import { Ago } from "../design/components/Ago.tsx";
 
 type Tab = "log" | "checks" | "sessions" | "files" | "memory";
 
@@ -377,7 +378,7 @@ export function TaskDrawer(props: Props) {
                       <div className="body">
                         <div className="who">
                           <b>{t.holder ? TOOL_LABEL[t.holder.tool] : "Person"}</b>
-                          <time>{timeAgo(q.askedAt, now)}</time>
+                          <Ago at={q.askedAt} now={now} />
                         </div>
                         <div className="txt">{q.text}</div>
                         {q.answer ? (

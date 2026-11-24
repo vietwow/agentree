@@ -21,7 +21,9 @@ import { ic } from "../ui/ic.tsx";
 import { Pop, usePop } from "../ui/Pop.tsx";
 import { copy, toast } from "../ui/toast.ts";
 import { ToolStack } from "../ui/ToolMark.tsx";
-import { ago, Empty, fmtDate, PIcon, ProgBar, PStatus } from "./parts.tsx";
+import { Empty, PIcon, ProgBar, PStatus } from "./parts.tsx";
+import { shortDate } from "../design/format/time.ts";
+import { Ago } from "../design/components/Ago.tsx";
 
 type View = "grid" | "list" | "table";
 type Sort = "recent" | "name" | "created" | "progress";
@@ -136,7 +138,7 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
                 </span>
               </span>
               <span className="num muted hide-m" style={{ width: 70, fontSize: 12 }}>
-                {fmtDate(p.createdAt, now)}
+                {shortDate(p.createdAt, now)}
               </span>
               <ToolStack tools={p.tools.slice(0, 3)} />
               {more(p)}
@@ -188,10 +190,10 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
                   </td>
                   <td className="num">{p.total}</td>
                   <td style={{ textAlign: "left" }} className="num muted">
-                    {fmtDate(p.createdAt, now)}
+                    {shortDate(p.createdAt, now)}
                   </td>
                   <td style={{ textAlign: "left" }} className="muted">
-                    {ago(p.lastAt, now)}
+                    <Ago at={p.lastAt} now={now} />
                   </td>
                   <td>{more(p)}</td>
                 </tr>
@@ -348,11 +350,11 @@ export function ProjectCard({
         </span>
         <span className="row" style={{ gap: 4 }} title="Created">
           {ic(Calendar, 12)}
-          {fmtDate(p.createdAt, now)}
+          {shortDate(p.createdAt, now)}
         </span>
         <span className="row hide-m" style={{ gap: 4 }} title="Last activity">
           {ic(Clock, 12)}
-          {ago(p.lastAt, now)}
+          <Ago at={p.lastAt} now={now} />
         </span>
         <span className="sp" />
         <ToolStack tools={p.tools.slice(0, 3)} />

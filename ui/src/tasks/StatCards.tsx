@@ -1,7 +1,8 @@
 import { ArrowDownRight, ArrowUpRight, Triangle } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Stats } from "../board/summary.ts";
-import { timeAgo } from "../format/time.ts";
+import { timeAgo } from "../design/format/time.ts";
+import { plural } from "../design/format/text.ts";
 
 export type Card = {
   label: string;
@@ -35,7 +36,7 @@ function cards(stats: Stats, now: Date): Card[] {
     {
       label: "Waiting for you",
       value: stats.waitingForOwner,
-      unit: stats.waitingForOwner === 1 ? "question" : "questions",
+      unit: plural(stats.waitingForOwner, "question"),
       note: stats.oldestQuestion ? `Oldest asked ${timeAgo(stats.oldestQuestion, now)}` : "No open question",
       tone: stats.waitingForOwner > 0 ? "bad" : "neutral",
     },

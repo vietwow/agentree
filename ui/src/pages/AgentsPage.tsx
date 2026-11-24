@@ -2,15 +2,15 @@ import { Check, ChevronDown, ChevronRight, Clock, CornerDownRight, Minus, Networ
 import { useMemo, useState } from "react";
 import { fixtureAgents, type AgentSession, type AgentState } from "../board/fixtures.ts";
 import { TOOL_LABEL, type Task, type Tool } from "../board/task.ts";
-import { timeAgo } from "../format/time.ts";
 import { ic } from "../ui/ic.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { SummaryCards } from "../tasks/StatCards.tsx";
 import { style } from "./parts.tsx";
+import { count, plural } from "../design/format/text.ts";
+import { Ago } from "../design/components/Ago.tsx";
 
 const COLS = "minmax(280px,1fr) 170px minmax(220px,1.2fr) 130px 110px 140px";
 const ROW_INSET = 44;
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
 const STATE: Record<AgentState, { label: string; tone: string }> = {
   working: { label: "Working", tone: "accent" },
@@ -84,7 +84,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
         <div className="c-meta">
           <span className="row" style={{ gap: 5, whiteSpace: "nowrap", color: s.state === "stale" ? "var(--bad)" : "var(--ink-3)" }}>
             {ic(Clock, 13)}
-            {timeAgo(s.ended ?? s.beat, now)}
+            <Ago at={s.ended ?? s.beat} now={now} />
           </span>
         </div>
       </div>
@@ -117,7 +117,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
               <div className="c-meta">
                 <span className="row faint" style={{ gap: 5, whiteSpace: "nowrap" }}>
                   {ic(Clock, 13)}
-                  {timeAgo(a.ended ?? a.since, now)}
+                  <Ago at={a.ended ?? a.since} now={now} />
                 </span>
               </div>
             </div>
@@ -146,27 +146,27 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
             {
               label: "Sessions",
               value: live.length,
-              unit: live.length === 1 ? "session" : "sessions",
-              note: `over ${plural(new Set(live.map((s) => s.tool)).size, "tool")}`,
+              unit: plural(live.length, "session"),
+              note: `over ${count(new Set(live.map((s) => s.tool)).size, "tool")}`,
               tone: "neutral",
             },
             {
               label: "Subagents",
               value: subs.length,
-              note: `${plural(subs.filter((a) => a.kind === "agentree-worker").length, "worker")} · ${plural(subs.filter((a) => a.kind === "agentree-reviewer").length, "reviewer")}`,
+              note: `${count(subs.filter((a) => a.kind === "agentree-worker").length, "worker")} · ${count(subs.filter((a) => a.kind === "agentree-reviewer").length, "reviewer")}`,
               tone: "neutral",
             },
             {
               label: "No beat",
               value: live.filter((s) => s.state === "stale").length,
-              unit: live.filter((s) => s.state === "stale").length === 1 ? "session" : "sessions",
+              unit: plural(live.filter((s) => s.state === "stale").length, "session"),
               note: "in over 30 minutes",
               tone: live.some((s) => s.state === "stale") ? "bad" : "neutral",
             },
             {
               label: "Review their own",
               value: tools.filter((t) => t.reviewsOwn).length,
-              note: `of ${plural(tools.length, "tool")}, by your switch`,
+              note: `of ${count(tools.length, "tool")}, by your switch`,
               tone: "neutral",
             },
           ]}

@@ -4,7 +4,8 @@ import { fixtureDetail } from "../board/fixtures.ts";
 import { TOOL_LABEL, type Session, type Task, type Tokens, type Tool } from "../board/task.ts";
 import { ic } from "../ui/ic.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
-import { fmtDate, ProgBar } from "./parts.tsx";
+import { ProgBar } from "./parts.tsx";
+import { shortDate } from "../design/format/time.ts";
 import { SummaryCards } from "../tasks/StatCards.tsx";
 
 type By = "tool" | "task" | "day";
@@ -84,7 +85,7 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
         <span className="trunc">{r.task!.title}</span>
       </span>
     ) : (
-      fmtDate(r.day!, now)
+      shortDate(r.day!, now)
     );
 
   return (

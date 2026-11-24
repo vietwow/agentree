@@ -5,7 +5,9 @@ import { TOOL_LABEL, type Task, type Tool } from "../board/task.ts";
 import { ic } from "../ui/ic.tsx";
 import { Select } from "../ui/Select.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
-import { ago, dayBucket, Empty, style } from "./parts.tsx";
+import { Empty, style } from "./parts.tsx";
+import { dayBucket } from "../design/format/time.ts";
+import { Ago } from "../design/components/Ago.tsx";
 
 type Who = ActivityEntry["who"];
 
@@ -88,7 +90,7 @@ export function ActivityPage({ entries, tasks, now, onOpenTask }: Props) {
                       {titles.get(e.task)}
                     </span>
                   </div>
-                  <time dateTime={e.at.toISOString()}>{ago(e.at, now)}</time>
+                  <Ago at={e.at} now={now} />
                 </div>
               ))}
             </div>

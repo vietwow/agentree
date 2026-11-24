@@ -2,15 +2,15 @@ import { ChevronDown, ChevronRight, CircleAlert, Clock, FileDiff, GitMerge, Shie
 import { useMemo, useState } from "react";
 import { fixtureDetail } from "../board/fixtures.ts";
 import { TOOL_LABEL, type Status, type Task, type TaskDetail } from "../board/task.ts";
-import { timeAgo } from "../format/time.ts";
+import { DAY, HOUR } from "../design/format/time.ts";
 import { ic } from "../ui/ic.tsx";
 import { StatusIcon } from "../ui/StatusIcon.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { Empty, style } from "./parts.tsx";
 import { SummaryCards } from "../tasks/StatCards.tsx";
+import { plural } from "../design/format/text.ts";
+import { Ago } from "../design/components/Ago.tsx";
 
-const HOUR = 60 * 60 * 1000;
-const DAY = 24 * HOUR;
 const COLS = "minmax(260px,1fr) 190px 150px 112px 76px 130px 150px 140px";
 /** The group header's chevron and gap put its status icon at 52px; a row's icon sits under it. */
 const ROW_INSET = 44;
@@ -141,7 +141,7 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
           <div className="c-meta" style={{ minWidth: 0, overflow: "hidden" }}>
             <span className="row" style={{ gap: 5, whiteSpace: "nowrap", color: late ? "var(--bad)" : "var(--ink-3)" }}>
               {ic(Clock, 13)}
-              {timeAgo(at, now)}
+              <Ago at={at} now={now} />
             </span>
           </div>
         </div>
@@ -178,7 +178,7 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
             {
               label: "Being reviewed",
               value: reviewing.length,
-              unit: reviewing.length === 1 ? "task" : "tasks",
+              unit: plural(reviewing.length, "task"),
               lead: old ? `${old}` : undefined,
               note: old ? "waiting over an hour" : "None waiting over an hour",
               tone: old ? "warn" : "neutral",
@@ -186,7 +186,7 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
             {
               label: "In the landing queue",
               value: queue.length,
-              unit: queue.length === 1 ? "task" : "tasks",
+              unit: plural(queue.length, "task"),
               note: "rebased by the lander when stale",
               tone: "neutral",
             },
@@ -200,7 +200,7 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
             {
               label: "Landed today",
               value: of("landed").length,
-              unit: of("landed").length === 1 ? "task" : "tasks",
+              unit: plural(of("landed").length, "task"),
               note: "on main",
               tone: of("landed").length ? "good" : "neutral",
             },

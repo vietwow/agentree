@@ -3,35 +3,6 @@ import { Fragment, type CSSProperties, type ReactNode } from "react";
 import { PROJECT_STATUS, type Project, type ProjectStatus } from "../board/projects.ts";
 import { ic } from "../ui/ic.tsx";
 
-const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const DAY = 24 * 60 * 60 * 1000;
-
-const midnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-const diffDays = (a: Date, b: Date) => Math.round((midnight(a) - midnight(b)) / DAY);
-
-export function fmtDate(d: Date, now: Date, long = false) {
-  return `${MON[d.getMonth()]} ${d.getDate()}${long || d.getFullYear() !== now.getFullYear() ? `, ${d.getFullYear()}` : ""}`;
-}
-
-export function ago(at: Date, now: Date) {
-  const m = Math.round((now.getTime() - at.getTime()) / 6e4);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.round(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.round(h / 24);
-  if (d < 7) return `${d}d ago`;
-  return fmtDate(at, now);
-}
-
-export function dayBucket(at: Date, now: Date) {
-  const n = diffDays(at, now);
-  if (n === 0) return "Today";
-  if (n === -1) return "Yesterday";
-  if (n > -7) return "This week";
-  return "Earlier";
-}
-
 export const style = (vars: Record<string, string | number>) => vars as CSSProperties;
 
 export function PIcon({ project, size = 15, className = "" }: { project: Project; size?: number; className?: string }) {
