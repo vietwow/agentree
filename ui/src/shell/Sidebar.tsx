@@ -16,12 +16,14 @@ import {
   TreeDeciduous,
 } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { toggleStar, useStars } from "../board/favorites.ts";
 import { setDropHandlers } from "../board/drag.ts";
+import { toggleStar, useStars } from "../board/favorites.ts";
 import { PROJECT_STATUS, type Project } from "../board/projects.ts";
-import { ic } from "../ui/ic.tsx";
-import { Pop, usePop } from "../ui/Pop.tsx";
-import { copy, toast } from "../ui/toast.ts";
+import { IconButton } from "../design/components/Button.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { MenuItem, MenuLabel, MenuSeparator } from "../design/components/Menu.tsx";
+import { Pop, usePop } from "../design/components/Pop.tsx";
+import { copy, toast } from "../design/components/toast.ts";
 import { OwnerAvatar, OwnerMenu, type OwnerMenuProps } from "./OwnerMenu.tsx";
 import { HEAD_PAGES, PAGES, PAGE_INFO, PROJECT_PAGES, type Page } from "./pages.ts";
 
@@ -108,9 +110,9 @@ export function Sidebar(props: Props) {
             <span className="ws-name trunc">agentree</span>
           </div>
           {!collapsed && (
-            <button type="button" className="ibtn ibtn-sm hide-m" onClick={onCollapse} data-tip="Collapse sidebar  [" aria-label="Collapse sidebar">
+            <IconButton label="Collapse sidebar" size="sm" className="hide-m" onClick={onCollapse} data-tip="Collapse sidebar  [">
               {ic(PanelLeft, 15)}
-            </button>
+            </IconButton>
           )}
         </div>
       </div>
@@ -166,22 +168,16 @@ export function Sidebar(props: Props) {
       )}
       {pop.open?.key === "help" && (
         <Pop anchor={pop.open.anchor} onClose={pop.close} width={260}>
-          <div className="mh">Help & resources</div>
-          <button type="button" className="mi" onClick={owner.onShortcuts}>
-            {ic(Keyboard, 15)}Keyboard shortcuts
-            <span className="r">
-              <kbd>?</kbd>
-            </span>
-          </button>
-          <button type="button" className="mi" onClick={onPalette}>
-            {ic(Command, 15)}Command menu
-            <span className="r">
-              <kbd>{MOD}K</kbd>
-            </span>
-          </button>
-          <button type="button" className="mi" onClick={() => onPage("help")}>
-            {ic(BookOpen, 15)}Help & docs
-          </button>
+          <MenuLabel>Help & resources</MenuLabel>
+          <MenuItem icon={Keyboard} keys="?" onClick={owner.onShortcuts}>
+            Keyboard shortcuts
+          </MenuItem>
+          <MenuItem icon={Command} keys={`${MOD}K`} onClick={onPalette}>
+            Command menu
+          </MenuItem>
+          <MenuItem icon={BookOpen} onClick={() => onPage("help")}>
+            Help & docs
+          </MenuItem>
         </Pop>
       )}
     </nav>
@@ -204,9 +200,9 @@ function Projects({ projects, project, page, inProject, onProject, onReorder, on
       <div className="sgroup-h">
         <span>Projects</span>
         <span className="sp" />
-        <button type="button" className="ibtn ibtn-xs" onClick={onNewProject} data-tip="New project  P" aria-label="New project">
+        <IconButton label="New project" size="xs" onClick={onNewProject} data-tip="New project  P">
           {ic(Plus, 14)}
-        </button>
+        </IconButton>
       </div>
       {shown.map((p) => {
         const open = !!expanded[p.id];
@@ -283,40 +279,37 @@ function Projects({ projects, project, page, inProject, onProject, onReorder, on
       })}
       {menuFor && menu.open && (
         <Pop anchor={menu.open.anchor} onClose={menu.close}>
-          <button type="button" className="mi" onClick={() => onProject(menuFor.id, "board")}>
-            {ic(ArrowUpRight, 15)}Open
-          </button>
-          <button
-            type="button"
-            className="mi"
+          <MenuItem icon={ArrowUpRight} onClick={() => onProject(menuFor.id, "board")}>
+            Open
+          </MenuItem>
+          <MenuItem
+            icon={Star}
             onClick={() => {
               const on = toggleStar(`project:${menuFor.id}`);
               toast(on ? "Added to favorites" : "Removed from favorites", { ms: 1800 });
             }}
           >
-            {ic(Star, 15)}
             {stars.has(`project:${menuFor.id}`) ? "Remove from favorites" : "Add to favorites"}
-          </button>
-          <button type="button" className="mi" onClick={() => copy(`${location.origin}/project/${menuFor.id}`)}>
-            {ic(Link, 15)}Copy link
-          </button>
-          <div className="msep" />
+          </MenuItem>
+          <MenuItem icon={Link} onClick={() => copy(`${location.origin}/project/${menuFor.id}`)}>
+            Copy link
+          </MenuItem>
+          <MenuSeparator />
           {shown.indexOf(menuFor) > 0 && (
-            <button type="button" className="mi" onClick={() => onReorder(menuFor.id, shown[shown.indexOf(menuFor) - 1]!.id)}>
-              {ic(ArrowUp, 15)}Move up in sidebar
-            </button>
+            <MenuItem icon={ArrowUp} onClick={() => onReorder(menuFor.id, shown[shown.indexOf(menuFor) - 1]!.id)}>
+              Move up in sidebar
+            </MenuItem>
           )}
           {shown.indexOf(menuFor) < shown.length - 1 && (
-            <button
-              type="button"
-              className="mi"
+            <MenuItem
+              icon={ArrowDown}
               onClick={() => {
                 const after = shown[shown.indexOf(menuFor) + 2];
                 onReorder(menuFor.id, after ? after.id : "");
               }}
             >
-              {ic(ArrowDown, 15)}Move down in sidebar
-            </button>
+              Move down in sidebar
+            </MenuItem>
           )}
         </Pop>
       )}

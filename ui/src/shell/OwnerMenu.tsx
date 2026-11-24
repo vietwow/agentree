@@ -1,5 +1,6 @@
 import { Keyboard, LogOut, Monitor, Moon, Settings, Sun, User } from "lucide-react";
-import { ic } from "../ui/ic.tsx";
+import { MenuItem, MenuLabel, MenuSeparator } from "../design/components/Menu.tsx";
+import { Segmented } from "../design/components/Segmented.tsx";
 import type { ThemeChoice } from "./theme.ts";
 
 export type OwnerMenuProps = {
@@ -38,42 +39,21 @@ export function OwnerMenu({ theme, onTheme, onSettings, onShortcuts }: OwnerMenu
           </div>
         </div>
       </div>
-      <div className="msep" />
-      <button type="button" className="mi">
-        {ic(User, 15)}View profile
-      </button>
-      <button type="button" className="mi" onClick={onSettings}>
-        {ic(Settings, 15)}Account settings
-      </button>
-      <div className="msep" />
-      <div className="mh">Theme</div>
+      <MenuSeparator />
+      <MenuItem icon={User}>View profile</MenuItem>
+      <MenuItem icon={Settings} onClick={onSettings}>
+        Account settings
+      </MenuItem>
+      <MenuSeparator />
+      <MenuLabel>Theme</MenuLabel>
       <div style={{ padding: "2px 6px 6px" }}>
-        <div className="seg" style={{ width: "100%" }}>
-          {THEMES.map(([key, Icon, name]) => (
-            <button
-              key={key}
-              type="button"
-              className={theme === key ? "on" : ""}
-              aria-pressed={theme === key}
-              style={{ flex: 1, justifyContent: "center" }}
-              onClick={() => onTheme(key)}
-            >
-              {ic(Icon, 13)}
-              {name}
-            </button>
-          ))}
-        </div>
+        <Segmented label="Theme" fill value={theme} onChange={onTheme} options={THEMES.map(([value, icon, label]) => ({ value, label, icon }))} />
       </div>
-      <div className="msep" />
-      <button type="button" className="mi" onClick={onShortcuts}>
-        {ic(Keyboard, 15)}Keyboard shortcuts
-        <span className="r">
-          <kbd>?</kbd>
-        </span>
-      </button>
-      <button type="button" className="mi">
-        {ic(LogOut, 15)}Sign out
-      </button>
+      <MenuSeparator />
+      <MenuItem icon={Keyboard} keys="?" onClick={onShortcuts}>
+        Keyboard shortcuts
+      </MenuItem>
+      <MenuItem icon={LogOut}>Sign out</MenuItem>
     </>
   );
 }

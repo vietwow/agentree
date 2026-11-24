@@ -1,7 +1,8 @@
 import { X } from "lucide-react";
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { ic } from "./ic.tsx";
+import { IconButton } from "./Button.tsx";
+import { ic } from "./icon.tsx";
 
 type Props = {
   title: string;
@@ -35,11 +36,7 @@ export function Modal({ title, sub, size = "", onClose, children, foot }: Props)
   return createPortal(
     <>
       <div className="scrim enter" style={{ zIndex: 60 }} onClick={onClose} />
-      <div
-        className="modal-wrap"
-        style={{ zIndex: 61 }}
-        onClick={(event) => event.target === event.currentTarget && onClose()}
-      >
+      <div className="modal-wrap" style={{ zIndex: 61 }} onClick={(event) => event.target === event.currentTarget && onClose()}>
         <div ref={box} className={`modal enter ${size}`} role="dialog" aria-modal="true" aria-labelledby={id}>
           <div className="modal-h">
             <div>
@@ -50,9 +47,9 @@ export function Modal({ title, sub, size = "", onClose, children, foot }: Props)
                 </div>
               )}
             </div>
-            <button type="button" className="ibtn ibtn-sm" onClick={onClose} aria-label="Close">
+            <IconButton label="Close" size="sm" onClick={onClose}>
               {ic(X, 16)}
-            </button>
+            </IconButton>
           </div>
           {children}
           {foot && <div className="modal-f">{foot}</div>}

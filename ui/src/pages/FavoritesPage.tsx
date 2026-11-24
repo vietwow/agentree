@@ -2,10 +2,14 @@ import { Star } from "lucide-react";
 import { useStars } from "../board/favorites.ts";
 import type { Project } from "../board/projects.ts";
 import { STATUS_LABEL, type Task } from "../board/task.ts";
+import { Button } from "../design/components/Button.tsx";
+import { Empty } from "../design/components/Empty.tsx";
+import { Page, PageHeader } from "../design/components/Page.tsx";
+import { Panel } from "../design/components/Panel.tsx";
 import { PriorityIcon } from "../ui/PriorityIcon.tsx";
 import { StatusIcon } from "../ui/StatusIcon.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
-import { Empty, style } from "./parts.tsx";
+import { style } from "./parts.tsx";
 import { ProjectCard } from "./ProjectsPage.tsx";
 
 type Props = {
@@ -24,21 +28,16 @@ export function FavoritesPage({ projects, tasks, now, onOpenProject, onOpenTask,
   const home = projects.find((p) => p.id === "agentree")!;
 
   return (
-    <div className="page wide">
-      <div className="ph">
-        <div>
-          <h1>Favorites</h1>
-          <p>Projects and tasks you've starred for quick access.</p>
-        </div>
-      </div>
+    <Page layout="wide">
+      <PageHeader title="Favorites">Projects and tasks you've starred for quick access.</PageHeader>
       {!ps.length && !ts.length ? (
-        <div className="panel">
+        <Panel>
           <Empty icon={Star} title="No favorites yet" text="Star a project or task to pin it here.">
-            <button type="button" className="btn btn-secondary btn-sm" onClick={onBrowse}>
+            <Button size="sm" onClick={onBrowse}>
               Browse projects
-            </button>
+            </Button>
           </Empty>
-        </div>
+        </Panel>
       ) : (
         <>
           <h2 className="sec" style={{ marginBottom: 10 }}>
@@ -65,7 +64,7 @@ export function FavoritesPage({ projects, tasks, now, onOpenProject, onOpenTask,
             </span>
           </h2>
           {ts.length ? (
-            <div className="panel" style={{ overflow: "hidden" }}>
+            <Panel clip>
               {ts.map((t) => (
                 <div
                   key={t.id}
@@ -90,12 +89,12 @@ export function FavoritesPage({ projects, tasks, now, onOpenProject, onOpenTask,
                   <ToolMark tool={t.holder?.tool} size={20} />
                 </div>
               ))}
-            </div>
+            </Panel>
           ) : (
             <p className="faint">Open a task and click the star to add it here.</p>
           )}
         </>
       )}
-    </div>
+    </Page>
   );
 }

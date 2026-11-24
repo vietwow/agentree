@@ -17,26 +17,32 @@ import {
   User,
   X,
 } from "lucide-react";
-import { reducedMotion } from "../design/motion.ts";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { toggleStar, useStars } from "../board/favorites.ts";
-import { useTicks } from "../board/ticks.ts";
 import type { Project } from "../board/projects.ts";
 import { isStale, openQuestions, partsOf } from "../board/summary.ts";
 import { KIND_LABEL, STATUS_LABEL, TOOL_LABEL, type Status, type Task, type TaskDetail } from "../board/task.ts";
+import { useTicks } from "../board/ticks.ts";
+import { Ago } from "../design/components/Ago.tsx";
+import { Badge } from "../design/components/Badge.tsx";
+import { IconButton } from "../design/components/Button.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { KeyValues } from "../design/components/KeyValues.tsx";
+import { MenuItem, MenuSeparator } from "../design/components/Menu.tsx";
+import { Pop, usePop } from "../design/components/Pop.tsx";
+import { ProgressBar } from "../design/components/ProgressBar.tsx";
+import { Tabs } from "../design/components/Tabs.tsx";
+import { copy, toast } from "../design/components/toast.ts";
 import { timeAgo } from "../design/format/time.ts";
-import { ProgBar, style } from "../pages/parts.tsx";
-import { ic } from "../ui/ic.tsx";
+import { reducedMotion } from "../design/motion.ts";
+import { style } from "../pages/parts.tsx";
 import { KIND_COLOR } from "../ui/colors.ts";
-import { Pop, usePop } from "../ui/Pop.tsx";
 import { PriorityIcon } from "../ui/PriorityIcon.tsx";
 import { StatusIcon } from "../ui/StatusIcon.tsx";
-import { copy, toast } from "../ui/toast.ts";
 import { ToolMark } from "../ui/ToolMark.tsx";
+import { ChecksSection, LogSection, None, SessionsSection, TimeBox, TreeBox } from "./DrawerSections.tsx";
 import { SubCheck } from "./SubCheck.tsx";
 import { SubtaskView } from "./SubtaskView.tsx";
-import { ChecksSection, LogSection, None, SessionsSection, TimeBox, TreeBox } from "./DrawerSections.tsx";
-import { Ago } from "../design/components/Ago.tsx";
 
 type Tab = "log" | "checks" | "sessions" | "files" | "memory";
 
@@ -141,35 +147,28 @@ export function TaskDrawer(props: Props) {
             {t.id}
           </span>
           <span className="sp" />
-          <button
-            type="button"
-            className="ibtn ibtn-sm"
+          <IconButton
+            label="Favorite"
+            size="sm"
             onClick={star}
             data-tip={starred ? "Unfavorite" : "Favorite"}
             aria-pressed={starred}
-            aria-label="Favorite"
             style={starred ? { color: "var(--warn)" } : undefined}
           >
             {ic(Star, 15)}
-          </button>
-          <button type="button" className="ibtn ibtn-sm" onClick={link} data-tip="Copy link" aria-label="Copy link">
+          </IconButton>
+          <IconButton label="Copy link" size="sm" tip onClick={link}>
             {ic(Link, 15)}
-          </button>
-          <button
-            type="button"
-            className="ibtn ibtn-sm hide-m"
-            onClick={onToggleFull}
-            data-tip={full ? "Side panel" : "Full page"}
-            aria-label="Toggle full page"
-          >
+          </IconButton>
+          <IconButton label="Toggle full page" size="sm" className="hide-m" onClick={onToggleFull} data-tip={full ? "Side panel" : "Full page"}>
             {ic(full ? Minimize2 : Maximize2, 15)}
-          </button>
-          <button type="button" className="ibtn ibtn-sm" onClick={pop.toggle("more")} aria-label="More">
+          </IconButton>
+          <IconButton label="More" size="sm" onClick={pop.toggle("more")}>
             {ic(Ellipsis, 15)}
-          </button>
-          <button type="button" className="ibtn ibtn-sm" onClick={onClose} data-tip="Close  Esc" aria-label="Close">
+          </IconButton>
+          <IconButton label="Close" size="sm" onClick={onClose} data-tip="Close  Esc">
             {ic(X, 16)}
-          </button>
+          </IconButton>
         </div>
 
         <div className="drawer-b" ref={body} key={t.id}>
@@ -198,17 +197,7 @@ export function TaskDrawer(props: Props) {
                 {t.title}
               </div>
 
-              <dl
-                className="kv"
-                style={{
-                  marginTop: 12,
-                  ...(full
-                    ? {
-                        gridTemplateColumns: "112px minmax(0,1fr) 112px minmax(0,1fr)",
-                      }
-                    : {}),
-                }}
-              >
+              <KeyValues columns={full ? 2 : 1} className="mt-3">
                 {prop(
                   ic(CircleDot, 14),
                   "Status",
@@ -299,7 +288,7 @@ export function TaskDrawer(props: Props) {
                     )}
                   </span>,
                 )}
-              </dl>
+              </KeyValues>
 
               <div className="dsec">
                 <div className="dsec-h">
@@ -332,7 +321,7 @@ export function TaskDrawer(props: Props) {
                   </span>
                   {parts.total > 0 && (
                     <span style={{ width: 90, display: "flex" }}>
-                      <ProgBar value={Math.round((parts.done / parts.total) * 100)} tone={parts.done === parts.total ? "green" : ""} />
+                      <ProgressBar value={Math.round((parts.done / parts.total) * 100)} tone={parts.done === parts.total ? "good" : undefined} />
                     </span>
                   )}
                 </div>
@@ -348,9 +337,9 @@ export function TaskDrawer(props: Props) {
                       {k.title}
                     </button>
                     {k.holder && <ToolMark tool={k.holder.tool} size={20} />}
-                    <button type="button" className="ibtn ibtn-xs x" onClick={() => onOpen(k.id)} aria-label="Open the task" tabIndex={-1}>
+                    <IconButton label="Open the task" size="xs" className="x" onClick={() => onOpen(k.id)} tabIndex={-1}>
                       {ic(ChevronRight, 14)}
-                    </button>
+                    </IconButton>
                   </div>
                 ))}
                 {t.subtasks.map((s) => (
@@ -359,9 +348,9 @@ export function TaskDrawer(props: Props) {
                     <button type="button" className="s" onClick={() => setSub(s.id)}>
                       {s.title}
                     </button>
-                    <button type="button" className="ibtn ibtn-xs x" onClick={() => setSub(s.id)} aria-label="Open subtask details" tabIndex={-1}>
+                    <IconButton label="Open subtask details" size="xs" className="x" onClick={() => setSub(s.id)} tabIndex={-1}>
                       {ic(ChevronRight, 14)}
-                    </button>
+                    </IconButton>
                   </div>
                 ))}
               </div>
@@ -386,9 +375,9 @@ export function TaskDrawer(props: Props) {
                             <b>You</b> {q.answer}
                           </div>
                         ) : (
-                          <span className="badge red" style={{ marginTop: 6 }}>
-                            {ic(CircleAlert, 12)}Waiting for you
-                          </span>
+                          <Badge tone="bad" className="mt-1.5" icon={ic(CircleAlert, 12)}>
+                            Waiting for you
+                          </Badge>
                         )}
                       </div>
                     </div>
@@ -397,33 +386,23 @@ export function TaskDrawer(props: Props) {
               )}
 
               <div className="dsec" ref={tabSec}>
-                <div className="tabs" style={{ marginBottom: 6 }} role="tablist">
-                  {(
-                    [
-                      ["log", "Log", detail.log.length],
-                      ["checks", "Checks", detail.checkRuns.length],
-                      ["sessions", "Sessions", detail.sessions.length],
-                      ["files", "Files", detail.writes.length + detail.appends.length],
-                      ["memory", "Memory", detail.memory.length],
-                    ] as [Tab, string, number][]
-                  ).map(([k, n, c]) => (
-                    <button
-                      key={k}
-                      type="button"
-                      role="tab"
-                      aria-selected={tab === k}
-                      className={`tab ${tab === k ? "on" : ""}`}
-                      onClick={() => {
-                        setTab(k);
-                        setTabbed(true);
-                        setShown((n) => n + 1);
-                      }}
-                    >
-                      {n}
-                      <span className="cnt">{c}</span>
-                    </button>
-                  ))}
-                </div>
+                <Tabs
+                  label="Task details"
+                  className="mb-1.5"
+                  value={tab}
+                  onChange={(k) => {
+                    setTab(k);
+                    setTabbed(true);
+                    setShown((n) => n + 1);
+                  }}
+                  tabs={[
+                    { value: "log", label: "Log", count: detail.log.length },
+                    { value: "checks", label: "Checks", count: detail.checkRuns.length },
+                    { value: "sessions", label: "Sessions", count: detail.sessions.length },
+                    { value: "files", label: "Files", count: detail.writes.length + detail.appends.length },
+                    { value: "memory", label: "Memory", count: detail.memory.length },
+                  ]}
+                />
                 <div style={{ paddingTop: 8 }} className="flex flex-col gap-3">
                   {tab === "log" && <LogSection key={t.id} detail={detail} now={now} />}
                   {tab === "checks" && <ChecksSection task={t} runs={detail.checkRuns} />}
@@ -435,7 +414,7 @@ export function TaskDrawer(props: Props) {
                   )}
                   {tab === "files" && (
                     <>
-                      <div className="kv" style={{ gridTemplateColumns: "112px minmax(0,1fr)" }}>
+                      <KeyValues>
                         <dt>Writes</dt>
                         <dd className="col" style={{ alignItems: "flex-start" }}>
                           {detail.writes.map((p) => (
@@ -456,7 +435,7 @@ export function TaskDrawer(props: Props) {
                             <span className="faint">Nothing</span>
                           )}
                         </dd>
-                      </div>
+                      </KeyValues>
                       <TreeBox task={t} detail={detail} />
                     </>
                   )}
@@ -480,29 +459,26 @@ export function TaskDrawer(props: Props) {
       {pop.open?.key === "status" && (
         <Pop anchor={pop.open.anchor} onClose={pop.close}>
           {PERSON_MOVES.map((s) => (
-            <button key={s} type="button" className="mi" onClick={() => s !== t.status && onMove(t.id, s)}>
-              <StatusIcon status={s} />
+            <MenuItem key={s} lead={<StatusIcon status={s} />} checked={s === t.status} onClick={() => s !== t.status && onMove(t.id, s)}>
               {STATUS_LABEL[s]}
-              {s === t.status && <span className="ck">{ic(CircleCheck, 14)}</span>}
-            </button>
+            </MenuItem>
           ))}
         </Pop>
       )}
       {pop.open?.key === "more" && (
         <Pop anchor={pop.open.anchor} onClose={pop.close}>
-          <button type="button" className="mi" onClick={star}>
-            {ic(Star, 15)}
+          <MenuItem icon={Star} onClick={star}>
             {starred ? "Remove from favorites" : "Add to favorites"}
-          </button>
-          <button type="button" className="mi" onClick={link}>
-            {ic(Link, 15)}Copy link
-          </button>
+          </MenuItem>
+          <MenuItem icon={Link} onClick={link}>
+            Copy link
+          </MenuItem>
           {movable && (
             <>
-              <div className="msep" />
-              <button type="button" className="mi" onClick={() => onMove(t.id, t.status === "backlog" ? "ready" : "backlog")}>
-                {ic(CircleDot, 15)}Move to {t.status === "backlog" ? "Ready" : "Backlog"}
-              </button>
+              <MenuSeparator />
+              <MenuItem icon={CircleDot} onClick={() => onMove(t.id, t.status === "backlog" ? "ready" : "backlog")}>
+                Move to {t.status === "backlog" ? "Ready" : "Backlog"}
+              </MenuItem>
             </>
           )}
         </Pop>

@@ -1,8 +1,8 @@
+import { count } from "../design/format/text.ts";
+import { DAY, MINUTE } from "../design/format/time.ts";
 import type { ActivityEntry } from "./activity.ts";
 import type { AgentSession } from "./fixtures.ts";
 import { TOOL_LABEL, type Task, type Tool } from "./task.ts";
-import { DAY, MINUTE } from "../design/format/time.ts";
-import { count } from "../design/format/text.ts";
 
 /** A live session of a tool, drawn as a card around the project. */
 export type Seat = {

@@ -1,4 +1,4 @@
-import { Modal } from "../ui/Modal.tsx";
+import { Modal } from "../design/components/Modal.tsx";
 
 const MOD = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl";
 

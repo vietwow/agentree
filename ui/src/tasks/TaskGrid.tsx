@@ -1,18 +1,20 @@
-import { ArrowDown, ArrowUp, Check, Plus, SearchX } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, SearchX } from "lucide-react";
 import { useRef, type PointerEvent as ReactPointerEvent } from "react";
 import { PARENT_TITLES } from "../board/fixtures.ts";
 import { STATUS_LABEL, TOOL_LABEL, type Status, type Task } from "../board/task.ts";
-import { Empty } from "../pages/parts.tsx";
+import { Button } from "../design/components/Button.tsx";
+import { Empty } from "../design/components/Empty.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { MenuItem } from "../design/components/Menu.tsx";
+import { Pop, usePop } from "../design/components/Pop.tsx";
 import { shortDate } from "../design/format/time.ts";
-import { ic } from "../ui/ic.tsx";
-import { Pop, usePop } from "../ui/Pop.tsx";
 import { PriorityIcon } from "../ui/PriorityIcon.tsx";
 import { StatusIcon } from "../ui/StatusIcon.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { PERSON_MOVES } from "./TaskDrawer.tsx";
 import { Labels } from "./TaskList.tsx";
-import { COLUMNS, optLabel } from "./ViewToolbar.tsx";
 import { groupTasks, updatedAt, type Column, type SortKey, type View } from "./view.ts";
+import { COLUMNS, optLabel } from "./ViewToolbar.tsx";
 
 type Props = {
   tasks: Task[];
@@ -48,9 +50,9 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
   if (!tasks.length)
     return (
       <Empty icon={SearchX} title="No results found" text="No tasks match these filters.">
-        <button type="button" className="btn btn-secondary btn-sm" onClick={onClear}>
+        <Button size="sm" onClick={onClear}>
           Clear filters
-        </button>
+        </Button>
       </Empty>
     );
 
@@ -276,21 +278,17 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
       {popTask && pop.open && (
         <Pop anchor={pop.open.anchor} onClose={pop.close}>
           {PERSON_MOVES.map((s, i) => (
-            <button
+            <MenuItem
               key={s}
-              type="button"
-              className="mi"
               role="menuitemradio"
               aria-checked={popTask.status === s}
+              lead={<StatusIcon status={s} />}
+              keys={String(i + 1)}
+              checked={popTask.status === s}
               onClick={() => s !== popTask.status && onMove([popTask.id], s)}
             >
-              <StatusIcon status={s} />
               <span className="trunc">{STATUS_LABEL[s]}</span>
-              <span className="r">
-                <kbd>{i + 1}</kbd>
-              </span>
-              {popTask.status === s && <span className="ck">{ic(Check, 14)}</span>}
-            </button>
+            </MenuItem>
           ))}
         </Pop>
       )}

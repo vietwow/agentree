@@ -3,17 +3,21 @@ import { Fragment, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { fixtureDetail, fixtureMilestones, PARENT_TITLES } from "../board/fixtures.ts";
 import { partsOf } from "../board/summary.ts";
 import { KIND_LABEL, KINDS, STATUS_LABEL, type Task } from "../board/task.ts";
+import { Button } from "../design/components/Button.tsx";
+import { Empty } from "../design/components/Empty.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { Page, PageHeader } from "../design/components/Page.tsx";
+import { Segmented } from "../design/components/Segmented.tsx";
+import { Select } from "../design/components/Select.tsx";
+import { SummaryCards } from "../design/components/SummaryCards.tsx";
+import { plural } from "../design/format/text.ts";
+import { DAY, HOUR, monthName, shortDate } from "../design/format/time.ts";
 import { NEW_VIEW, applyView, type View } from "../tasks/view.ts";
 import { ViewToolbar } from "../tasks/ViewToolbar.tsx";
-import { ic } from "../ui/ic.tsx";
-import { Select } from "../ui/Select.tsx";
 import { STATUS_COLOR } from "../ui/colors.ts";
 import { StatusIcon } from "../ui/StatusIcon.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
-import { Empty, style } from "./parts.tsx";
-import { SummaryCards } from "../tasks/StatCards.tsx";
-import { DAY, HOUR, monthName, shortDate } from "../design/format/time.ts";
-import { plural } from "../design/format/text.ts";
+import { style } from "./parts.tsx";
 
 type Zoom = "hour" | "week" | "month";
 type Group = "status" | "assignee" | "parent" | "none";
@@ -173,34 +177,19 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
 
   const controls = (
     <>
-      <div className="seg" style={{ marginLeft: 4 }}>
-        {ZOOMS.map(([k, name]) => (
-          <button key={k} type="button" className={zoom === k ? "on" : ""} onClick={() => setZoom(k)}>
-            {name}
-          </button>
-        ))}
-      </div>
-      <Select
-        value={group}
-        options={GROUPS}
-        onChange={setGroup}
-        label="Group by"
-        style={{ height: 26, width: "auto", fontSize: 12, marginLeft: 4 }}
-      />
-      <button type="button" className="btn btn-ghost" onClick={toToday}>
+      <Segmented label="Zoom" className="ml-1" value={zoom} onChange={setZoom} options={ZOOMS.map(([value, label]) => ({ value, label }))} />
+      <Select value={group} options={GROUPS} onChange={setGroup} label="Group by" size="sm" className="ml-1" />
+      <Button variant="ghost" onClick={toToday}>
         {ic(Crosshair, 14)}Today
-      </button>
+      </Button>
     </>
   );
 
   return (
-    <div className="page flush">
-      <div className="ph">
-        <div>
-          <h1>Progress</h1>
-          <p>How far along the project is, read from the board: each task from its claim to its landing, and the milestones.</p>
-        </div>
-      </div>
+    <Page layout="flush">
+      <PageHeader title="Progress">
+        How far along the project is, read from the board: each task from its claim to its landing, and the milestones.
+      </PageHeader>
       <div className="@container" style={{ padding: "0 var(--gutter) 16px" }}>
         <SummaryCards
           cards={[
@@ -422,6 +411,6 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
       ) : (
         <Empty icon={ChartGantt} title="Nothing on the timeline" text="No task matches the filters." />
       )}
-    </div>
+    </Page>
   );
 }

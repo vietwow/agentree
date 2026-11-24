@@ -1,7 +1,9 @@
 import { Bell, ChevronDown, CircleCheck, FolderPlus, Menu, Plus, Search, Sparkles } from "lucide-react";
 import { Fragment, type ReactNode } from "react";
-import { ic } from "../ui/ic.tsx";
-import { Pop, usePop } from "../ui/Pop.tsx";
+import { Button, IconButton } from "../design/components/Button.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { MenuItem, MenuLabel, MenuSeparator } from "../design/components/Menu.tsx";
+import { Pop, usePop } from "../design/components/Pop.tsx";
 import { OwnerAvatar, OwnerMenu, type OwnerMenuProps } from "./OwnerMenu.tsx";
 
 export type Crumb = { label: string; icon?: ReactNode; onClick?: () => void };
@@ -25,21 +27,16 @@ export function TopBar({ crumbs, unread, onMenu, onSearch, onNotices, onNewTask,
 
   return (
     <header className="topbar">
-      <button type="button" className="ibtn mnav-btn" onClick={onMenu} aria-label="Open navigation">
+      <IconButton label="Open navigation" className="mnav-btn" onClick={onMenu}>
         {ic(Menu, 17)}
-      </button>
+      </IconButton>
       <nav className="crumbs trunc" aria-label="Breadcrumb">
         {crumbs.map((crumb, i) => {
           const cur = i === crumbs.length - 1;
           return (
             <Fragment key={crumb.label}>
               {i > 0 && <span className="sep">/</span>}
-              <button
-                type="button"
-                className={cur ? "cur" : ""}
-                onClick={crumb.onClick}
-                aria-current={cur ? "page" : undefined}
-              >
+              <button type="button" className={cur ? "cur" : ""} onClick={crumb.onClick} aria-current={cur ? "page" : undefined}>
                 {crumb.icon}
                 {crumb.label}
               </button>
@@ -53,7 +50,7 @@ export function TopBar({ crumbs, unread, onMenu, onSearch, onNotices, onNewTask,
         <span className="lbltxt">Search or jump to…</span>
         <span className="kbd">{MOD}K</span>
       </button>
-      <button type="button" className="ibtn" onClick={onNotices} data-tip="Notifications" aria-label="Notifications">
+      <IconButton label="Notifications" tip onClick={onNotices}>
         {ic(Bell, 16)}
         {unread && (
           <span
@@ -69,50 +66,36 @@ export function TopBar({ crumbs, unread, onMenu, onSearch, onNotices, onNewTask,
             }}
           />
         )}
-      </button>
-      <button
-        type="button"
-        className="btn btn-secondary btn-sm"
-        onClick={pop.toggle("create")}
-        aria-haspopup="menu"
-        aria-expanded={pop.open?.key === "create"}
-        aria-label="Create new"
-      >
+      </IconButton>
+      <Button size="sm" onClick={pop.toggle("create")} aria-haspopup="menu" aria-expanded={pop.open?.key === "create"} aria-label="Create new">
         {ic(Plus, 14)}
         <span className="hide-m">New</span>
         {ic(ChevronDown, 12, "hide-m")}
-      </button>
-      <button
-        type="button"
-        className="ibtn hide-m"
+      </Button>
+      <IconButton
+        label="Account menu"
+        className="hide-m"
         onClick={pop.toggle("user")}
         aria-haspopup="menu"
         aria-expanded={pop.open?.key === "user"}
-        aria-label="Account menu"
         style={{ width: "auto", padding: "0 2px" }}
       >
         <OwnerAvatar size="md" />
-      </button>
+      </IconButton>
 
       {pop.open?.key === "create" && (
         <Pop anchor={pop.open.anchor} onClose={pop.close} width={220}>
-          <div className="mh">Create</div>
-          <button type="button" className="mi" onClick={onNewTask}>
-            {ic(CircleCheck, 15)}Task
-            <span className="r">
-              <kbd>N</kbd>
-            </span>
-          </button>
-          <button type="button" className="mi" onClick={onNewProject}>
-            {ic(FolderPlus, 15)}Project
-            <span className="r">
-              <kbd>P</kbd>
-            </span>
-          </button>
-          <div className="msep" />
-          <button type="button" className="mi" onClick={onPlan}>
-            {ic(Sparkles, 15)}Break a goal down
-          </button>
+          <MenuLabel>Create</MenuLabel>
+          <MenuItem icon={CircleCheck} keys="N" onClick={onNewTask}>
+            Task
+          </MenuItem>
+          <MenuItem icon={FolderPlus} keys="P" onClick={onNewProject}>
+            Project
+          </MenuItem>
+          <MenuSeparator />
+          <MenuItem icon={Sparkles} onClick={onPlan}>
+            Break a goal down
+          </MenuItem>
         </Pop>
       )}
       {pop.open?.key === "user" && (

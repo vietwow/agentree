@@ -1,15 +1,15 @@
 import { ListChecks, Plus } from "lucide-react";
 import { isClaimed, isStale, openQuestions, partsOf } from "../board/summary.ts";
 import { STATUS_LABEL, TOOL_LABEL, type Status, type Task, type Tool } from "../board/task.ts";
-import { ProgBar } from "../pages/parts.tsx";
-import { Badge } from "../ui/Badge.tsx";
-import { ic } from "../ui/ic.tsx";
+import { Ago } from "../design/components/Ago.tsx";
+import { Badge } from "../design/components/Badge.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { ProgressBar } from "../design/components/ProgressBar.tsx";
+import { reducedMotion } from "../design/motion.ts";
 import { PriorityIcon } from "../ui/PriorityIcon.tsx";
 import { StatusIcon } from "../ui/StatusIcon.tsx";
 import { ToolMark, ToolStack } from "../ui/ToolMark.tsx";
 import { PERSON_MOVES } from "./TaskDrawer.tsx";
-import { reducedMotion } from "../design/motion.ts";
-import { Ago } from "../design/components/Ago.tsx";
 
 const COLUMNS = ["backlog", "ready", "in-progress", "checking", "review", "accepted", "done"] as const satisfies readonly Status[];
 
@@ -195,7 +195,7 @@ function Card({ task, parts, now, delay, open, landing, onLanded, onOpen }: Card
           <span className="num">
             {done}/{total}
           </span>
-          <ProgBar value={Math.round((done / total) * 100)} tone={done === total ? "green" : ""} />
+          <ProgressBar value={Math.round((done / total) * 100)} tone={done === total ? "good" : undefined} />
         </span>
       )}
       <span className="flex h-5 w-full items-center gap-2">

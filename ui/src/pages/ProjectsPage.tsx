@@ -17,13 +17,20 @@ import {
 import { useState } from "react";
 import { toggleStar, useStars } from "../board/favorites.ts";
 import { PROJECT_STATUS, progressOf, type Project, type ProjectStatus } from "../board/projects.ts";
-import { ic } from "../ui/ic.tsx";
-import { Pop, usePop } from "../ui/Pop.tsx";
-import { copy, toast } from "../ui/toast.ts";
-import { ToolStack } from "../ui/ToolMark.tsx";
-import { Empty, PIcon, ProgBar, PStatus } from "./parts.tsx";
-import { shortDate } from "../design/format/time.ts";
 import { Ago } from "../design/components/Ago.tsx";
+import { Button, IconButton } from "../design/components/Button.tsx";
+import { Empty } from "../design/components/Empty.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { MenuItem } from "../design/components/Menu.tsx";
+import { Page, PageHeader } from "../design/components/Page.tsx";
+import { Panel } from "../design/components/Panel.tsx";
+import { Pop, usePop } from "../design/components/Pop.tsx";
+import { ProgressBar } from "../design/components/ProgressBar.tsx";
+import { Segmented } from "../design/components/Segmented.tsx";
+import { copy, toast } from "../design/components/toast.ts";
+import { shortDate } from "../design/format/time.ts";
+import { ToolStack } from "../ui/ToolMark.tsx";
+import { PIcon, PStatus } from "./parts.tsx";
 
 type View = "grid" | "list" | "table";
 type Sort = "recent" | "name" | "created" | "progress";
@@ -40,7 +47,7 @@ const SORTS: [Sort, string][] = [
   ["progress", "Progress"],
 ];
 
-const tone = (p: Project) => (p.status === "complete" ? "green" : p.status === "risk" ? "red" : "");
+const tone = (p: Project) => (p.status === "complete" ? "good" : p.status === "risk" ? "bad" : undefined);
 
 type Props = { projects: Project[]; now: Date; onOpen: (id: string) => void };
 
@@ -65,10 +72,10 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
   const active = projects.filter((p) => p.status !== "complete").length;
 
   const more = (p: Project, extra?: React.CSSProperties) => (
-    <button
-      type="button"
-      className="ibtn ibtn-sm more"
-      aria-label="Project options"
+    <IconButton
+      label="Project options"
+      size="sm"
+      className="more"
       style={extra}
       onClick={(event) => {
         event.stopPropagation();
@@ -76,32 +83,31 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
       }}
     >
       {ic(Ellipsis, 14)}
-    </button>
+    </IconButton>
   );
 
   let body;
   if (!projects.length)
     body = (
-      <div className="panel">
+      <Panel>
         <Empty icon={FolderKanban} title="No projects yet" text="Register a repository to start organizing its work." />
-      </div>
+      </Panel>
     );
   else if (!shown.length)
     body = (
-      <div className="panel">
+      <Panel>
         <Empty icon={SearchX} title="No results found" text="No projects match your search or filters. Try a different term.">
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
+          <Button
+            size="sm"
             onClick={() => {
               setQ("");
               setStatus("all");
             }}
           >
             Clear filters
-          </button>
+          </Button>
         </Empty>
-      </div>
+      </Panel>
     );
   else if (view === "grid")
     body = (
@@ -113,7 +119,7 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
     );
   else if (view === "list")
     body = (
-      <div className="panel" style={{ overflow: "hidden" }}>
+      <Panel clip>
         {shown.map((p) => {
           const pr = progressOf(p);
           return (
@@ -132,7 +138,7 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
                 <PStatus status={p.status} />
               </span>
               <span className="row hide-m" style={{ width: 140 }}>
-                <ProgBar value={pr} />
+                <ProgressBar value={pr} />
                 <span className="num faint" style={{ fontSize: 11.5 }}>
                   {pr}%
                 </span>
@@ -145,11 +151,11 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
             </div>
           );
         })}
-      </div>
+      </Panel>
     );
   else
     body = (
-      <div className="panel" style={{ overflowX: "auto" }}>
+      <Panel style={{ overflowX: "auto" }}>
         <table className="perm-t" style={{ minWidth: 860 }}>
           <thead>
             <tr>
@@ -182,7 +188,7 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
                   </td>
                   <td>
                     <span className="row">
-                      <ProgBar value={pr} />
+                      <ProgressBar value={pr} />
                       <span className="num faint" style={{ fontSize: 11.5 }}>
                         {pr}%
                       </span>
@@ -201,30 +207,25 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
             })}
           </tbody>
         </table>
-      </div>
+      </Panel>
     );
 
   const menuFor = menu.open && projects.find((p) => p.id === menu.open!.key);
 
   return (
-    <div className="page wide">
-      <div className="ph">
-        <div>
-          <h1>Projects</h1>
-          <p>
-            {active} active · {projects.length - active} completed
-          </p>
-        </div>
-        <div className="acts">
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => toast("Registering a project is not built yet", { kind: "info", ms: 2200 })}
-          >
-            {ic(Plus, 14)}New project
-          </button>
-        </div>
-      </div>
+    <Page layout="wide">
+      <PageHeader
+        title="Projects"
+        actions={
+          <>
+            <Button variant="primary" onClick={() => toast("Registering a project is not built yet", { kind: "info", ms: 2200 })}>
+              {ic(Plus, 14)}New project
+            </Button>
+          </>
+        }
+      >
+        {active} active · {projects.length - active} completed
+      </PageHeader>
       <div className="row" style={{ marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
         <div className="inwrap">
           {ic(Search, 13)}
@@ -264,35 +265,26 @@ export function ProjectsPage({ projects, now, onOpen }: Props) {
           ))}
         </select>
         <span className="sp" />
-        <div className="seg" role="tablist" aria-label="Layout">
-          {VIEWS.map(([k, n, Icon]) => (
-            <button key={k} type="button" className={view === k ? "on" : ""} onClick={() => setView(k)} aria-label={n}>
-              {ic(Icon, 13)}
-              <span className="hide-m">{n}</span>
-            </button>
-          ))}
-        </div>
+        <Segmented label="Layout" value={view} onChange={setView} collapse options={VIEWS.map(([value, label, icon]) => ({ value, label, icon }))} />
       </div>
       {body}
       {menuFor && menu.open && (
         <Pop anchor={menu.open.anchor} onClose={menu.close}>
-          <button type="button" className="mi" onClick={() => onOpen(menuFor.id)}>
-            {ic(FolderKanban, 15)}Open
-          </button>
-          <button
-            type="button"
-            className="mi"
+          <MenuItem icon={FolderKanban} onClick={() => onOpen(menuFor.id)}>
+            Open
+          </MenuItem>
+          <MenuItem
+            icon={Star}
             onClick={() => toast(toggleStar(`project:${menuFor.id}`) ? "Added to favorites" : "Removed from favorites", { ms: 1800 })}
           >
-            {ic(Star, 15)}
             {stars.has(`project:${menuFor.id}`) ? "Remove from favorites" : "Add to favorites"}
-          </button>
-          <button type="button" className="mi" onClick={() => copy(`${location.origin}/project/${menuFor.id}`)}>
-            {ic(Link, 15)}Copy link
-          </button>
+          </MenuItem>
+          <MenuItem icon={Link} onClick={() => copy(`${location.origin}/project/${menuFor.id}`)}>
+            Copy link
+          </MenuItem>
         </Pop>
       )}
-    </div>
+    </Page>
   );
 }
 
@@ -338,7 +330,7 @@ export function ProjectCard({
       </div>
       <div className="desc">{p.desc}</div>
       <div className="row" style={{ gap: 10 }}>
-        <ProgBar value={pr} tone={tone(p)} />
+        <ProgressBar value={pr} tone={tone(p)} />
         <span className="num" style={{ fontSize: 12, fontWeight: 500 }}>
           {pr}%
         </span>

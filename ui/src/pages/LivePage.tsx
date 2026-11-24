@@ -3,9 +3,10 @@ import type { ActivityEntry } from "../board/activity.ts";
 import { fixtureAgents } from "../board/fixtures.ts";
 import { liveBoard, saidBy, type Region, type Seat } from "../board/live.ts";
 import type { Task } from "../board/task.ts";
-import { reducedMotion } from "../design/motion.ts";
-import { count } from "../design/format/text.ts";
 import { Ago } from "../design/components/Ago.tsx";
+import { Page } from "../design/components/Page.tsx";
+import { count } from "../design/format/text.ts";
+import { reducedMotion } from "../design/motion.ts";
 
 const CW = 200;
 const PITCH = 67;
@@ -154,7 +155,7 @@ export function LivePage({
   })();
 
   return (
-    <div className="page live">
+    <Page theme="live">
       <div className="live-proj seg" role="group" aria-label="Project">
         {projects.map((p) => (
           <button key={p.id} type="button" className={p.id === project ? "on" : ""} aria-pressed={p.id === project} onClick={() => setProject(p.id)}>
@@ -363,7 +364,7 @@ export function LivePage({
           </div>
         )}
       </section>
-    </div>
+    </Page>
   );
 }
 

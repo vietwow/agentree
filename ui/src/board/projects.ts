@@ -1,6 +1,6 @@
 import { Building2, Folder, Layers, Palette, type LucideIcon } from "lucide-react";
-import type { Task, Tool } from "./task.ts";
 import { DAY } from "../design/format/time.ts";
+import type { Task, Tool } from "./task.ts";
 
 export type ProjectStatus = "planning" | "active" | "risk" | "hold" | "complete";
 

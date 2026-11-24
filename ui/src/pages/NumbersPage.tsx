@@ -2,11 +2,12 @@ import { CalendarDays, ListTodo, Wrench } from "lucide-react";
 import { Fragment, useMemo, useState } from "react";
 import { fixtureDetail } from "../board/fixtures.ts";
 import { TOOL_LABEL, type Session, type Task, type Tokens, type Tool } from "../board/task.ts";
-import { ic } from "../ui/ic.tsx";
-import { ToolMark } from "../ui/ToolMark.tsx";
-import { ProgBar } from "./parts.tsx";
+import { Page, PageHeader } from "../design/components/Page.tsx";
+import { ProgressBar } from "../design/components/ProgressBar.tsx";
+import { Segmented } from "../design/components/Segmented.tsx";
+import { SummaryCards } from "../design/components/SummaryCards.tsx";
 import { shortDate } from "../design/format/time.ts";
-import { SummaryCards } from "../tasks/StatCards.tsx";
+import { ToolMark } from "../ui/ToolMark.tsx";
 
 type By = "tool" | "task" | "day";
 
@@ -89,13 +90,10 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
     );
 
   return (
-    <div className="page flush">
-      <div className="ph">
-        <div>
-          <h1>Numbers</h1>
-          <p>The tokens and cost each tool reports, summed over tools, tasks and days. What a tool does not report is not known, never estimated.</p>
-        </div>
-      </div>
+    <Page layout="flush">
+      <PageHeader title="Numbers">
+        The tokens and cost each tool reports, summed over tools, tasks and days. What a tool does not report is not known, never estimated.
+      </PageHeader>
       <div className="@container" style={{ padding: "0 var(--gutter) 16px" }}>
         <SummaryCards
           cards={[
@@ -128,14 +126,7 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
         />
       </div>
       <div className="toolbar" role="toolbar">
-        <div className="seg">
-          {BYS.map(([k, n, icon]) => (
-            <button key={k} type="button" className={by === k ? "on" : ""} onClick={() => setBy(k)} aria-pressed={by === k}>
-              {ic(icon, 13)}
-              <span className="hide-m">{n}</span>
-            </button>
-          ))}
-        </div>
+        <Segmented label="Sum by" value={by} onChange={setBy} collapse options={BYS.map(([value, label, icon]) => ({ value, label, icon }))} />
         <span className="sp" />
         <span className="faint" style={{ fontSize: "var(--text-xs)" }}>
           Costs are the tools' own estimates, as they report them.
@@ -192,7 +183,7 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
                   <td>
                     {r.sum.unknown < r.sum.sessions && (
                       <div style={{ display: "flex" }}>
-                        <ProgBar value={Math.round((r.sum.cost / top) * 100)} />
+                        <ProgressBar value={Math.round((r.sum.cost / top) * 100)} />
                       </div>
                     )}
                   </td>
@@ -218,6 +209,6 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
           ))}
         </div>
       )}
-    </div>
+    </Page>
   );
 }

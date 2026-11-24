@@ -1,15 +1,19 @@
-import { ChevronDown, ChevronRight, CircleAlert, Clock, FileDiff, GitMerge, ShieldCheck, Undo2 } from "lucide-react";
+import { CircleAlert, Clock, FileDiff, GitMerge, ShieldCheck, Undo2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { fixtureDetail } from "../board/fixtures.ts";
 import { TOOL_LABEL, type Status, type Task, type TaskDetail } from "../board/task.ts";
+import { Ago } from "../design/components/Ago.tsx";
+import { Badge, type Tone } from "../design/components/Badge.tsx";
+import { Empty } from "../design/components/Empty.tsx";
+import { GroupHeader } from "../design/components/GroupHeader.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { Page, PageHeader } from "../design/components/Page.tsx";
+import { SummaryCards } from "../design/components/SummaryCards.tsx";
+import { plural } from "../design/format/text.ts";
 import { DAY, HOUR } from "../design/format/time.ts";
-import { ic } from "../ui/ic.tsx";
 import { StatusIcon } from "../ui/StatusIcon.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
-import { Empty, style } from "./parts.tsx";
-import { SummaryCards } from "../tasks/StatCards.tsx";
-import { plural } from "../design/format/text.ts";
-import { Ago } from "../design/components/Ago.tsx";
+import { style } from "./parts.tsx";
 
 const COLS = "minmax(260px,1fr) 190px 150px 112px 76px 130px 150px 140px";
 /** The group header's chevron and gap put its status icon at 52px; a row's icon sits under it. */
@@ -33,11 +37,11 @@ const GROUPS: { stage: Stage; name: string; icon: Status }[] = [
   { stage: "landed", name: "Landed today", icon: "done" },
 ];
 
-const VERDICT: Record<Stage, { label: string; tone: string }> = {
+const VERDICT: Record<Stage, { label: string; tone: Tone }> = {
   reviewing: { label: "Reviewing", tone: "accent" },
-  accepted: { label: "Accepted", tone: "green" },
-  rejected: { label: "Rejected", tone: "red" },
-  landed: { label: "Accepted", tone: "green" },
+  accepted: { label: "Accepted", tone: "good" },
+  rejected: { label: "Rejected", tone: "bad" },
+  landed: { label: "Accepted", tone: "good" },
 };
 
 /** What the reviewing agents decided, and where each accepted task is on its way to main. */
@@ -116,10 +120,9 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
             )}
           </div>
           <div className="c-meta">
-            <span className={`badge ${verdict.tone}`}>
-              <span className="dot" />
+            <Badge tone={verdict.tone} dot>
               {verdict.label}
-            </span>
+            </Badge>
           </div>
           <div className="c-meta num">
             <span className="row" style={{ gap: 5, color: t.checks.failed ? "var(--bad)" : "var(--good)" }}>
@@ -162,16 +165,11 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
   };
 
   return (
-    <div className="page flush">
-      <div className="ph">
-        <div>
-          <h1>Review</h1>
-          <p>
-            An agent reviews each task whose checks passed and accepts it, or rejects it with findings. The lander then puts the accepted tasks on
-            main, one at a time.
-          </p>
-        </div>
-      </div>
+    <Page layout="flush">
+      <PageHeader title="Review">
+        An agent reviews each task whose checks passed and accepts it, or rejects it with findings. The lander then puts the accepted tasks on main,
+        one at a time.
+      </PageHeader>
       <div className="@container" style={{ padding: "0 var(--gutter) 16px" }}>
         <SummaryCards
           cards={[
@@ -225,20 +223,13 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
               if (!items.length) return null;
               return (
                 <div key={g.stage} className="contents">
-                  <div className="grp">
-                    <button
-                      type="button"
-                      className="ibtn ibtn-xs"
-                      onClick={() => setClosed((now) => ({ ...now, [g.stage]: !now[g.stage] }))}
-                      aria-expanded={!closed[g.stage]}
-                      aria-label="Toggle group"
-                    >
-                      {ic(closed[g.stage] ? ChevronRight : ChevronDown, 13)}
-                    </button>
-                    <StatusIcon status={g.icon} />
-                    <span>{g.name}</span>
-                    <span className="cnt">{items.length}</span>
-                  </div>
+                  <GroupHeader
+                    name={g.name}
+                    count={items.length}
+                    open={!closed[g.stage]}
+                    onToggle={() => setClosed((now) => ({ ...now, [g.stage]: !now[g.stage] }))}
+                    lead={<StatusIcon status={g.icon} />}
+                  />
                   {!closed[g.stage] && items.map(row)}
                 </div>
               );
@@ -248,6 +239,6 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
       ) : (
         <Empty icon={ShieldCheck} title="Nothing to review" text="A task shows here once its checks pass." />
       )}
-    </div>
+    </Page>
   );
 }

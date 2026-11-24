@@ -1,7 +1,6 @@
 import {
   ArrowDown,
   ArrowUp,
-  Check,
   ChevronDown,
   ChevronRight,
   CircleDot,
@@ -16,23 +15,27 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { PARENT_TITLES } from "../board/fixtures.ts";
 import { toggleStar, useStars } from "../board/favorites.ts";
+import { PARENT_TITLES } from "../board/fixtures.ts";
 import { partsOf } from "../board/summary.ts";
-import { useTicks } from "../board/ticks.ts";
 import { KIND_LABEL, STATUS_LABEL, TOOL_LABEL, type Status, type Task } from "../board/task.ts";
-import { Empty, style } from "../pages/parts.tsx";
-import { ic } from "../ui/ic.tsx";
+import { useTicks } from "../board/ticks.ts";
+import { Button, IconButton } from "../design/components/Button.tsx";
+import { Empty } from "../design/components/Empty.tsx";
+import { GroupHeader } from "../design/components/GroupHeader.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { MenuItem, MenuSeparator } from "../design/components/Menu.tsx";
+import { Pop, usePop } from "../design/components/Pop.tsx";
+import { copy, toast } from "../design/components/toast.ts";
+import { style } from "../pages/parts.tsx";
 import { KIND_COLOR } from "../ui/colors.ts";
-import { Pop, usePop } from "../ui/Pop.tsx";
 import { PriorityIcon } from "../ui/PriorityIcon.tsx";
 import { StatusIcon } from "../ui/StatusIcon.tsx";
-import { copy, toast } from "../ui/toast.ts";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { SubCheck } from "./SubCheck.tsx";
 import { PERSON_MOVES } from "./TaskDrawer.tsx";
-import { optLabel } from "./ViewToolbar.tsx";
 import { rfcLabel, type Group, type SortKey, type View } from "./view.ts";
+import { optLabel } from "./ViewToolbar.tsx";
 
 type Col = "status" | "assignee" | "priority" | "labels" | "parent";
 
@@ -227,9 +230,9 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
             </div>
           ))}
           <div className="c-more">
-            <button type="button" className="ibtn ibtn-sm" onClick={pop.toggle(`more:${t.id}`)} aria-label="More actions">
+            <IconButton label="More actions" size="sm" onClick={pop.toggle(`more:${t.id}`)}>
               {ic(Ellipsis, 15)}
-            </button>
+            </IconButton>
           </div>
         </div>
         {open && (
@@ -299,30 +302,20 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
           return (
             <div key={gk} className="contents">
               {(groups.length > 1 || g.key !== "all") && (
-                <div className="grp">
-                  <button
-                    type="button"
-                    className="ibtn ibtn-xs"
-                    onClick={() => setClosed((now) => ({ ...now, [gk]: !coll }))}
-                    aria-expanded={!coll}
-                    aria-label="Toggle group"
-                  >
-                    {ic(coll ? ChevronRight : ChevronDown, 13)}
-                  </button>
-                  {head.html}
-                  <span>{head.name}</span>
-                  <span className="cnt">{g.tasks.length}</span>
-                  {adds && (
-                    <button
-                      type="button"
-                      className="ibtn ibtn-xs"
-                      onClick={() => onNotBuilt("Creating a task")}
-                      aria-label={`Add task to ${head.name}`}
-                    >
-                      {ic(Plus, 13)}
-                    </button>
-                  )}
-                </div>
+                <GroupHeader
+                  name={head.name}
+                  count={g.tasks.length}
+                  open={!coll}
+                  onToggle={() => setClosed((now) => ({ ...now, [gk]: !coll }))}
+                  lead={head.html}
+                  actions={
+                    adds && (
+                      <IconButton label={`Add task to ${head.name}`} size="xs" onClick={() => onNotBuilt("Creating a task")}>
+                        {ic(Plus, 13)}
+                      </IconButton>
+                    )
+                  }
+                />
               )}
               {!coll && g.tasks.map((t) => row(t, g))}
               {!coll && adds && (
@@ -339,13 +332,13 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
         <div className={`bulkbar ${bulkIn ? "enter" : ""}`} role="toolbar" aria-label="Bulk actions" onAnimationEnd={() => setBulkIn(false)}>
           <b style={{ fontWeight: 600 }}>{nSel} selected</b>
           <span className="sep" />
-          <button type="button" className="btn btn-sm" onClick={pop.toggle("bulk")}>
+          <Button variant="inverse" size="sm" onClick={pop.toggle("bulk")}>
             {ic(CircleDot, 14)}Status
-          </button>
+          </Button>
           <span className="sep" />
-          <button type="button" className="btn btn-sm" onClick={() => setSel(new Set())} aria-label="Clear selection">
+          <Button variant="inverse" size="sm" onClick={() => setSel(new Set())} aria-label="Clear selection">
             {ic(X, 14)}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -354,11 +347,10 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
           {PERSON_MOVES.map((s) => {
             const ids = chosen.filter((t) => PERSON_MOVES.includes(t.status) && t.status !== s).map((t) => t.id);
             return (
-              <button key={s} type="button" className="mi" disabled={!ids.length} onClick={() => onMove(ids, s)}>
-                <StatusIcon status={s} />
+              <MenuItem lead={<StatusIcon status={s} />} key={s} disabled={!ids.length} onClick={() => onMove(ids, s)}>
                 {STATUS_LABEL[s]}
                 {!ids.length && <span className="r faint">None to move</span>}
-              </button>
+              </MenuItem>
             );
           })}
         </Pop>
@@ -366,21 +358,17 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
       {popTask && pop.open?.key.startsWith("status:") && (
         <Pop anchor={pop.open.anchor} onClose={pop.close}>
           {PERSON_MOVES.map((s, i) => (
-            <button
+            <MenuItem
               key={s}
-              type="button"
-              className="mi"
               role="menuitemradio"
               aria-checked={popTask.status === s}
+              lead={<StatusIcon status={s} />}
+              keys={String(i + 1)}
+              checked={popTask.status === s}
               onClick={() => s !== popTask.status && onMove([popTask.id], s)}
             >
-              <StatusIcon status={s} />
               <span className="trunc">{STATUS_LABEL[s]}</span>
-              <span className="r">
-                <kbd>{i + 1}</kbd>
-              </span>
-              {popTask.status === s && <span className="ck">{ic(Check, 14)}</span>}
-            </button>
+            </MenuItem>
           ))}
         </Pop>
       )}
@@ -408,32 +396,27 @@ function TaskMenu({
   return (
     <>
       {onOpen && (
-        <button type="button" className="mi" onClick={() => onOpen(t.id)}>
-          {ic(PanelRightOpen, 15)}Open
-        </button>
+        <MenuItem icon={PanelRightOpen} onClick={() => onOpen(t.id)}>
+          Open
+        </MenuItem>
       )}
       {PERSON_MOVES.includes(t.status) && (
         <>
-          {onOpen && <div className="msep" />}
+          {onOpen && <MenuSeparator />}
           {PERSON_MOVES.filter((s) => s !== t.status).map((s) => (
-            <button key={s} type="button" className="mi" onClick={() => onMove(s)}>
-              {ic(CircleDot, 15)}Move to {STATUS_LABEL[s]}
-            </button>
+            <MenuItem icon={CircleDot} key={s} onClick={() => onMove(s)}>
+              Move to {STATUS_LABEL[s]}
+            </MenuItem>
           ))}
         </>
       )}
-      <div className="msep" />
-      <button
-        type="button"
-        className="mi"
-        onClick={() => toast(toggleStar(`task:${t.id}`) ? "Added to favorites" : "Removed from favorites", { ms: 1800 })}
-      >
-        {ic(Star, 15)}
+      <MenuSeparator />
+      <MenuItem icon={Star} onClick={() => toast(toggleStar(`task:${t.id}`) ? "Added to favorites" : "Removed from favorites", { ms: 1800 })}>
         {starred ? "Remove from favorites" : "Add to favorites"}
-      </button>
-      <button type="button" className="mi" onClick={() => copy(`${location.origin}/task/${t.id}`)}>
-        {ic(Link, 15)}Copy link
-      </button>
+      </MenuItem>
+      <MenuItem icon={Link} onClick={() => copy(`${location.origin}/task/${t.id}`)}>
+        Copy link
+      </MenuItem>
     </>
   );
 }

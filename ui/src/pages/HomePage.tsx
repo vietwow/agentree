@@ -5,10 +5,11 @@ import type { ActivityEntry } from "../board/activity.ts";
 import { fixtureAgents } from "../board/fixtures.ts";
 import { fileAreas, forecast, markCounts, numbers, toolsLive, type FileArea, type FileCell, type FileMark, type Forecast } from "../board/home.ts";
 import { STATUS_LABEL, TOOL_LABEL, type Task } from "../board/task.ts";
-import { ic } from "../ui/ic.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { Page } from "../design/components/Page.tsx";
+import { duration } from "../design/format/time.ts";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { style } from "./parts.tsx";
-import { duration } from "../design/format/time.ts";
 
 type Props = {
   tasks: readonly Task[];
@@ -306,7 +307,7 @@ export function HomePage({ tasks, activity, now, onOpenTask, onAgents }: Props) 
   useEffect(() => setChartKey((n) => n + 1), [span]);
 
   return (
-    <div className="page wide home">
+    <Page layout="wide" theme="home">
       <div className="h-grid">
         <div className="h-col">
           <header className="h-head">
@@ -501,6 +502,6 @@ export function HomePage({ tasks, activity, now, onOpenTask, onAgents }: Props) 
         </div>
       </div>
       <TipCard tip={tip} />
-    </div>
+    </Page>
   );
 }

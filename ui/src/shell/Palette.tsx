@@ -1,7 +1,8 @@
 import { Command, FolderKanban, Layers, ListChecks, Search, SearchX } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { ic } from "../ui/ic.tsx";
+import { Badge } from "../design/components/Badge.tsx";
+import { ic } from "../design/components/icon.tsx";
 
 export type PaletteItem = {
   key: string;
@@ -114,11 +115,7 @@ export function Palette({ mode: start, idle, commands, tasks, projects, suggeste
       <div className="palette" role="dialog" aria-modal="true" aria-label="Command menu" onKeyDown={onKey}>
         <div className="pal-in">
           {ic(mode === "search" ? Search : Command, 17)}
-          {mode === "search" && (
-            <span className="badge" style={{ flexShrink: 0 }}>
-              Search
-            </span>
-          )}
+          {mode === "search" && <Badge className="shrink-0">Search</Badge>}
           <input
             ref={input}
             value={q}

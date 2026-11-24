@@ -2,13 +2,17 @@ import { Activity, Hourglass, Pause, Play, Plus, ShieldAlert, Timer, type Lucide
 import { useMemo } from "react";
 import { fixtureSlots, type Slots, type Waiting } from "../board/fixtures.ts";
 import { TOOL_LABEL, type Task, type Tool } from "../board/task.ts";
-import { ic } from "../ui/ic.tsx";
-import { ToolMark } from "../ui/ToolMark.tsx";
-import { ProgBar } from "./parts.tsx";
-import { SummaryCards } from "../tasks/StatCards.tsx";
-import { plural } from "../design/format/text.ts";
 import { Ago } from "../design/components/Ago.tsx";
+import { Badge, type Tone } from "../design/components/Badge.tsx";
+import { Button } from "../design/components/Button.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { Page, PageHeader } from "../design/components/Page.tsx";
+import { Panel, PanelBody } from "../design/components/Panel.tsx";
+import { ProgressBar } from "../design/components/ProgressBar.tsx";
+import { SummaryCards } from "../design/components/SummaryCards.tsx";
+import { plural } from "../design/format/text.ts";
 import { MINUTE } from "../design/format/time.ts";
+import { ToolMark } from "../ui/ToolMark.tsx";
 
 type Props = {
   tasks: Task[];
@@ -17,9 +21,9 @@ type Props = {
   onNotBuilt: (what: string) => void;
 };
 
-const WHY: Record<Waiting["why"], { label: string; tone: string }> = {
-  "no room": { label: "No room", tone: "amber" },
-  "its turn": { label: "Its turn", tone: "gray" },
+const WHY: Record<Waiting["why"], { label: string; tone: Tone }> = {
+  "no room": { label: "No room", tone: "warn" },
+  "its turn": { label: "Its turn", tone: "neutral" },
   "sensitive to load": { label: "Sensitive to load", tone: "violet" },
 };
 
@@ -60,15 +64,10 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
   );
 
   return (
-    <div className="page">
-      <div className="ph">
-        <div>
-          <h1>Slots</h1>
-          <p>
-            The heavy runs of this machine. A run starts when its cost fits in what is free, with a margin kept; the number of seats is what fits.
-          </p>
-        </div>
-      </div>
+    <Page>
+      <PageHeader title="Slots">
+        The heavy runs of this machine. A run starts when its cost fits in what is free, with a margin kept; the number of seats is what fits.
+      </PageHeader>
 
       <div className="@container" style={{ paddingBottom: 16 }}>
         <SummaryCards
@@ -99,10 +98,10 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
         />
       </div>
 
-      <div className="panel" style={{ marginBottom: 16 }}>
-        <div className="panel-h">
-          <h2>Load, the last hour</h2>
-          <div className="acts" style={{ gap: 14, fontSize: "var(--text-xs)", color: "var(--ink-3)" }}>
+      <Panel
+        title="Load, the last hour"
+        note={
+          <span className="flex gap-3.5">
             <Legend color="var(--accent)">Host</Legend>
             <Legend color="var(--ink-3)" dashed>
               Docker's machine
@@ -110,25 +109,23 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
             <Legend color="var(--bad)" dashed>
               Mark {pct(s.mark)}
             </Legend>
-          </div>
-        </div>
-        <div className="panel-b">
+          </span>
+        }
+        className="mb-4"
+      >
+        <PanelBody>
           <LoadChart s={s} />
-        </div>
-      </div>
+        </PanelBody>
+      </Panel>
 
       <div className="grid2">
         <div className="stack" style={{ gap: 16 }}>
-          <div className="panel">
-            <div className="panel-h">
-              <h2>Running</h2>
-              <span className="cnt faint">{s.runs.length}</span>
-            </div>
+          <Panel title="Running" count={s.runs.length}>
             {s.runs.map((r) => (
               <div key={r.task} className="nrow" style={{ cursor: "default" }}>
-                <span className="badge accent mono" style={{ minWidth: 26, justifyContent: "center" }} title="Seat">
+                <Badge tone="accent" className="mono min-w-6.5 justify-center" title="Seat">
                   {r.seat}
-                </span>
+                </Badge>
                 <div className="grow" style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
                   {taskRef(r.task)}
                   <code className="mono trunc" style={{ fontSize: "var(--text-xs)", color: "var(--ink-2)" }}>
@@ -150,21 +147,14 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                 </div>
               </div>
             ))}
-          </div>
+          </Panel>
 
-          <div className="panel">
-            <div className="panel-h">
-              <h2>Waiting</h2>
-              <span className="cnt faint">{s.queue.length}</span>
-              <span className="acts faint" style={{ fontSize: "var(--text-xs)" }}>
-                in the order they asked
-              </span>
-            </div>
+          <Panel title="Waiting" count={s.queue.length} note="in the order they asked">
             {s.queue.map((w, i) => (
               <div key={w.task} className="nrow" style={{ cursor: "default" }}>
-                <span className="badge mono" style={{ minWidth: 26, justifyContent: "center" }} title="Place in the queue">
+                <Badge className="mono min-w-6.5 justify-center" title="Place in the queue">
                   {i + 1}
-                </span>
+                </Badge>
                 <div className="grow" style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
                   {taskRef(w.task)}
                   <code className="mono trunc" style={{ fontSize: "var(--text-xs)", color: "var(--ink-2)" }}>
@@ -181,30 +171,23 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                     </span>
                   </span>
                   <span className="row" style={{ gap: 8, fontSize: "var(--text-xs)" }}>
-                    <span className={`badge ${WHY[w.why].tone}`}>
-                      <span className="dot" />
+                    <Badge tone={WHY[w.why].tone} dot>
                       {WHY[w.why].label}
-                    </span>
+                    </Badge>
                     <span className="muted">{w.reason}</span>
                   </span>
                 </div>
-                <button type="button" className="btn btn-sm btn-ghost" onClick={() => onNotBuilt("Moving a run first")}>
+                <Button variant="ghost" size="sm" onClick={() => onNotBuilt("Moving a run first")}>
                   Move first
-                </button>
+                </Button>
               </div>
             ))}
-          </div>
+          </Panel>
         </div>
 
         <div className="stack" style={{ gap: 16 }}>
-          <div className="panel">
-            <div className="panel-h">
-              <h2>The bounds</h2>
-              <span className="acts faint" style={{ fontSize: "var(--text-xs)" }}>
-                this machine's, not the repository's
-              </span>
-            </div>
-            <div className="panel-b" style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: "var(--text-sm)" }}>
+          <Panel title="The bounds" note="this machine's, not the repository's">
+            <PanelBody className="flex flex-col gap-2.5 text-sm">
               <Bound name="Lowest number of runs" value={String(s.bounds.lowest)} />
               <Bound name="Highest number of runs" value={String(s.bounds.highest)} />
               <Bound name="Margin kept free" value={pct(s.bounds.margin)} />
@@ -213,13 +196,10 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                 <span className="muted">Hold the number fixed</span>
                 <input type="checkbox" className="toggle" checked={s.bounds.fixed} onChange={() => onNotBuilt("Holding the number fixed")} />
               </label>
-            </div>
-          </div>
+            </PanelBody>
+          </Panel>
 
-          <div className="panel">
-            <div className="panel-h">
-              <h2>What the queue decided</h2>
-            </div>
+          <Panel title="What the queue decided">
             <div className="feed lined" style={{ padding: "0 14px 6px" }}>
               {s.decisions.map((d) => {
                 const k = DECISION[d.kind];
@@ -241,10 +221,10 @@ export function SlotsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
                 );
               })}
             </div>
-          </div>
+          </Panel>
         </div>
       </div>
-    </div>
+    </Page>
   );
 }
 
@@ -271,7 +251,7 @@ function Use({ label, used, given, unit = "" }: { label: string; used: number; g
         </span>
       </span>
       <span style={{ display: "flex" }}>
-        <ProgBar value={Math.round(share * 100)} tone={share > 0.85 ? "amber" : ""} />
+        <ProgressBar value={Math.round(share * 100)} tone={share > 0.85 ? "warn" : undefined} />
       </span>
     </div>
   );

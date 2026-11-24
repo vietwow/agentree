@@ -1,3 +1,4 @@
+import { MINUTE } from "../design/format/time.ts";
 import {
   KIND_LABEL,
   type CheckRun,
@@ -10,7 +11,6 @@ import {
   type TaskDetail,
   type Tool,
 } from "./task.ts";
-import { MINUTE } from "../design/format/time.ts";
 
 /**
  * Sample tasks for the first page, until the daemon serves the board.

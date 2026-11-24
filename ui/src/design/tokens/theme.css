@@ -42,6 +42,14 @@
   --primary-hover: color-mix(in srgb, var(--primary) 86%, var(--on-primary));
   --primary-pressed: color-mix(in srgb, var(--primary) 78%, var(--on-primary));
   --on-primary: var(--stone-0);
+  --primary-fill: none;
+  --primary-fill-hover: none;
+  --primary-disabled: var(--primary);
+  --on-primary-disabled: var(--on-primary);
+  --primary-ring: var(--accent);
+  --primary-ring-offset: 1px;
+  --shadow-primary-hover: var(--shadow-primary);
+  --shadow-primary-pressed: var(--shadow-primary);
 
   /* Tones: what a state means. */
   --good: var(--green-700);
@@ -102,6 +110,10 @@
   --primary-hover: var(--gold-250);
   --primary-pressed: var(--gold-500);
   --primary-disabled: var(--gold-800);
+  --primary-fill: linear-gradient(to bottom, var(--primary-top), var(--primary));
+  --primary-fill-hover: linear-gradient(to bottom, var(--primary-top-hover), var(--primary-hover));
+  --primary-ring: var(--primary);
+  --primary-ring-offset: 2px;
   --on-primary: var(--gold-ink);
   --on-primary-disabled: var(--gold-900);
 
@@ -127,7 +139,11 @@
   --shadow-card: 0 0 0 1px var(--line);
   --shadow-pop: 0 16px 40px -10px rgb(0 0 0 / 0.6), 0 0 0 1px var(--line-strong);
   --shadow-drag: 0 18px 40px -10px rgb(0 0 0 / 0.7), 0 0 0 1px var(--line-strong);
-  --shadow-primary: none;
+  --shadow-primary:
+    0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent), 0 6px 22px -8px color-mix(in srgb, var(--primary) 45%, transparent);
+  --shadow-primary-hover:
+    0 0 0 1px color-mix(in srgb, var(--primary) 55%, transparent), 0 6px 22px -8px color-mix(in srgb, var(--primary) 65%, transparent);
+  --shadow-primary-pressed: inset 0 2px 4px rgb(0 0 0 / 0.2);
 }
 
 /* Tailwind's colour utilities, one for each token of this tier: `text-ink-2`, `bg-tray`, `border-line`. */

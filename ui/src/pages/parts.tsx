@@ -1,7 +1,6 @@
-import type { LucideIcon } from "lucide-react";
-import { Fragment, type CSSProperties, type ReactNode } from "react";
+import { Fragment, type CSSProperties } from "react";
 import { PROJECT_STATUS, type Project, type ProjectStatus } from "../board/projects.ts";
-import { ic } from "../ui/ic.tsx";
+import { ic } from "../design/components/icon.tsx";
 
 export const style = (vars: Record<string, string | number>) => vars as CSSProperties;
 
@@ -20,25 +19,6 @@ export function PStatus({ status }: { status: ProjectStatus }) {
       <i />
       {s.name}
     </span>
-  );
-}
-
-export function ProgBar({ value, tone = "" }: { value: number; tone?: "" | "green" | "amber" | "red" }) {
-  return (
-    <span className={`prog ${tone}`} role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={100}>
-      <i style={style({ "--p": value / 100 })} />
-    </span>
-  );
-}
-
-export function Empty({ icon, title, text, children }: { icon: LucideIcon; title: string; text: string; children?: ReactNode }) {
-  return (
-    <div className="empty-state">
-      <div className="glyph">{ic(icon, 20)}</div>
-      <h2 className="es-h">{title}</h2>
-      <p>{text}</p>
-      {children}
-    </div>
   );
 }
 

@@ -4,16 +4,18 @@ import { setDropHandlers } from "../board/drag.ts";
 import { fixtureDetail } from "../board/fixtures.ts";
 import { stats, totals } from "../board/summary.ts";
 import type { Status, Task } from "../board/task.ts";
-import { Button } from "../ui/Button.tsx";
-import { ic } from "../ui/ic.tsx";
-import { toast } from "../ui/toast.ts";
+import { Button } from "../design/components/Button.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { Page, PageHeader } from "../design/components/Page.tsx";
+import { Segmented } from "../design/components/Segmented.tsx";
+import { toast } from "../design/components/toast.ts";
 import { StatCards } from "./StatCards.tsx";
 import { TaskBoard } from "./TaskBoard.tsx";
 import { PERSON_MOVES } from "./TaskDrawer.tsx";
 import { TaskGrid } from "./TaskGrid.tsx";
 import { TaskList } from "./TaskList.tsx";
-import { ViewToolbar } from "./ViewToolbar.tsx";
 import { applyView, groupTasks, saveView, savedView, type Mode, type View } from "./view.ts";
+import { ViewToolbar } from "./ViewToolbar.tsx";
 
 const MODES: [Mode, string, typeof List][] = [
   ["list", "List", List],
@@ -100,37 +102,29 @@ export function TasksPage({ tasks, now, mode, selected, onOpen, onMove, order, o
   });
 
   const seg = (
-    <div className="seg">
-      {MODES.map(([k, n, icon]) => (
-        <button
-          key={k}
-          type="button"
-          className={view.mode === k ? "on" : ""}
-          onClick={() => change({ ...view, mode: k })}
-          aria-pressed={view.mode === k}
-        >
-          {ic(icon, 13)}
-          <span className="hide-m">{n}</span>
-        </button>
-      ))}
-    </div>
+    <Segmented
+      label="View"
+      value={view.mode}
+      onChange={(mode) => change({ ...view, mode })}
+      collapse
+      options={MODES.map(([value, label, icon]) => ({ value, label, icon }))}
+    />
   );
 
   return (
-    <div className="page flush">
-      <div className="ph">
-        <div>
-          <h1>Tasks</h1>
-          <p>
-            {sum.open} open tasks · {sum.done} of {sum.all} landed
-          </p>
-        </div>
-        <div className="acts">
-          <Button tone="primary" icon={ic(Plus, 14)} onClick={() => onNotBuilt("Creating a task")}>
-            New task
-          </Button>
-        </div>
-      </div>
+    <Page layout="flush">
+      <PageHeader
+        title="Tasks"
+        actions={
+          <>
+            <Button variant="primary" icon={ic(Plus, 14)} onClick={() => onNotBuilt("Creating a task")}>
+              New task
+            </Button>
+          </>
+        }
+      >
+        {sum.open} open tasks · {sum.done} of {sum.all} landed
+      </PageHeader>
       <div className="@container" style={{ padding: "0 var(--gutter) 16px" }}>
         <StatCards stats={stats(tasks, now)} now={now} />
       </div>
@@ -173,6 +167,6 @@ export function TasksPage({ tasks, now, mode, selected, onOpen, onMove, order, o
           />
         </div>
       )}
-    </div>
+    </Page>
   );
 }

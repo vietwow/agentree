@@ -49,6 +49,19 @@ for (const theme of THEMES) {
     });
   }
 
+  for (const mode of ["Board", "Table"]) {
+    test(`Tasks ${mode} ${theme}`, async ({ page }) => {
+      await open(page, theme, "Tasks");
+      await page.locator(".seg button", { hasText: mode }).click();
+      await page.waitForTimeout(800);
+      for (const w of WIDTHS) {
+        await page.setViewportSize({ width: w.width, height: w.height });
+        await page.waitForTimeout(300);
+        await expect.soft(page).toHaveScreenshot(`Tasks${mode}-${theme}-${w.name}.png`);
+      }
+    });
+  }
+
   test(`Task drawer ${theme}`, async ({ page }) => {
     await open(page, theme, "Tasks");
     await page.getByText("T-0002", { exact: true }).first().click();

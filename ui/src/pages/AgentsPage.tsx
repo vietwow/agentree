@@ -1,24 +1,28 @@
-import { Check, ChevronDown, ChevronRight, Clock, CornerDownRight, Minus, Network, Plug, Webhook } from "lucide-react";
+import { Check, Clock, CornerDownRight, Minus, Network, Plug, Webhook } from "lucide-react";
 import { useMemo, useState } from "react";
 import { fixtureAgents, type AgentSession, type AgentState } from "../board/fixtures.ts";
 import { TOOL_LABEL, type Task, type Tool } from "../board/task.ts";
-import { ic } from "../ui/ic.tsx";
-import { ToolMark } from "../ui/ToolMark.tsx";
-import { SummaryCards } from "../tasks/StatCards.tsx";
-import { style } from "./parts.tsx";
-import { count, plural } from "../design/format/text.ts";
 import { Ago } from "../design/components/Ago.tsx";
+import { Badge, type Tone } from "../design/components/Badge.tsx";
+import { GroupHeader } from "../design/components/GroupHeader.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { Page, PageHeader } from "../design/components/Page.tsx";
+import { Panel } from "../design/components/Panel.tsx";
+import { SummaryCards } from "../design/components/SummaryCards.tsx";
+import { count, plural } from "../design/format/text.ts";
+import { ToolMark } from "../ui/ToolMark.tsx";
+import { style } from "./parts.tsx";
 
 const COLS = "minmax(280px,1fr) 170px minmax(220px,1.2fr) 130px 110px 140px";
 const ROW_INSET = 44;
 
-const STATE: Record<AgentState, { label: string; tone: string }> = {
+const STATE: Record<AgentState, { label: string; tone: Tone }> = {
   working: { label: "Working", tone: "accent" },
-  checking: { label: "Checks running", tone: "amber" },
+  checking: { label: "Checks running", tone: "warn" },
   reviewing: { label: "Reviewing", tone: "accent" },
   asking: { label: "Asking you", tone: "violet" },
-  stale: { label: "No beat", tone: "red" },
-  ended: { label: "Ended", tone: "gray" },
+  stale: { label: "No beat", tone: "bad" },
+  ended: { label: "Ended", tone: "neutral" },
 };
 
 type Props = {
@@ -38,10 +42,9 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
   const byTool = [...new Set(sessions.map((s) => s.tool))].map((tool) => ({ tool, rows: sessions.filter((s) => s.tool === tool) }));
 
   const badge = (state: AgentState) => (
-    <span className={`badge ${STATE[state].tone}`}>
-      <span className="dot" />
+    <Badge tone={STATE[state].tone} dot>
       {STATE[state].label}
-    </span>
+    </Badge>
   );
   const taskCell = (id?: string) =>
     id ? (
@@ -130,16 +133,11 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
   const mark = (on: boolean) => <span style={{ color: on ? "var(--good)" : "var(--ink-4)", display: "flex" }}>{ic(on ? Check : Minus, 14)}</span>;
 
   return (
-    <div className="page flush" style={{ overflowY: "auto" }}>
-      <div className="ph">
-        <div>
-          <h1>Agents</h1>
-          <p>
-            The sessions of each tool and the subagents they start. agentree starts none of them; it follows their calls of the board and the tools'
-            hooks.
-          </p>
-        </div>
-      </div>
+    <Page layout="flush" className="overflow-y-auto">
+      <PageHeader title="Agents">
+        The sessions of each tool and the subagents they start. agentree starts none of them; it follows their calls of the board and the tools'
+        hooks.
+      </PageHeader>
       <div className="@container" style={{ padding: "0 var(--gutter) 16px", flexShrink: 0 }}>
         <SummaryCards
           cards={[
@@ -185,20 +183,13 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
           </div>
           {byTool.map((g) => (
             <div key={g.tool} className="contents">
-              <div className="grp">
-                <button
-                  type="button"
-                  className="ibtn ibtn-xs"
-                  onClick={() => setClosed((now) => ({ ...now, [g.tool]: !now[g.tool] }))}
-                  aria-expanded={!closed[g.tool]}
-                  aria-label="Toggle group"
-                >
-                  {ic(closed[g.tool] ? ChevronRight : ChevronDown, 13)}
-                </button>
-                <ToolMark tool={g.tool} size={20} />
-                <span>{TOOL_LABEL[g.tool]}</span>
-                <span className="cnt">{g.rows.length}</span>
-              </div>
+              <GroupHeader
+                name={TOOL_LABEL[g.tool]}
+                count={g.rows.length}
+                open={!closed[g.tool]}
+                onToggle={() => setClosed((now) => ({ ...now, [g.tool]: !now[g.tool] }))}
+                lead={<ToolMark tool={g.tool} size={20} />}
+              />
               {!closed[g.tool] && g.rows.map(row)}
             </div>
           ))}
@@ -206,13 +197,7 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
       </div>
 
       <div style={{ padding: "20px var(--gutter) 32px", flexShrink: 0 }}>
-        <div className="panel">
-          <div className="panel-h">
-            <h2>The tools</h2>
-            <span className="acts faint" style={{ fontSize: "var(--text-xs)" }}>
-              set up by agentree init
-            </span>
-          </div>
+        <Panel title="The tools" note="set up by agentree init">
           <div className="tbl-wrap" style={{ border: 0 }}>
             <table className="tbl" style={{ width: "100%" }} aria-label="The tools">
               <thead>
@@ -274,8 +259,8 @@ export function AgentsPage({ tasks, now, onOpenTask, onNotBuilt }: Props) {
               </tbody>
             </table>
           </div>
-        </div>
+        </Panel>
       </div>
-    </div>
+    </Page>
   );
 }

@@ -1,8 +1,10 @@
 import { ArrowLeft, ArrowUpRight, ChevronLeft, ChevronRight, Folder, Trash2, User } from "lucide-react";
 import { useEffect } from "react";
 import { TOOL_LABEL, type Task } from "../board/task.ts";
-import { ic } from "../ui/ic.tsx";
-import { toast } from "../ui/toast.ts";
+import { Button } from "../design/components/Button.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { KeyValues } from "../design/components/KeyValues.tsx";
+import { toast } from "../design/components/toast.ts";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { SubCheck } from "./SubCheck.tsx";
 
@@ -55,7 +57,7 @@ export function SubtaskView({
       <div className="faint" style={{ fontSize: 12, margin: "4px 0 0 26px" }}>
         Subtask {i + 1} of {t.subtasks.length} · {s.done ? "Done" : "Open"}
       </div>
-      <dl className="kv" style={{ marginTop: 16 }}>
+      <KeyValues className="mt-4">
         <dt>{ic(User, 14)}Assignee</dt>
         <dd>
           <span className={`pillbtn ${t.holder ? "" : "empty"}`}>
@@ -80,7 +82,7 @@ export function SubtaskView({
             {t.title}
           </button>
         </dd>
-      </dl>
+      </KeyValues>
       <div className="dsec">
         <div className="dsec-h">
           <h3 id="s-note-l">Notes</h3>
@@ -94,31 +96,25 @@ export function SubtaskView({
         />
       </div>
       <div className="dsec row" style={{ gap: 6, flexWrap: "wrap" }}>
-        <button type="button" className="btn btn-secondary btn-sm" onClick={() => notBuilt("Converting a subtask to a task")}>
+        <Button size="sm" onClick={() => notBuilt("Converting a subtask to a task")}>
           {ic(ArrowUpRight, 13)}Convert to task
-        </button>
+        </Button>
         <span className="sp" />
-        <button
-          type="button"
-          className="btn btn-sm btn-ghost"
-          disabled={i === 0}
-          onClick={() => onOpen(t.subtasks[i - 1]!.id)}
-          aria-label="Previous subtask"
-        >
+        <Button variant="ghost" size="sm" disabled={i === 0} onClick={() => onOpen(t.subtasks[i - 1]!.id)} aria-label="Previous subtask">
           {ic(ChevronLeft, 14)}Previous
-        </button>
-        <button
-          type="button"
-          className="btn btn-sm btn-ghost"
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
           disabled={i === t.subtasks.length - 1}
           onClick={() => onOpen(t.subtasks[i + 1]!.id)}
           aria-label="Next subtask"
         >
           Next{ic(ChevronRight, 14)}
-        </button>
-        <button type="button" className="btn btn-sm btn-danger-ghost" onClick={() => notBuilt("Deleting a subtask")}>
+        </Button>
+        <Button variant="danger" size="sm" onClick={() => notBuilt("Deleting a subtask")}>
           {ic(Trash2, 13)}Delete
-        </button>
+        </Button>
       </div>
     </div>
   );

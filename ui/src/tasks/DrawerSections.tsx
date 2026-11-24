@@ -1,9 +1,9 @@
 import { CircleCheck, CircleX, Clock, FolderTree, GitBranch, GitCommitHorizontal, LoaderCircle, Server } from "lucide-react";
 import type { ReactNode } from "react";
 import { STATUS_LABEL, TOOL_LABEL, type CheckRun, type Session, type Task, type TaskDetail } from "../board/task.ts";
+import { Badge } from "../design/components/Badge.tsx";
 import { compact, money } from "../design/format/number.ts";
 import { ago, duration, fullTime, timeAgo } from "../design/format/time.ts";
-import { Badge } from "../ui/Badge.tsx";
 import { STATUS_COLOR } from "../ui/colors.ts";
 import { ToolMark } from "../ui/ToolMark.tsx";
 import { ChecksBar } from "./ChecksBar.tsx";

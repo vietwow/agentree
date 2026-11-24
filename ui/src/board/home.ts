@@ -1,9 +1,9 @@
+import { count } from "../design/format/text.ts";
+import { DAY, HOUR } from "../design/format/time.ts";
 import type { ActivityEntry } from "./activity.ts";
 import { FILE_AREAS, fixtureDetail, type AgentSession } from "./fixtures.ts";
 import { isStale, openQuestions, startOfDay, totals } from "./summary.ts";
 import type { Status, Task, Tool } from "./task.ts";
-import { DAY, HOUR } from "../design/format/time.ts";
-import { count } from "../design/format/text.ts";
 
 /** A file of an area as the board marks it; "main" is a file no task holds, checks, landed or wants. */
 export type FileMark = "main" | "landed" | "held" | "checking" | "wanted";

@@ -1,26 +1,18 @@
-import {
-  Archive,
-  BookMarked,
-  Brain,
-  ChevronDown,
-  ChevronRight,
-  Clock,
-  FileText,
-  Handshake,
-  Lightbulb,
-  Pencil,
-  Search,
-  TriangleAlert,
-  type LucideIcon,
-} from "lucide-react";
+import { Archive, BookMarked, Brain, Clock, FileText, Handshake, Lightbulb, Pencil, Search, TriangleAlert, type LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { fixtureFacts, type Fact } from "../board/fixtures.ts";
 import { TOOL_LABEL } from "../board/task.ts";
-import { ic } from "../ui/ic.tsx";
-import { ToolMark } from "../ui/ToolMark.tsx";
-import { SummaryCards } from "../tasks/StatCards.tsx";
-import { Empty, MdText, style } from "./parts.tsx";
 import { Ago } from "../design/components/Ago.tsx";
+import { Badge, type Tone } from "../design/components/Badge.tsx";
+import { Button } from "../design/components/Button.tsx";
+import { Empty } from "../design/components/Empty.tsx";
+import { GroupHeader } from "../design/components/GroupHeader.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { Page, PageHeader } from "../design/components/Page.tsx";
+import { Segmented } from "../design/components/Segmented.tsx";
+import { SummaryCards } from "../design/components/SummaryCards.tsx";
+import { ToolMark } from "../ui/ToolMark.tsx";
+import { MdText, style } from "./parts.tsx";
 
 const COLS = "minmax(300px,1fr) 220px 110px 170px 120px 96px";
 const ROW_INSET = 44;
@@ -34,10 +26,10 @@ const KINDS: { kind: Kind; name: string; icon: LucideIcon }[] = [
 ];
 const KIND_ICON = Object.fromEntries(KINDS.map((k) => [k.kind, k.icon])) as Record<Kind, LucideIcon>;
 
-const STATE: Record<Fact["state"], { label: string; tone: string }> = {
-  "in-force": { label: "In force", tone: "green" },
-  proposed: { label: "Proposed", tone: "amber" },
-  retired: { label: "Retired", tone: "gray" },
+const STATE: Record<Fact["state"], { label: string; tone: Tone }> = {
+  "in-force": { label: "In force", tone: "good" },
+  proposed: { label: "Proposed", tone: "warn" },
+  retired: { label: "Retired", tone: "neutral" },
 };
 
 type Props = {
@@ -106,10 +98,9 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
             </span>
           </div>
           <div className="c-meta">
-            <span className={`badge ${state.tone}`}>
-              <span className="dot" />
+            <Badge tone={state.tone} dot>
               {state.label}
-            </span>
+            </Badge>
           </div>
           <div className="c-meta">
             <span className="row" style={{ gap: 5, whiteSpace: "nowrap", color: "var(--ink-3)" }}>
@@ -130,12 +121,12 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
                 ) : (
                   f.state === "in-force" && (
                     <>
-                      <button type="button" className="btn btn-sm btn-ghost" onClick={() => onNotBuilt("Editing a fact")}>
+                      <Button variant="ghost" size="sm" onClick={() => onNotBuilt("Editing a fact")}>
                         {ic(Pencil, 13)}Edit
-                      </button>
-                      <button type="button" className="btn btn-sm btn-ghost" onClick={() => onNotBuilt("Retiring a fact")}>
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => onNotBuilt("Retiring a fact")}>
                         {ic(Archive, 13)}Retire
-                      </button>
+                      </Button>
                     </>
                   )
                 )}
@@ -181,16 +172,11 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
   };
 
   return (
-    <div className="page flush">
-      <div className="ph">
-        <div>
-          <h1>Memory</h1>
-          <p>
-            What a session learns, kept as one Markdown file a fact in work/memory/. A claim's brief holds the agreements and the facts about the
-            task's paths; the rest is found by recall.
-          </p>
-        </div>
-      </div>
+    <Page layout="flush">
+      <PageHeader title="Memory">
+        What a session learns, kept as one Markdown file a fact in work/memory/. A claim's brief holds the agreements and the facts about the task's
+        paths; the rest is found by recall.
+      </PageHeader>
       <div className="@container" style={{ padding: "0 var(--gutter) 16px" }}>
         <SummaryCards
           cards={[
@@ -226,17 +212,13 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
           {ic(Search, 13)}
           <input className="input search-sm" placeholder="Recall" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search the memory" />
         </div>
-        <div className="seg">
-          <button type="button" className={kind === "all" ? "on" : ""} onClick={() => setKind("all")} aria-pressed={kind === "all"}>
-            All
-          </button>
-          {KINDS.map((k) => (
-            <button key={k.kind} type="button" className={kind === k.kind ? "on" : ""} onClick={() => setKind(k.kind)} aria-pressed={kind === k.kind}>
-              {ic(k.icon, 13)}
-              <span className="hide-m">{k.name}</span>
-            </button>
-          ))}
-        </div>
+        <Segmented
+          label="Kind"
+          value={kind}
+          onChange={setKind}
+          collapse
+          options={[{ value: "all", label: "All" }, ...KINDS.map((k) => ({ value: k.kind, label: k.name, icon: k.icon }))]}
+        />
       </div>
       {groups.length ? (
         <div className="list-wrap">
@@ -251,22 +233,13 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
             </div>
             {groups.map((g) => (
               <div key={g.key} className="contents">
-                <div className="grp">
-                  <button
-                    type="button"
-                    className="ibtn ibtn-xs"
-                    onClick={() => setClosed((now) => ({ ...now, [g.key]: !now[g.key] }))}
-                    aria-expanded={!closed[g.key]}
-                    aria-label="Toggle group"
-                  >
-                    {ic(closed[g.key] ? ChevronRight : ChevronDown, 13)}
-                  </button>
-                  <span className="row" style={{ color: "var(--ink-2)" }}>
-                    {ic(g.icon, 14)}
-                  </span>
-                  <span>{g.name}</span>
-                  <span className="cnt">{g.rows.length}</span>
-                </div>
+                <GroupHeader
+                  name={g.name}
+                  count={g.rows.length}
+                  open={!closed[g.key]}
+                  onToggle={() => setClosed((now) => ({ ...now, [g.key]: !now[g.key] }))}
+                  lead={<span className="row text-ink-2">{ic(g.icon, 14)}</span>}
+                />
                 {!closed[g.key] && g.rows.map(row)}
               </div>
             ))}
@@ -275,6 +248,6 @@ export function MemoryPage({ query = "", now, onOpenTask, onNotBuilt }: Props) {
       ) : (
         <Empty icon={Brain} title="No fact found" text="Nothing in work/memory/ matches the search." />
       )}
-    </div>
+    </Page>
   );
 }

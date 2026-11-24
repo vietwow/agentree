@@ -2,14 +2,19 @@ import { ArrowRight, BookOpen, ChevronDown, ChevronUp, FileText, Hash, ListCheck
 import { useState } from "react";
 import { DOCS, type Doc } from "../board/fixtures.ts";
 import type { Task } from "../board/task.ts";
-import { ic } from "../ui/ic.tsx";
+import { Badge, type Tone } from "../design/components/Badge.tsx";
+import { Empty } from "../design/components/Empty.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { Page, PageHeader } from "../design/components/Page.tsx";
+import { Panel } from "../design/components/Panel.tsx";
+import { Segmented } from "../design/components/Segmented.tsx";
 import { StatusIcon } from "../ui/StatusIcon.tsx";
-import { Empty, MdText } from "./parts.tsx";
+import { MdText } from "./parts.tsx";
 
-const STATUS: Record<Doc["status"], { label: string; tone: string }> = {
-  draft: { label: "Draft", tone: "amber" },
-  accepted: { label: "Accepted", tone: "green" },
-  superseded: { label: "Superseded", tone: "gray" },
+const STATUS: Record<Doc["status"], { label: string; tone: Tone }> = {
+  draft: { label: "Draft", tone: "warn" },
+  accepted: { label: "Accepted", tone: "good" },
+  superseded: { label: "Superseded", tone: "neutral" },
 };
 
 const KINDS = [
@@ -43,13 +48,8 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
   const link = (id?: string) => DOCS.find((d) => d.id === id);
 
   return (
-    <div className="page flush">
-      <div className="ph">
-        <div>
-          <h1>Documents</h1>
-          <p>The project's RFCs and ADRs, read from the files of main. The page changes none of them.</p>
-        </div>
-      </div>
+    <Page layout="flush">
+      <PageHeader title="Documents">The project's RFCs and ADRs, read from the files of main. The page changes none of them.</PageHeader>
       <div className="toolbar" role="toolbar">
         <div className="inwrap">
           {ic(Search, 13)}
@@ -61,13 +61,7 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
             aria-label="Search documents"
           />
         </div>
-        <div className="seg">
-          {KINDS.map(([k, n]) => (
-            <button key={k} type="button" className={kind === k ? "on" : ""} onClick={() => setKind(k)} aria-pressed={kind === k}>
-              {n}
-            </button>
-          ))}
-        </div>
+        <Segmented label="Kind" value={kind} onChange={setKind} options={KINDS.map(([value, label]) => ({ value, label }))} />
         <span className="sp" />
         <span className="faint mono" style={{ fontSize: "var(--text-xs)" }}>
           rfcs/ · docs/adr/
@@ -83,7 +77,7 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
           alignItems: "start",
         }}
       >
-        <div className="panel" style={{ overflow: "hidden" }}>
+        <Panel clip>
           {shown.length ? (
             shown.map((d) => (
               <div
@@ -116,10 +110,9 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
                     </span>
                   </span>
                   <span className="row faint" style={{ gap: 8, fontSize: "var(--text-xs)" }}>
-                    <span className={`badge ${STATUS[d.status].tone}`}>
-                      <span className="dot" />
+                    <Badge tone={STATUS[d.status].tone} dot>
                       {STATUS[d.status].label}
-                    </span>
+                    </Badge>
                     <span className="num">{d.date}</span>
                   </span>
                 </div>
@@ -128,7 +121,7 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
           ) : (
             <Empty icon={BookOpen} title="No document found" text="Nothing in rfcs/ or docs/adr/ matches the search." />
           )}
-        </div>
+        </Panel>
 
         <article
           className="panel"
@@ -142,10 +135,9 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
               {doc.kind} {doc.number}: {doc.title}
             </h2>
             <div className="row" style={{ gap: 10, fontSize: "var(--text-xs)", marginBottom: 16, flexWrap: "wrap" }}>
-              <span className={`badge ${STATUS[doc.status].tone}`}>
-                <span className="dot" />
+              <Badge tone={STATUS[doc.status].tone} dot>
                 {STATUS[doc.status].label}
-              </span>
+              </Badge>
               <span className="faint num">{doc.date}</span>
               {link(doc.supersedes) && (
                 <button type="button" className="pillbtn" onClick={() => openDoc(doc.supersedes!)}>
@@ -222,6 +214,6 @@ export function DocumentsPage({ tasks, onOpenTask }: Props) {
           </aside>
         </article>
       </div>
-    </div>
+    </Page>
   );
 }

@@ -4,7 +4,6 @@ import {
   ArrowUpDown,
   Calendar,
   CalendarPlus,
-  Check,
   ChevronDown,
   CircleDot,
   Columns3,
@@ -25,13 +24,17 @@ import {
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { KIND_LABEL, STATUS_LABEL, TOOL_LABEL, type Kind, type Status, type Task, type Tool } from "../board/task.ts";
-import { ic } from "../ui/ic.tsx";
+import { Badge } from "../design/components/Badge.tsx";
+import { Button, IconButton } from "../design/components/Button.tsx";
+import { ic } from "../design/components/icon.tsx";
+import { MenuItem, MenuLabel, MenuSeparator } from "../design/components/Menu.tsx";
+import { Pop, usePop } from "../design/components/Pop.tsx";
+import { Segmented } from "../design/components/Segmented.tsx";
+import { style } from "../pages/parts.tsx";
 import { KIND_COLOR } from "../ui/colors.ts";
-import { Pop, usePop } from "../ui/Pop.tsx";
 import { PriorityIcon } from "../ui/PriorityIcon.tsx";
 import { StatusIcon } from "../ui/StatusIcon.tsx";
 import { ToolMark } from "../ui/ToolMark.tsx";
-import { style } from "../pages/parts.tsx";
 import { FIELD_NAME, fieldOpts, type Column, type Field, type GroupKey, type SortKey, type View } from "./view.ts";
 
 const FIELD_ICON: Record<Field, LucideIcon> = {
@@ -157,31 +160,31 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
             aria-label="Search tasks"
           />
         </div>
-        <button type="button" className={`btn btn-ghost ${v.filters.length ? "on" : ""}`} onClick={pop.toggle("filter")}>
+        <Button variant="ghost" on={v.filters.length > 0} onClick={pop.toggle("filter")}>
           {ic(ListFilter, 14)}Filter
           {v.filters.length > 0 && (
             <>
               {" "}
-              <span className="badge accent" style={{ height: 16, padding: "0 5px" }}>
+              <Badge tone="accent" className="h-4 px-1.25">
                 {v.filters.length}
-              </span>
+              </Badge>
             </>
           )}
-        </button>
-        <button type="button" className="btn btn-ghost" onClick={pop.toggle("sort")}>
+        </Button>
+        <Button variant="ghost" onClick={pop.toggle("sort")}>
           {ic(ArrowUpDown, 14)}
           <span className="hide-m">Sort:</span> {sortName}
-        </button>
+        </Button>
         {group && (
-          <button type="button" className="btn btn-ghost" onClick={pop.toggle("group")}>
+          <Button variant="ghost" onClick={pop.toggle("group")}>
             {ic(Rows3, 14)}
             <span className="hide-m">Group:</span> {groupName}
-          </button>
+          </Button>
         )}
         {cols && (
-          <button type="button" className="btn btn-ghost" onClick={pop.toggle("cols")}>
+          <Button variant="ghost" onClick={pop.toggle("cols")}>
             {ic(Columns3, 14)}Columns
-          </button>
+          </Button>
         )}
         {extra}
         <span className="sp" />
@@ -202,20 +205,20 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
                     {ic(FIELD_ICON[f.f], 12)}
                     <b>{FIELD_NAME[f.f]}</b> {f.op === "not" ? "is not" : "is"} <span>{val}</span>
                   </button>
-                  <button type="button" className="ibtn" onClick={() => remove(i)} aria-label="Remove filter">
+                  <IconButton label="Remove filter" onClick={() => remove(i)}>
                     {ic(X, 12)}
-                  </button>
+                  </IconButton>
                 </span>
               </span>
             );
           })}
-          <button type="button" className="btn btn-sm btn-ghost" onClick={pop.toggle("filter")}>
+          <Button variant="ghost" size="sm" onClick={pop.toggle("filter")}>
             {ic(Plus, 12)}Add
-          </button>
+          </Button>
           <span className="sp" />
-          <button type="button" className="btn btn-sm btn-ghost" onClick={() => set({ filters: [] })}>
+          <Button variant="ghost" size="sm" onClick={() => set({ filters: [] })}>
             Clear all
-          </button>
+          </Button>
         </div>
       )}
 
@@ -224,9 +227,9 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
           <div className="mh fb-h">
             Filter by
             {v.filters.length > 0 && (
-              <button type="button" className="btn btn-sm btn-ghost" onClick={() => set({ filters: [] })}>
+              <Button variant="ghost" size="sm" onClick={() => set({ filters: [] })}>
                 Clear all
-              </button>
+              </Button>
             )}
           </div>
           {v.filters.length ? (
@@ -257,9 +260,9 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
                         <span className="trunc grow">{n.length ? n.join(", ") : <span className="faint">Select…</span>}</span>
                         {ic(ChevronDown, 12)}
                       </button>
-                      <button type="button" className="ibtn ibtn-xs" onClick={() => remove(i)} aria-label="Remove filter">
+                      <IconButton label="Remove filter" size="xs" onClick={() => remove(i)}>
                         {ic(Trash2, 13)}
-                      </button>
+                      </IconButton>
                     </div>
                     {edit === i && (
                       <div
@@ -284,7 +287,7 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
               No filters applied. Combine filters to narrow the task list, e.g. Status is In progress and Assignee is Claude Code.
             </p>
           )}
-          <div className="msep" />
+          <MenuSeparator />
           <div className="fb-add">
             <span className="faint">Add filter:</span>
             {(Object.keys(FIELD_NAME) as Field[]).map((k) => (
@@ -313,9 +316,9 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
           if (!f) return null;
           return (
             <Pop anchor={pop.open.anchor} onClose={pop.close}>
-              <div className="mh">
+              <MenuLabel>
                 {FIELD_NAME[f.f]} {f.op === "not" ? "is not" : "is"}
-              </div>
+              </MenuLabel>
               {valueList(i, false)}
             </Pop>
           );
@@ -323,53 +326,42 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
 
       {pop.open?.key === "sort" && (
         <Pop anchor={pop.open.anchor} onClose={pop.close} width={240}>
-          <div className="mh">Sort by</div>
+          <MenuLabel>Sort by</MenuLabel>
           {SORTS.map(([k, n]) => (
-            <button key={k} type="button" className="mi" onClick={() => set({ sort: { ...v.sort, f: k } })}>
+            <MenuItem key={k} checked={v.sort.f === k} onClick={() => set({ sort: { ...v.sort, f: k } })}>
               {n}
-              {v.sort.f === k && <span className="ck">{ic(Check, 14)}</span>}
-            </button>
+            </MenuItem>
           ))}
-          <div className="msep" />
+          <MenuSeparator />
           <div style={{ padding: "4px 6px" }}>
-            <div className="seg" style={{ width: "100%" }}>
-              <button
-                type="button"
-                className={v.sort.dir > 0 ? "on" : ""}
-                style={{ flex: 1, justifyContent: "center" }}
-                onClick={() => set({ sort: { ...v.sort, dir: 1 } })}
-              >
-                {ic(ArrowUp, 12)}Ascending
-              </button>
-              <button
-                type="button"
-                className={v.sort.dir < 0 ? "on" : ""}
-                style={{ flex: 1, justifyContent: "center" }}
-                onClick={() => set({ sort: { ...v.sort, dir: -1 } })}
-              >
-                {ic(ArrowDown, 12)}Descending
-              </button>
-            </div>
+            <Segmented
+              label="Direction"
+              fill
+              value={v.sort.dir > 0 ? "up" : "down"}
+              onChange={(d) => set({ sort: { ...v.sort, dir: d === "up" ? 1 : -1 } })}
+              options={[
+                { value: "up", label: "Ascending", icon: ArrowUp },
+                { value: "down", label: "Descending", icon: ArrowDown },
+              ]}
+            />
           </div>
         </Pop>
       )}
 
       {pop.open?.key === "group" && (
         <Pop anchor={pop.open.anchor} onClose={pop.close}>
-          <div className="mh">Group by</div>
+          <MenuLabel>Group by</MenuLabel>
           {GROUPS.map(([k, n, icon]) => (
-            <button key={k} type="button" className="mi" onClick={() => set({ group: k })}>
-              {ic(icon, 15)}
+            <MenuItem key={k} icon={icon} checked={v.group === k} onClick={() => set({ group: k })}>
               {n}
-              {v.group === k && <span className="ck">{ic(Check, 14)}</span>}
-            </button>
+            </MenuItem>
           ))}
         </Pop>
       )}
 
       {pop.open?.key === "cols" && (
         <Pop anchor={pop.open.anchor} onClose={pop.close}>
-          <div className="mh">Visible columns</div>
+          <MenuLabel>Visible columns</MenuLabel>
           {COLUMNS.filter(([c]) => c !== "title").map(([c, n]) => (
             <label key={c} className="mi" data-keep style={{ cursor: "pointer" }}>
               <input
@@ -381,10 +373,8 @@ export function ViewToolbar({ view: v, onView, tasks, group = true, cols = false
               {n}
             </label>
           ))}
-          <div className="msep" />
-          <button type="button" className="mi" onClick={() => set({ colW: {} })}>
-            {ic(RotateCcw, 14)}Reset widths
-          </button>
+          <MenuSeparator />
+          <MenuItem onClick={() => set({ colW: {} })}>{ic(RotateCcw, 14)}Reset widths</MenuItem>
         </Pop>
       )}
     </>
