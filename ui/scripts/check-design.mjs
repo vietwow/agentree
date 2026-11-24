@@ -1,4 +1,5 @@
-// Fails when a colour, font size, z-index, duration or palette read is written outside the tokens.
+// Fails when a colour, font size, z-index, duration or palette read is written outside the tokens,
+// or when markup uses the browser's own select.
 // Tokens live in src/design/tokens/ and page themes in src/themes/; sample data in src/board/ may hold colours.
 import { readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -65,6 +66,7 @@ function checkTs(file) {
     if (!isData(file) && COLOUR.test(source.replace(/\/\/.*$/, ""))) report(file, line, "colour literal", source);
     if (paletteRead.test(source)) report(file, line, "palette read outside a theme", source);
     for (const [pattern, what] of CLASS_LITERALS) if (pattern.test(source)) report(file, line, what, source);
+    if (/<select\b/.test(source)) report(file, line, "the browser's select, where design/components/Select.tsx draws one", source);
   });
   for (const m of text.matchAll(/style=\{\{([^{}]*)\}\}/g)) {
     const line = text.slice(0, m.index).split("\n").length;
