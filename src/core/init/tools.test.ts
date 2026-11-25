@@ -70,8 +70,8 @@ test("init writes the rules, each tool's MCP entry and hooks, the skills and the
       ["claude-code", true, 6, true, "full"],
       ["claude-desktop", true, 0, false, "none"],
       ["cursor", true, 6, true, "model only"],
-      ["codex", true, 5, false, "full"],
-      ["antigravity", true, 3, false, "full"],
+      ["codex", true, 5, true, "full"],
+      ["antigravity", true, 3, true, "full"],
     ],
   );
 });

@@ -947,7 +947,20 @@ documentation says of the two forms:
   project's rules, and whether it can ask the owner, their pages do not
   say. The definitions are files of the project: `.claude/agents/*.md`
   (Claude Code, and Cursor), `.codex/agents/*.toml` (Codex, and
-  Cursor), `.agents/agents/*.md` (Antigravity).
+  Cursor), `.agents/agents/*.md` (Antigravity). `init` writes a worker
+  and a reviewer in each form. Codex's is a TOML file with `name`,
+  `description` and `developer_instructions`, named `agentree_worker`
+  and `agentree_reviewer` as its page's examples are; it takes the
+  parent's permissions and MCP servers, which the file cannot change.
+  Antigravity's is Markdown whose front matter has `name`,
+  `description`, `subagent: true` and `mainAgent: false`, and whose
+  body is the system prompt; it names no `tools`, since its page says
+  a tool's name it does not know may hang the subagent, so the
+  reviewer's "you change no file" is held by its brief alone there, as
+  in Codex. The forms were read on 2026-11-24 on
+  [Codex's page](https://learn.chatgpt.com/docs/agent-configuration/subagents.md)
+  and [Antigravity's](https://antigravity.google/docs/subagents/); no
+  definition was tried in either tool.
 - **A session of its own**, opened in another folder, holds nothing of
   the project but what that folder gives it, and talks to the owner.
 

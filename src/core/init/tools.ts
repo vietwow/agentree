@@ -11,7 +11,17 @@ import { dirname, join } from "node:path";
 import { CONFIG_FILE, DEFAULT_CONFIG } from "../board/config.ts";
 import { Refusal } from "../errors.ts";
 import { TOOLS, type Tool } from "../task/model.ts";
-import { agentDefinition, DOCUMENT_TEMPLATES, RULES_END, RULES_START, skillFile, SKILLS, TAKING_WORK } from "./templates.ts";
+import {
+  agentDefinition,
+  antigravityAgent,
+  codexAgent,
+  DOCUMENT_TEMPLATES,
+  RULES_END,
+  RULES_START,
+  skillFile,
+  SKILLS,
+  TAKING_WORK,
+} from "./templates.ts";
 
 /** The tools a project is set up for: every one but a person. */
 export const AGENT_TOOLS = TOOLS.filter((tool): tool is Exclude<Tool, "person"> => tool !== "person");
@@ -122,9 +132,9 @@ const SETUP: Record<Exclude<Tool, "person">, (files: ReturnType<typeof writer>, 
       "the hooks that follow a session and hold an edit to its task's paths",
     );
     report.byHand.push("Codex: trust the project, so that it reads .codex/config.toml and .codex/hooks.json.");
-    report.byHand.push("Codex: no worker's or reviewer's definition is written (.codex/agents/*.toml): its form was not read on Codex's own page.");
+    for (const role of ["worker", "reviewer"] as const) write(`.codex/agents/agentree-${role}.toml`, codexAgent(role), `the ${role}'s definition`);
   },
-  antigravity({ json }, report) {
+  antigravity({ json, write }) {
     json(".agents/mcp_config.json", (value) => ((value.mcpServers ??= {})[SERVER] = MCP), "the board's MCP server");
     json(
       ".agents/hooks.json",
@@ -138,9 +148,8 @@ const SETUP: Record<Exclude<Tool, "person">, (files: ReturnType<typeof writer>, 
       },
       "the hooks that follow a session and hold an edit to its task's paths",
     );
-    report.byHand.push(
-      "Antigravity: no worker's or reviewer's definition is written (.agents/agents/*.md): its form was not read on Antigravity's own page.",
-    );
+    for (const role of ["worker", "reviewer"] as const)
+      write(`.agents/agents/agentree-${role}.md`, antigravityAgent(role), `the ${role}'s definition`);
   },
 };
 

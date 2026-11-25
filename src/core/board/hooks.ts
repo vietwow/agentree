@@ -81,7 +81,12 @@ export function onHook(directory: string, tool: Tool, event: string, input: Inpu
   for (const [task, hold] of claims(places)) if (hold.session === id) beat(places, "claims", task, at);
   const subagent = first(input.agent_id, input.subagent_id);
   if (kind === "subagentstart" && subagent)
-    startSubagent(places, id, { id: subagent, kind: first(input.agent_type, input.subagent_type) ?? "subagent", task: "" }, at);
+    startSubagent(
+      places,
+      id,
+      { id: subagent, kind: (first(input.agent_type, input.subagent_type) ?? "subagent").replaceAll("_", "-"), task: "" },
+      at,
+    );
   if (kind === "subagentstop" && subagent && known?.subagents.some((sub) => sub.id === subagent))
     updateSubagent(places, id, subagent, { ended: at }, at);
   if (kind !== "pretooluse") return answer(tool, event);

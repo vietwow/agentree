@@ -64,7 +64,8 @@ You are the coordinator the owner talks to. You build nothing yourself.
 2. Before each worker you start, \`agentree load\`. Start no more than it
    says; start none while heavy runs wait; ask again before the next.
 3. Hand a ready task to a worker of a tool that can meet its \`needs\`:
-   a subagent of your own tool (the definition \`agentree-worker\`), or a
+   a subagent of your own tool (the definition \`agentree-worker\`;
+   Codex names it \`agentree_worker\`), or a
    session of another tool through \`agentree agent -- <that tool's
    headless command>\`. The worker claims the task itself and works in
    the task's tree.
@@ -341,12 +342,31 @@ can check it. Return the verdict in a few lines.
 
 /** A subagent's definition in the Markdown form Claude Code and Cursor read: front matter, then its brief. */
 export function agentDefinition(role: "worker" | "reviewer"): string {
-  const description =
-    role === "worker"
-      ? "Builds one task of the agentree board in the task's own tree. Use it to hand a ready task to a fresh context."
-      : "Reviews one task of the agentree board that another session built. Use it for a task in review; it edits no file.";
+  const description = DESCRIPTION(role);
   const tools = role === "reviewer" ? "disallowedTools: Edit, Write, MultiEdit, NotebookEdit\n" : "";
   return `---\nname: agentree-${role}\ndescription: ${description}\n${tools}---\n\n${BRIEF(role)}`;
+}
+
+const DESCRIPTION = (role: "worker" | "reviewer") =>
+  role === "worker"
+    ? "Builds one task of the agentree board in the task's own tree. Use it to hand a ready task to a fresh context."
+    : "Reviews one task of the agentree board that another session built. Use it for a task in review; it edits no file.";
+
+/**
+ * A custom agent of Codex: a TOML file of `.codex/agents/` with its name, when to use it, and its instructions.
+ * Codex names an agent by the `name` in the file; it takes the parent's permissions and MCP servers, which a file cannot change.
+ */
+export function codexAgent(role: "worker" | "reviewer"): string {
+  const text = (value: string) => JSON.stringify(value);
+  return `name = ${text(`agentree_${role}`)}\ndescription = ${text(DESCRIPTION(role))}\ndeveloper_instructions = """\n${BRIEF(role).replaceAll("\\", "\\\\")}"""\n`;
+}
+
+/**
+ * A custom subagent of Antigravity: a Markdown file of `.agents/agents/` whose front matter names it and says when to
+ * use it, and whose body is its system prompt. It names no tools: a tool's name that Antigravity does not know hangs it.
+ */
+export function antigravityAgent(role: "worker" | "reviewer"): string {
+  return `---\nname: agentree-${role}\ndescription: ${DESCRIPTION(role)}\nsubagent: true\nmainAgent: false\n---\n\n${BRIEF(role)}`;
 }
 
 /** A skill's file in the open form: front matter with its name and what it is for, then its words. */

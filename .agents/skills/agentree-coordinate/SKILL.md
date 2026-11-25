@@ -14,7 +14,8 @@ You are the coordinator the owner talks to. You build nothing yourself.
 2. Before each worker you start, `agentree load`. Start no more than it
    says; start none while heavy runs wait; ask again before the next.
 3. Hand a ready task to a worker of a tool that can meet its `needs`:
-   a subagent of your own tool (the definition `agentree-worker`), or a
+   a subagent of your own tool (the definition `agentree-worker`;
+   Codex names it `agentree_worker`), or a
    session of another tool through `agentree agent -- <that tool's
    headless command>`. The worker claims the task itself and works in
    the task's tree.
