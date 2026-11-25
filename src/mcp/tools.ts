@@ -10,7 +10,7 @@ import { accept, commit, land, reject, review, scope, submit, waitingToLand } fr
 import { acceptFact, FACT_KINDS, factsFor, recall, remember, type Fact, type FactKind } from "../core/board/memory.ts";
 import { formNotes, obstacles } from "../core/board/rules.ts";
 import { reportSession } from "../core/board/sessions.ts";
-import { claimOf, claims } from "../core/board/state.ts";
+import { claimOf, claims, reviewOf, submissionOf } from "../core/board/state.ts";
 import { readBoard, taskOf } from "../core/board/store.ts";
 import { comparePart } from "../clone/compare.ts";
 import { comment } from "../core/board/comments.ts";
@@ -201,12 +201,15 @@ export function boardServer(board: Board): McpServer {
   );
   tool(
     "run",
-    "Run a command of the project in the tree of the task you hold, as a check runs: a heavy one waits for its turn. Answers with what it said.",
+    "Run a command of the project in the tree of the task you hold or review, as a check runs: a heavy one waits for its turn. Answers with what it said.",
     ...acting({ task: TASK, command: text("The command, as the shell reads it.") }, ["task", "command"]),
     async (args, actor) => {
+      // Its worker runs in the tree it holds; its reviewer, in the tree that was submitted, to run its checks again.
+      const mine = (hold: { by: string; session: string } | undefined) => hold?.by === actor.worker && hold.session === actor.session;
       const hold = claimOf(places, args.task);
-      if (!hold || hold.by !== actor.worker || hold.session !== actor.session) throw new Refusal(`${args.task} is not held by ${actor.worker}`);
-      const ran = await board.run(args.command, hold.tree, args.task, actor.worker);
+      const tree = mine(hold) ? hold!.tree : mine(reviewOf(places, args.task)) ? submissionOf(places, args.task)?.tree : undefined;
+      if (!tree) throw new Refusal(`${args.task} is neither held nor under review by ${actor.worker}: claim it, or mark it with \`review\`, first`);
+      const ran = await board.run(args.command, tree, args.task, actor.worker);
       return [
         `The command ${ran.result === "passed" ? "passed" : ran.result === "failed" ? "failed" : "ran into its bound and was ended"}${ran.waitedMs ? `, after ${Math.round(ran.waitedMs / 1000)} s of waiting for its turn` : ""}.`,
         ran.output,

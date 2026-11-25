@@ -156,6 +156,11 @@ test("the board's tools are served as MCP at a project's address: a session clai
   assert.equal((await tool("record", reading)).content[0].text, "shell, base: 1 elements recorded.");
   assert.ok(existsSync(join(context.places.trees, "T-0001/parity/shell/base.json")));
   assert.match((await tool("record", { ...reading, task: "T-0002" })).content[0].text, /^Refused: T-0002 is not held by this session/);
+  assert.match(
+    (await call("tools/call", { name: "run", arguments: { worker: "cursor/composer-2", session: "s-2", task: "T-0001", command: "pwd" } })).content[0]
+      .text,
+    /^Refused: T-0001 is neither held nor under review by cursor\/composer-2/,
+  );
   assert.match((await tool("run", { task: "T-0001", command: "pwd" })).content[0].text, /^The command passed\.\n\n.+\/project-trees\/T-0001$/);
   assert.equal((await app.request("/mcp/project", { method: "POST", headers: { host: "127.0.0.1:4517" } })).status, 401);
   assert.deepEqual(
