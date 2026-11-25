@@ -748,7 +748,13 @@ try {
     if (subcommand !== undefined && !values.help) throw new Refusal(`"${subcommand}" is no subcommand`);
   }
 } catch (error) {
-  if (!(error instanceof Refusal)) throw error;
-  process.stderr.write(`agentree: ${error.message}\n`);
+  const code = (error as NodeJS.ErrnoException).code;
+  // A session in a sandbox may not write where the board's state is: it is told the way that works there.
+  if (code === "EPERM" || code === "EACCES")
+    process.stderr.write(
+      `agentree: this session may not write ${(error as NodeJS.ErrnoException).path ?? "the board's state"}: its sandbox keeps the command from the board. Use the board's MCP tools of the same names (the server "agentree"), which run outside the sandbox.\n`,
+    );
+  else if (!(error instanceof Refusal)) throw error;
+  else process.stderr.write(`agentree: ${error.message}\n`);
   process.exitCode = 1;
 }

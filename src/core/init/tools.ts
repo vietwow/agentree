@@ -120,18 +120,26 @@ const SETUP: Record<Exclude<Tool, "person">, (files: ReturnType<typeof writer>, 
   },
   codex({ read, write, json }, report) {
     const config = read(".codex/config.toml") ?? "";
+    // The board's tools are approved as a whole: a run without a person cannot approve one, and Codex's sandbox keeps the
+    // command from writing the board's state, so its tools are the one way such a session takes work. Each holds the board's rules.
+    const approved = `default_tools_approval_mode = "approve"\n`;
+    const section = `[mcp_servers.${SERVER}]\ncommand = "${MCP.command}"\nargs = ["mcp"]\n`;
     if (!config.includes(`[mcp_servers.${SERVER}]`))
       write(
         ".codex/config.toml",
-        `${config}${config && !config.endsWith("\n") ? "\n" : ""}${config ? "\n" : ""}[mcp_servers.${SERVER}]\ncommand = "${MCP.command}"\nargs = ["mcp"]\n`,
+        `${config}${config && !config.endsWith("\n") ? "\n" : ""}${config ? "\n" : ""}${section}${approved}`,
         "the board's MCP server",
       );
+    else if (config.includes(section) && !config.includes(`${section}${approved}`))
+      write(".codex/config.toml", config.replace(section, `${section}${approved}`), "the board's MCP server, its tools approved");
     json(
       ".codex/hooks.json",
       (value) => matcherHooks(value, "codex", ["SessionStart", "PreToolUse", "Stop", "SubagentStart", "SubagentStop"]),
       "the hooks that follow a session and hold an edit to its task's paths",
     );
-    report.byHand.push("Codex: trust the project, so that it reads .codex/config.toml and .codex/hooks.json.");
+    report.byHand.push(
+      "Codex: trust the project (`codex exec --trust` once, or in its app), so that it reads .codex/config.toml and .codex/hooks.json.",
+    );
     for (const role of ["worker", "reviewer"] as const) write(`.codex/agents/agentree-${role}.toml`, codexAgent(role), `the ${role}'s definition`);
   },
   antigravity({ json, write }) {

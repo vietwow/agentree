@@ -37,7 +37,7 @@ test("init writes the rules, each tool's MCP entry and hooks, the skills and the
   assert.equal(read("CLAUDE.md"), "@AGENTS.md\n");
   assert.deepEqual(json(".mcp.json").mcpServers.agentree, { command: "agentree", args: ["mcp"] });
   assert.deepEqual(json(".cursor/mcp.json").mcpServers.agentree, { type: "stdio", command: "agentree", args: ["mcp"] });
-  assert.match(read(".codex/config.toml"), /^\[mcp_servers\.agentree\]\ncommand = "agentree"\nargs = \["mcp"\]\n$/);
+  assert.match(read(".codex/config.toml"), /^\[mcp_servers\.agentree\]\ncommand = "agentree"\nargs = \["mcp"\]\ndefault_tools_approval_mode = "approve"\n$/);
   assert.deepEqual(json(".agents/mcp_config.json").mcpServers.agentree, { command: "agentree", args: ["mcp"] });
   assert.deepEqual(json(".claude/settings.json").hooks.PreToolUse, [
     { hooks: [{ type: "command", command: "agentree hook claude-code PreToolUse" }] },
