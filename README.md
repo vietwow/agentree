@@ -4,8 +4,9 @@ A task board for AI coding agents of every tool, with a git worktree per
 task, independent review, landing by fast-forward, and a live board in the
 browser.
 
-Status: being built while its first RFC,
-[`rfcs/0001-agentree`](./rfcs/0001-agentree/README.md), is a draft.
+Status: its first RFC,
+[`rfcs/0001-agentree`](./rfcs/0001-agentree/README.md), is accepted, and
+its steps are built.
 
 | Path           | What                                                                                                                    |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------- |

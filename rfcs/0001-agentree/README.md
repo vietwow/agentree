@@ -1,15 +1,16 @@
 ---
-status: draft
+status: accepted
 ---
 
 # RFC 0001: agentree
 
-A draft for the owner to judge. Each claim about a tool or about git names
-where it was read in [Verified](#verified); what was not checked is in
-[Not verified](#not-verified). Nothing here is decided until the owner
-accepts it; [The owner's answers](#the-owners-answers) holds what is
-answered, and [the questions](#questions-for-the-owner) what is not.
-Nothing is built before the RFC is accepted.
+Accepted by the owner on 2026-11-24, with its steps built. Each claim
+about a tool or about git names where it was read in
+[Verified](#verified); what was not checked is in
+[Not verified](#not-verified). [The owner's answers](#the-owners-answers)
+holds what was answered. It was built while it was a draft, on the
+owner's answer of 2026-11-24, and follows the code: a change of the
+design is a change of this text in the same commit.
 
 ## The problem
 
@@ -1777,6 +1778,34 @@ The design is done when:
   other;
 - the origin repository runs on agentree in place of its own command.
 
+**What was proved, on 2026-11-24.** A new repository of two files,
+set up by `agentree init` alone, with four tasks written in the board's
+form. Two tools worked on it, each a real session: Codex 0.172.0, run
+without a person through `agentree agent -- codex exec`, and Cursor,
+the session that built agentree. Codex built two tasks and Cursor two;
+each task was reviewed by the other tool and landed by the daemon, four
+landings, one of them rebased on what had landed since its claim. The
+task that writes the file of another was refused at its claim while
+Codex held that other, naming the paths, and was claimed and landed
+once the other was on `main`. A review Codex could not finish was
+rejected by it, taken again and submitted again, and accepted.
+
+What it took, each mended in the same day: Codex loaded no skill, since
+a description with a colon made the front matter no YAML; its sandbox
+keeps the command from writing the board's state under `.git` and from
+reaching the daemon, so it takes work through the board's MCP tools
+alone, which a run without a person can use only when they are approved
+in its configuration (`init` writes that now); and the MCP tool `run`
+refused a reviewer. The MCP server's settings were given on Codex's
+command line as `init` writes them in `.codex/config.toml`, since the
+project was not trusted in Codex; the proof ran with a machine's home of
+its own, named to that server in its environment.
+
+Not proved: Claude Code (its account had reached its weekly limit),
+Antigravity (not on the machine), Claude Desktop (no run without a
+person); so three of five tools landed nothing. The origin repository
+was not run on agentree: it is read-only from here.
+
 ## Verified
 
 Git, tried on 2026-11-22 with git 2.54.0 in a throwaway repository:
@@ -1911,8 +1940,8 @@ The numbers of [Performance](#performance) were counted in the origin's
 
 ## Not verified
 
-- Nothing of this design has run. In the origin the mode of trees is
-  designed and answered by the owner, and not built.
+- In the origin the mode of trees is designed and answered by the
+  owner, and not built.
 - Only Claude Code's pages were read in their own text; the pages of
   Cursor, Codex and Antigravity were read through a summary, and each
   sentence used here is to be read again on its page.
@@ -1997,5 +2026,8 @@ The numbers of [Performance](#performance) were counted in the origin's
   own global rules and memory; only that it starts outside the project
   is by design here.
 - The template and its script were read, not run, here.
-- No tool was tried: every row of [The tools](#the-tools) is its
-  documentation's word.
+- Codex and Cursor were tried ([Proving it](#proving-it)); the rows of
+  Claude Code, Claude Desktop and Antigravity in
+  [The tools](#the-tools) are their documentation's word. Claude Code
+  ran `agentree hook` and `agentree statusline` in no session that got
+  as far as a tool call.

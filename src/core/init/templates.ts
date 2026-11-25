@@ -26,16 +26,19 @@ for the command and in \`worker\` for a tool call, with your session's id.
    <command>\`: a heavy one waits for its turn on the machine.
 4. A question for the owner goes on the card: \`agentree ask T-NNNN\`.
    The task stays yours; read the answer with \`agentree wait T-NNNN\`.
-5. Before you stop, whatever the reason, \`agentree log T-NNNN\`: what was
-   done, the checks and their numbers, what is left, what you found
-   wrong outside your paths, what was not verified.
+5. Before you stop work on a task you hold, whatever the reason,
+   \`agentree log T-NNNN\`: what was done, the checks and their numbers,
+   what is left, what you found wrong outside your paths, what was not
+   verified. A reviewer writes no entry of its own: its verdict is one.
 6. \`agentree submit T-NNNN\` when "Done when" holds. Its checks run in
    the queue; take your next task meanwhile. \`agentree release T-NNNN\`
    gives it back unfinished, with what the next worker starts from.
 7. Never review a task your session built. \`agentree review T-NNNN\`
    marks a task as yours to review; read its diff against its base in
-   its tree, run its checks again, then \`agentree accept\` or
-   \`agentree reject\` with findings, each one checkable.
+   its tree, run its checks again (\`agentree run T-NNNN -- <check>\`
+   runs in the tree that was submitted), then \`agentree accept\` with
+   what you read and ran, or \`agentree reject\` with findings, each
+   one checkable.
 8. Before you start another agent, \`agentree load\`: start no more than
    it says, and none while heavy runs wait.
 
