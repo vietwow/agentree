@@ -60,5 +60,9 @@
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "agentree statusline"
   }
 }
