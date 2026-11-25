@@ -1,3 +1,4 @@
+import { press } from "../design/components/press.ts";
 import { CalendarDays, ListTodo, Wrench } from "lucide-react";
 import { Fragment, useMemo, useState } from "react";
 import { board, detail } from "../board/daemon.ts";
@@ -84,7 +85,7 @@ export function NumbersPage({ tasks, now, onOpenTask }: Props) {
         {TOOL_LABEL[r.tool!]}
       </span>
     ) : by === "task" ? (
-      <span className="flex items-center gap-2 cursor-pointer" data-opens-task onClick={() => onOpenTask(r.task!.id)}>
+      <span className="flex items-center gap-2 cursor-pointer" data-opens-task {...press(() => onOpenTask(r.task!.id))}>
         <span className="key mono faint">{r.task!.id}</span>
         <span className="trunc">{r.task!.title}</span>
       </span>

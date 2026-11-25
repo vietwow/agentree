@@ -27,8 +27,8 @@ export function Modal({ title, sub, size = "", onClose, children, foot }: Props)
 
   return createPortal(
     <>
-      <div className="scrim enter" onClick={onClose} />
-      <div className="modal-wrap" onClick={(event) => event.target === event.currentTarget && onClose()}>
+      <div className="scrim enter" role="presentation" onClick={onClose} />
+      <div className="modal-wrap" role="presentation" onClick={(event) => event.target === event.currentTarget && onClose()}>
         <div ref={box} className={`modal enter ${size}`} role="dialog" aria-modal="true" aria-labelledby={id}>
           <div className="modal-h">
             <div>

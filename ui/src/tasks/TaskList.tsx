@@ -1,3 +1,4 @@
+import { press } from "../design/components/press.ts";
 import {
   ArrowDown,
   ArrowUp,
@@ -190,7 +191,7 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
           <div className="c-check">
             <input type="checkbox" className="check" checked={sel.has(t.id)} onChange={() => toggleSel(t.id)} aria-label={`Select ${t.title}`} />
           </div>
-          <div className="ttl" data-opens-task onClick={() => onOpen(t.id)}>
+          <div className="ttl" data-opens-task {...press(() => onOpen(t.id))}>
             {parts.total ? (
               <button
                 type="button"
@@ -279,13 +280,13 @@ export function TaskList({ groups, view: v, onView, tasks, selected, onOpen, onM
               aria-label="Select all"
             />
           </div>
-          <div className="cursor-pointer" onClick={() => sortBy("title")}>
+          <div className="cursor-pointer" {...press(() => sortBy("title"))}>
             Task {arrow("title")}
           </div>
           {COLS.map((c) => {
             const f: SortKey = c === "labels" || c === "parent" ? "manual" : c;
             return (
-              <div className="cursor-pointer" key={c} onClick={() => sortBy(f)}>
+              <div className="cursor-pointer" key={c} {...press(() => sortBy(f))}>
                 {LCOLS[c][0]} {v.sort.f === c ? arrow(c) : null}
               </div>
             );

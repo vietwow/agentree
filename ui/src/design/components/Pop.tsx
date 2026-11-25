@@ -93,6 +93,8 @@ export function Pop({ anchor, onClose, width, role = "menu", label, className = 
   }, [anchor, onClose]);
 
   return createPortal(
+    // The items of a menu are buttons of their own, each with its keys: this only closes the menu once one was pressed.
+    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div
       ref={box}
       role={role}

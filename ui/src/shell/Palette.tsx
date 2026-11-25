@@ -110,7 +110,9 @@ export function Palette({ mode: start, idle, commands, tasks, projects, suggeste
   let index = 0;
   return createPortal(
     <>
-      <div className="scrim z-[calc(var(--z-palette)-1)]" onClick={onClose} />
+      <div className="scrim z-[calc(var(--z-palette)-1)]" role="presentation" onClick={onClose} />
+      {/* The keys of the menu are the dialog's, wherever the focus is within it. */}
+      {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
       <div className="palette" role="dialog" aria-modal="true" aria-label="Command menu" onKeyDown={onKey}>
         <div className="pal-in">
           {ic(mode === "search" ? Search : Command, 17)}
@@ -160,10 +162,13 @@ export function Palette({ mode: start, idle, commands, tasks, projects, suggeste
                 {group.items.map((item) => {
                   const i = index++;
                   return (
+                    // An option is chosen by the keys of the field above it, which names the one that is lit: it takes no key of its own.
+                    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events
                     <div
                       key={item.key}
                       id={`pi-${i}`}
                       role="option"
+                      tabIndex={-1}
                       aria-selected={i === at}
                       className={`pi ${i === at ? "hl" : ""}`}
                       onMouseMove={() => i !== at && setHl(i)}

@@ -1,3 +1,4 @@
+import { press } from "../design/components/press.ts";
 import {
   Calendar,
   CircleCheck,
@@ -127,7 +128,7 @@ export function ProjectsPage({ projects, now, onOpen, onNew }: Props) {
         {shown.map((p) => {
           const pr = progressOf(p);
           return (
-            <div key={p.id} className="mini min-h-13 gap-3" role="link" tabIndex={0} onClick={() => onOpen(p.id)}>
+            <div key={p.id} className="mini min-h-13 gap-3" {...press(() => onOpen(p.id), "link")}>
               <PIcon project={p} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">

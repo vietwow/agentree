@@ -120,7 +120,7 @@ export function TaskDrawer(props: Props) {
 
   return (
     <>
-      {full && <div className={`drawer-scrim full ${closing ? "leaving" : entering ? "enter" : ""}`} onClick={onClose} />}
+      {full && <div className={`drawer-scrim full ${closing ? "leaving" : entering ? "enter" : ""}`} role="presentation" onClick={onClose} />}
       <aside
         ref={props.panelRef}
         className={`drawer ${full ? "full" : ""} ${closing ? "leaving" : entering ? "enter" : ""} ${tabbed ? "fx-tabs" : ""}`}

@@ -1,3 +1,4 @@
+import { press } from "../design/components/press.ts";
 import { Bot, CircleCheck, CircleGauge, Clock, GitMerge, GitPullRequest, ListTodo, type LucideIcon } from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -414,13 +415,13 @@ export function HomePage({ project, sample, tasks, activity, now, onOpenTask, on
                         key={j}
                         className={`home-sq ${c.mark} ${c.task ? "link" : ""}`}
                         onMouseEnter={(e) => setTip(above(e.currentTarget, cellTip(a, c)))}
-                        onClick={
-                          c.task &&
-                          (() => {
-                            setTip(undefined);
-                            onOpenTask(c.task!.id);
-                          })
-                        }
+                        {...(c.task
+                          ? press(() => {
+                              setTip(undefined);
+                              onOpenTask(c.task!.id);
+                            })
+                          : {})}
+                        aria-label={c.task ? `${c.task.id}: ${c.task.title}` : undefined}
                       />
                     ))}
                   </div>

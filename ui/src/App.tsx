@@ -51,7 +51,6 @@ function savedOrder(): string[] {
   }
 }
 
-
 type Props = {
   /** The machine's projects, and the board of the open one. */
   projects: Project[];
@@ -396,7 +395,7 @@ export function App({ projects: listed, board, onProject }: Props) {
     <>
       <div className={`shell ${collapsed && !menuOpen ? "collapsed" : ""} ${menuOpen ? "mnav" : ""}`}>
         {sidebar}
-        {menuOpen && <div className="side-scrim" onClick={() => setMenuOpen(false)} />}
+        {menuOpen && <div className="side-scrim" role="presentation" onClick={() => setMenuOpen(false)} />}
         <main className="main" id="main">
           <TopBar
             crumbs={crumbs}

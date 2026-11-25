@@ -1,3 +1,4 @@
+import { press } from "../design/components/press.ts";
 import { Check, Clock, CornerDownRight, Minus, Network, Plug, Webhook } from "lucide-react";
 import { useState } from "react";
 import { board, send } from "../board/daemon.ts";
@@ -53,7 +54,7 @@ export function AgentsPage({ tasks, now, onOpenTask }: Props) {
   );
   const taskCell = (id?: string) =>
     id ? (
-      <span className="flex items-center gap-2 min-w-0" data-opens-task onClick={() => onOpenTask(id)}>
+      <span className="flex items-center gap-2 min-w-0" data-opens-task {...press(() => onOpenTask(id))}>
         <span className="key mono">{id}</span>
         <span className="trunc obj cursor-pointer">{title(id)}</span>
       </span>

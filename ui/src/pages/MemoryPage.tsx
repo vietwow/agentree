@@ -1,3 +1,4 @@
+import { press } from "../design/components/press.ts";
 import {
   Archive,
   BookMarked,
@@ -80,7 +81,7 @@ export function MemoryPage({ query = "", now, onOpenTask }: Props) {
     return (
       <div key={f.file} className="contents">
         <div className={`trow ${isOpen ? "sel" : ""}`} style={{ ...style({ "--cols": COLS }), paddingLeft: ROW_INSET }}>
-          <div className="ttl" onClick={() => setOpen(isOpen ? undefined : f.file)} aria-expanded={isOpen}>
+          <div className="ttl" {...press(() => setOpen(isOpen ? undefined : f.file))} aria-expanded={isOpen}>
             <span className="flex items-center gap-2 text-ink-3">{ic(KIND_ICON[f.kind], 14)}</span>
             <span className="tt">{f.title}</span>
           </div>

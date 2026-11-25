@@ -1,3 +1,4 @@
+import { press } from "../design/components/press.ts";
 import { Activity, TreeDeciduous } from "lucide-react";
 import { useState } from "react";
 import type { ActivityEntry, ActivityKind } from "../board/activity.ts";
@@ -78,7 +79,7 @@ export function ActivityPage({ entries, tasks, now, onOpenTask }: Props) {
                   <Avatar who={e.who} />
                   <div className="flex-1 min-w-0">
                     <b>{nameOf(e.who)}</b> <span className="muted">{e.text.charAt(0).toLowerCase() + e.text.slice(1)}</span>{" "}
-                    <span className="obj" data-opens-task onClick={() => onOpenTask(e.task)}>
+                    <span className="obj" data-opens-task {...press(() => onOpenTask(e.task))}>
                       {titles.get(e.task)}
                     </span>
                   </div>

@@ -1,3 +1,4 @@
+import { press } from "../design/components/press.ts";
 import { CircleAlert, Clock, FileDiff, GitMerge, ShieldCheck, Undo2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { detail } from "../board/daemon.ts";
@@ -88,7 +89,7 @@ export function ReviewPage({ tasks, now, selected, onOpenTask }: Props) {
     return (
       <div key={t.id} className="contents">
         <div className={`trow ${selected === t.id ? "sel" : ""}`} style={{ ...style({ "--cols": COLS }), paddingLeft: ROW_INSET }}>
-          <div className="ttl" data-opens-task onClick={() => onOpenTask(t.id)}>
+          <div className="ttl" data-opens-task {...press(() => onOpenTask(t.id))}>
             <StatusIcon status={t.status} />
             <span className="key">{t.id}</span>
             <span className="tt">{t.title}</span>

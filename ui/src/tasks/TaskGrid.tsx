@@ -1,3 +1,4 @@
+import { press } from "../design/components/press.ts";
 import { ArrowDown, ArrowUp, Plus, SearchX } from "lucide-react";
 import { useRef, type PointerEvent as ReactPointerEvent } from "react";
 import { parentTitles } from "../board/daemon.ts";
@@ -198,7 +199,7 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
                 const f = SORTABLE[c[0]];
                 return (
                   <th key={c[0]} className={c[0] === "title" ? "sticky" : ""} scope="col">
-                    <div className="thi" onClick={() => sortBy(c[0])}>
+                    <div className="thi" {...press(() => sortBy(c[0]))}>
                       {c[1]}
                       {f && v.sort.f === f && ic(v.sort.dir > 0 ? ArrowUp : ArrowDown, 11)}
                     </div>
@@ -247,7 +248,7 @@ export function TaskGrid({ tasks, view: v, onView, deps, now, selected, onOpen, 
       </div>
       <div className="only-m pt-2 px-4 pb-22.5">
         {tasks.map((t) => (
-          <div key={t.id} className="panel p-3 mb-2" data-opens-task onClick={() => onOpen(t.id)}>
+          <div key={t.id} className="panel p-3 mb-2" data-opens-task {...press(() => onOpen(t.id))}>
             <div className="flex items-center gap-2 mb-2">
               <StatusIcon status={t.status} />
               <b className="flex-1 min-w-0 font-medium">{t.title}</b>

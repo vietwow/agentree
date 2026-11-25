@@ -1,3 +1,4 @@
+import { press } from "../design/components/press.ts";
 import { ChartGantt, Crosshair, Diamond } from "lucide-react";
 import { Fragment, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { board, detail, parentTitles } from "../board/daemon.ts";
@@ -163,6 +164,8 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
       const name = pt.list[0]!.name + (pt.list.length > 1 ? ` +${pt.list.length - 1}` : "");
       const tip = `${pt.list.map((m) => m.name).join(" · ")} · ${shortDate(pt.list[0]!.at, now)}`;
       return (
+        // A milestone does nothing when pressed: it takes the focus so that its name is read, and its tip shown, without a pointer.
+        // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
         <div key={i} className="ms-w" style={{ left: pt.x - 6, top: y + 9 }} data-tip={tip} tabIndex={0} aria-label={`Milestone: ${tip}`}>
           <span className="ms" />
           {room >= 28 && (
@@ -255,7 +258,7 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
                     key={r.t.id}
                     className={`tl-row ${selected === r.t.id ? "bg-surface-2" : ""}`}
                     data-opens-task
-                    onClick={() => onOpenTask(r.t.id)}
+                    {...press(() => onOpenTask(r.t.id))}
                   >
                     <StatusIcon status={r.t.status} size={12} />
                     <span className={`trunc flex-1 min-w-0 ${r.t.status === "done" ? "text-ink-3" : ""}`}>{r.t.title}</span>
@@ -344,7 +347,7 @@ export function ProgressPage({ tasks, now, onOpenTask, selected }: Props) {
                       className={`bar cursor-pointer ${t.status === "done" ? "done" : ""}`}
                       style={{ ...style({ "--c": c }), left: x, top: y + 7, width: w }}
                       data-opens-task
-                      onClick={() => onOpenTask(t.id)}
+                      {...press(() => onOpenTask(t.id))}
                       title={`${t.title} · ${start(t).toLocaleString()} → ${t.landedAt ? t.landedAt.toLocaleString() : STATUS_LABEL[t.status]}`}
                     >
                       <span className="pf" style={{ width: `${progressOf(t)}%` }} />

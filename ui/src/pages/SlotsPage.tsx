@@ -1,3 +1,4 @@
+import { press } from "../design/components/press.ts";
 import { Activity, Hourglass, Pause, Play, Plus, ShieldAlert, Timer, type LucideIcon } from "lucide-react";
 
 import { send, slots } from "../board/daemon.ts";
@@ -48,7 +49,7 @@ export function SlotsPage({ tasks, now, onOpenTask }: Props) {
   const taskRef = (id: string) => (
     <span className="flex items-center gap-2 min-w-0">
       <span className="key mono text-(length:--text-xs) text-ink-3">{id}</span>
-      <span className="obj trunc font-medium cursor-pointer" data-opens-task onClick={() => onOpenTask(id)}>
+      <span className="obj trunc font-medium cursor-pointer" data-opens-task {...press(() => onOpenTask(id))}>
         {title(id)}
       </span>
     </span>
@@ -209,7 +210,7 @@ export function SlotsPage({ tasks, now, onOpenTask }: Props) {
                     </span>
                     <div className="flex-1 min-w-0">
                       {d.task && (
-                        <span className="obj" data-opens-task onClick={() => onOpenTask(d.task!)}>
+                        <span className="obj" data-opens-task {...press(() => onOpenTask(d.task!))}>
                           {d.task}
                         </span>
                       )}{" "}
