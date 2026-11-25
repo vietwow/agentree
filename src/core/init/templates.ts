@@ -310,6 +310,9 @@ the inventory: the run that fetches drawings starts from them.
   },
 ];
 
+/** A value of front matter as a quoted string: a description holds colons, which YAML would read as a mapping. */
+const quoted = (text: string) => JSON.stringify(text);
+
 const BRIEF = (role: "worker" | "reviewer") =>
   role === "worker"
     ? `You are a worker of this repository's board. Read "Taking work" in
@@ -344,7 +347,7 @@ can check it. Return the verdict in a few lines.
 export function agentDefinition(role: "worker" | "reviewer"): string {
   const description = DESCRIPTION(role);
   const tools = role === "reviewer" ? "disallowedTools: Edit, Write, MultiEdit, NotebookEdit\n" : "";
-  return `---\nname: agentree-${role}\ndescription: ${description}\n${tools}---\n\n${BRIEF(role)}`;
+  return `---\nname: agentree-${role}\ndescription: ${quoted(description)}\n${tools}---\n\n${BRIEF(role)}`;
 }
 
 const DESCRIPTION = (role: "worker" | "reviewer") =>
@@ -366,13 +369,13 @@ export function codexAgent(role: "worker" | "reviewer"): string {
  * use it, and whose body is its system prompt. It names no tools: a tool's name that Antigravity does not know hangs it.
  */
 export function antigravityAgent(role: "worker" | "reviewer"): string {
-  return `---\nname: agentree-${role}\ndescription: ${DESCRIPTION(role)}\nsubagent: true\nmainAgent: false\n---\n\n${BRIEF(role)}`;
+  return `---\nname: agentree-${role}\ndescription: ${quoted(DESCRIPTION(role))}\nsubagent: true\nmainAgent: false\n---\n\n${BRIEF(role)}`;
 }
 
 /** A skill's file in the open form: front matter with its name and what it is for, then its words. */
 export function skillFile(skill: Skill): string {
   const marks = skill.byModel ? "" : "disable-model-invocation: true\n";
-  return `---\nname: ${skill.name}\ndescription: ${skill.description}\n${marks}---\n\n${skill.body}`;
+  return `---\nname: ${skill.name}\ndescription: ${quoted(skill.description)}\n${marks}---\n\n${skill.body}`;
 }
 
 /** What a project's own documents start from: the files `init` writes beside its RFCs and its ADRs, under names the Documents page does not list. */

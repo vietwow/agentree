@@ -1,6 +1,6 @@
 ---
 name: agentree-coordinate
-description: The coordinator's brief: hand the ready tasks of the board to workers, follow them, and land what is accepted. Used only when the owner asks for a coordinator by name.
+description: "The coordinator's brief: hand the ready tasks of the board to workers, follow them, and land what is accepted. Used only when the owner asks for a coordinator by name."
 disable-model-invocation: true
 ---
 

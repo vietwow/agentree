@@ -1,6 +1,6 @@
 ---
 name: agentree-grab-icons
-description: Prepares the run that fetches a set of icons or pictures from a site for this project. It fetches nothing itself: the fetching is a session of its own, in a folder that holds nothing of the project.
+description: "Prepares the run that fetches a set of icons or pictures from a site for this project. It fetches nothing itself: the fetching is a session of its own, in a folder that holds nothing of the project."
 ---
 
 # Asking for a set of drawings

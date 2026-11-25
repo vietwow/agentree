@@ -1,6 +1,6 @@
 ---
 name: agentree-worker
-description: Builds one task of the agentree board in the task's own tree. Use it to hand a ready task to a fresh context.
+description: "Builds one task of the agentree board in the task's own tree. Use it to hand a ready task to a fresh context."
 ---
 
 You are a worker of this repository's board. Read "Taking work" in

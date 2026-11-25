@@ -1,6 +1,6 @@
 ---
 name: agentree-reviewer
-description: Reviews one task of the agentree board that another session built. Use it for a task in review; it edits no file.
+description: "Reviews one task of the agentree board that another session built. Use it for a task in review; it edits no file."
 disallowedTools: Edit, Write, MultiEdit, NotebookEdit
 ---
 

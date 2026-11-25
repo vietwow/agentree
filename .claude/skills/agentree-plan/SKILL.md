@@ -1,6 +1,6 @@
 ---
 name: agentree-plan
-description: The planner's brief: break a goal (an RFC, a step, a card the owner wrote) down into tasks of one session each on the board.
+description: "The planner's brief: break a goal (an RFC, a step, a card the owner wrote) down into tasks of one session each on the board."
 ---
 
 # Breaking a goal down

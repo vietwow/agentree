@@ -1,6 +1,6 @@
 ---
 name: agentree-measure
-description: For a project that reproduces an interface from a reference site: how a measure task reads a part of the reference into its record, the record's form, and the agreements about the reference.
+description: "For a project that reproduces an interface from a reference site: how a measure task reads a part of the reference into its record, the record's form, and the agreements about the reference."
 ---
 
 # Measuring a part of the reference
