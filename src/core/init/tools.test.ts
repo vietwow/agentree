@@ -201,13 +201,19 @@ test("a tool's hooks follow its session, beat its claim, and refuse an edit outs
   );
   hook("claude-code", "SubagentStart", { session_id: "s-claude", cwd: root, agent_id: "a-1", agent_type: "agentree-worker" });
   hook("claude-code", "SubagentStop", { session_id: "s-claude", cwd: root, agent_id: "a-1" });
+  assert.deepEqual(
+    hook("cursor", "subagentStart", { parent_conversation_id: "s-cursor", subagent_id: "sub-1", subagent_type: "explore", workspace_roots: [root] }),
+    { exit: 0, stdout: '{"permission":"allow"}' },
+    "Cursor blocks a subagent whose hook prints no answer",
+  );
+  hook("cursor", "subagentStop", { parent_conversation_id: "s-cursor", subagent_id: "sub-1", workspace_roots: [root] });
   hook("cursor", "sessionEnd", { conversation_id: "s-cursor", workspace_roots: [root] });
   assert.deepEqual(
     agentsView(context.places, context.now()).map((s) => [s.id, s.tool, s.model, s.state, s.task, s.subagents.map((sub) => [sub.kind, sub.state])]),
     [
       ["s-codex", "codex", "gpt-5.6", "working", "T-0001", []],
       ["s-claude", "claude-code", "unknown", "working", undefined, [["agentree-worker", "ended"]]],
-      ["s-cursor", "cursor", "unknown", "ended", undefined, []],
+      ["s-cursor", "cursor", "unknown", "ended", undefined, [["explore", "ended"]]],
       ["s-agy", "antigravity", "gemini-4", "working", undefined, []],
     ],
   );

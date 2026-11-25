@@ -48,6 +48,8 @@ function refusal(places: Places, cwd: string, file: string): string | undefined 
 /** The answer in the form each tool reads: a refusal stops the tool call, and anything else lets it go on. */
 function answer(tool: Tool, event: string, why?: string): Hooked {
   const gate = event.toLowerCase() === "pretooluse";
+  // Cursor reads an answer from two of its hooks, and blocks the action when one prints none: a tool call, and a subagent's start.
+  if (tool === "cursor" && event.toLowerCase() === "subagentstart") return { exit: 0, stdout: JSON.stringify({ permission: "allow" }) };
   if (tool === "cursor")
     return gate
       ? { exit: 0, stdout: JSON.stringify(why ? { permission: "deny", user_message: why, agent_message: why } : { permission: "allow" }) }
@@ -60,7 +62,7 @@ function answer(tool: Tool, event: string, why?: string): Hooked {
 /** Acts on one hook of a tool, started in a directory, at a time. A hook never fails its tool: what is no session of a board is let through. */
 export function onHook(directory: string, tool: Tool, event: string, input: Input, now: Date): Hooked {
   const cwd = first(input.cwd, input.workspace_roots?.[0], input.workspacePaths?.[0]) ?? directory;
-  const id = first(input.session_id, input.conversation_id, input.conversationId);
+  const id = first(input.session_id, input.conversation_id, input.conversationId, input.parent_conversation_id);
   let places: Places;
   try {
     places = boardOf(cwd);
