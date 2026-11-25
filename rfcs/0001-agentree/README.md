@@ -683,7 +683,10 @@ is the board's own work, like the checks of a submit, and the daemon
 is the one process that is always there to do it; in the origin a
 worker kept a loop of landings running, and accepted tasks waited
 behind checks of submits for hours. `agentree land` and the MCP tool
-still land by themselves, with their checks in their own process. Two
+still land by themselves, with their checks in their own process. A
+project made by `agentree demo` is a sample, marked so in the machine's
+list: the daemon lands nothing of it, so that it keeps a task in every
+status, and `agentree land` still lands one of its tasks by hand. Two
 landers meet only at the landing lock, which a landing holds only to
 move `main`; a lock left by a process that ended is taken over.
 

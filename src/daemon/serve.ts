@@ -44,12 +44,13 @@ function watch(events: Events, queue: Queue, now: () => Date) {
     const ids = all.map((project) => project.id).join(",");
     if (ids !== listed && listed !== "") events.emit({ what: "projects" });
     listed = ids;
-    for (const { id } of all) {
+    for (const { id, sample } of all) {
       try {
         // A task's checks run in the tree of its project, each heavy one in its turn of the machine's queue.
         runWaitingChecks(id, { places: placesOfProject(id), now }, queue).catch((error: unknown) => console.error(error));
         runWaitingSetups(id, { places: placesOfProject(id), now }, queue).catch((error: unknown) => console.error(error));
-        runWaitingLandings(id, { places: placesOfProject(id), now }, queue).catch((error: unknown) => console.error(error));
+        // A sample project is left as it was made, so that it shows a task in every status: nothing of it is landed.
+        if (!sample) runWaitingLandings(id, { places: placesOfProject(id), now }, queue).catch((error: unknown) => console.error(error));
         const print = fingerprint(id);
         // A claim whose worker went quiet is given back, when the project's option says so.
         releaseStale({ places: placesOfProject(id), now });
