@@ -707,13 +707,21 @@ const COMMANDS: Record<string, () => unknown> = {
   },
   mcp() {
     const at = context();
-    const project = projectIdOf(at.places.root);
+    // Read at each call: the repository may be registered after the server started.
+    const project = () => {
+      const id = projectIdOf(at.places.root);
+      if (!id)
+        throw new Refusal(
+          'this repository is not on this machine\'s list of projects, so the daemon runs no command of it: run "agentree register" in it',
+        );
+      return id;
+    };
     const daemon = <T>(path: string, body?: unknown) =>
       ask<T>(path, body).then((answer) => answer ?? Promise.reject(new Refusal("no daemon answers on this machine: start it with: agentree serve")));
     serveStdio(() =>
       boardServer({
         context: at,
-        run: (command, cwd, task, by) => daemon(`/api/projects/${project}/run`, { command, cwd, task, by }),
+        run: async (command, cwd, task, by) => daemon(`/api/projects/${project()}/run`, { command, cwd, task, by }),
         load: () => daemon<SlotsView>("/api/slots").then(loadInWords),
       }),
     );
