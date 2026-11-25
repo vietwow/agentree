@@ -492,9 +492,15 @@ is slow or misses, and is never the source.
   So a session an agent starts headless through `agentree agent --
   <the tool's command>` (below) reports its use in full, but Cursor's; a
   session a person starts reports its model through its hooks, and its
-  tokens are mostly not known. Claude Code's status line,
-  which `init` sets to a script of agentree's that also prints what the
-  owner had there, sends the model and the estimated cost on each update.
+  tokens are mostly not known. Claude Code's status line, which `init`
+  sets in the project's `.claude/settings.json` to `agentree statusline`
+  unless the project has one of its own, sends the model and the
+  estimated cost on each update: the command writes them as what the
+  session used on the task it holds or reviews, a commit of the board
+  for a cost that moved by a cent, and shows the line the owner has in
+  their own settings (`~/.claude/settings.json`) with the board's line
+  under it. It was tried with the JSON of Claude Code's page, on no
+  session of Claude Code.
   Reading a tool's own transcript files would give more, and is not done:
   their form is no documented interface.
 - **Where it is kept.** Each session's record is a file of the board's

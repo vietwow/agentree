@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /** `agentree <subcommand>`: the core on the command line. It holds no rule: each line below is one call of the core. */
 import { readFileSync } from "node:fs";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import { homedir } from "node:os";
 import { randomBytes } from "node:crypto";
 import { basename, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
@@ -50,6 +51,7 @@ import { boardServer } from "../mcp/tools.ts";
 import { ask, projectIdOf } from "./daemon.ts";
 import { renderTask } from "../core/task/file.ts";
 import { endSession, reportSession } from "../core/board/sessions.ts";
+import { onStatusLine } from "../core/board/statusline.ts";
 import { reportUse } from "../core/board/usage.ts";
 import { doctor } from "../core/init/doctor.ts";
 import { kickstart } from "../core/init/kickstart.ts";
@@ -96,6 +98,7 @@ const USAGE = `Usage: agentree <subcommand> [options]
   projects                              the projects of this machine
   serve [--port <n>]                    the daemon: the UI and its API, on 127.0.0.1 only
   mcp                                   the board's MCP server on standard input and output, for this repository
+  statusline                            Claude Code's status line: its JSON on standard input; tells the board the session's model and cost
   hook <tool> <event>                   what a tool's hook tells the board; its JSON on standard input
   doctor                                what of this project's setup is there, and what is missing
   compare <part> [--state <state>]      read the project's page of a part in a browser and compare it with its record
@@ -663,6 +666,28 @@ const COMMANDS: Record<string, () => unknown> = {
     endSession(at.places, session, ended);
     process.stderr.write(`agentree: session ${session} of ${tool} ended${reported.unknown ? `; ${reported.unknown}` : ""}\n`);
     process.exitCode = code;
+  },
+  statusline() {
+    // Claude Code's status line: the board is told of the session, and the line is the owner's own with the board's under it.
+    // It never fails its tool: whatever goes wrong, the owner's line is still shown.
+    const raw = process.stdin.isTTY ? "" : readFileSync(0, "utf8");
+    let line = "";
+    try {
+      line = onStatusLine(process.cwd(), raw.trim() ? (JSON.parse(raw) as Record<string, never>) : {}, new Date());
+    } catch {
+      // Said nowhere: a status line has no place for an error.
+    }
+    let own = "";
+    try {
+      const settings = JSON.parse(readFileSync(join(homedir(), ".claude/settings.json"), "utf8")) as { statusLine?: { command?: string } };
+      const command = settings.statusLine?.command;
+      if (command && !command.includes("agentree statusline"))
+        own = spawnSync("sh", ["-c", command], { input: raw, encoding: "utf8", timeout: 5000 }).stdout?.trimEnd() ?? "";
+    } catch {
+      // The owner has no status line of their own.
+    }
+    const shown = [own, line].filter(Boolean).join("\n");
+    if (shown) say(shown);
   },
   hook() {
     const [tool, event] = rest;

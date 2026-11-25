@@ -5,6 +5,7 @@
  * changes only what is not as it would write it, and nothing of the
  * project's own beside it.
  */
+import { spawnSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { CONFIG_FILE, DEFAULT_CONFIG } from "../board/config.ts";
@@ -18,6 +19,10 @@ export const AGENT_TOOLS = TOOLS.filter((tool): tool is Exclude<Tool, "person"> 
 const SERVER = "agentree";
 /** The board's tools over standard input and output: the tool starts the command in the project, outside its session's sandbox. */
 const MCP = { command: "agentree", args: ["mcp"] };
+/** Claude Code's status line: it shows the owner's own line, read from their settings, with the board's under it. */
+const STATUS_LINE = "agentree statusline";
+/** Whether a tool finds the command by its name. */
+const onPath = () => spawnSync("sh", ["-c", "command -v agentree"], { encoding: "utf8" }).status === 0;
 const hook = (tool: Tool, event: string) => `agentree hook ${tool} ${event}`;
 
 /** The engineering standard a project starts with, as agentree keeps it. */
@@ -65,12 +70,22 @@ const SETUP: Record<Exclude<Tool, "person">, (files: ReturnType<typeof writer>, 
     json(".mcp.json", (value) => ((value.mcpServers ??= {})[SERVER] = MCP), "the board's MCP server");
     json(
       ".claude/settings.json",
-      (value) => matcherHooks(value, "claude-code", ["SessionStart", "PreToolUse", "Stop", "SessionEnd", "SubagentStart", "SubagentStop"]),
-      "the hooks that follow a session and hold an edit to its task's paths",
+      (value) => {
+        matcherHooks(value, "claude-code", ["SessionStart", "PreToolUse", "Stop", "SessionEnd", "SubagentStart", "SubagentStop"]);
+        // The status line tells the board the session's model and cost; a status line the project has of its own is left as it is.
+        // A project's status line stands in place of the owner's own: it is set only where its command is found, and shows theirs.
+        const ours = String(value.statusLine?.command ?? "").includes(STATUS_LINE);
+        if (ours || (!value.statusLine?.command && onPath())) value.statusLine = { type: "command", command: STATUS_LINE };
+      },
+      "the hooks that follow a session and hold an edit to its task's paths, and the status line that reports its cost",
     );
     for (const role of ["worker", "reviewer"] as const)
       write(`.claude/agents/agentree-${role}.md`, agentDefinition(role), `the ${role}'s definition`);
     report.byHand.push("Claude Code: run `claude` in the project once and approve the MCP server `agentree` of .mcp.json.");
+    if (!onPath())
+      report.byHand.push(
+        "Claude Code: its status line is set once `agentree` is on the path; run `agentree init` again then. Until then it reports no cost.",
+      );
   },
   "claude-desktop"({ json }, report) {
     json(".mcp.json", (value) => ((value.mcpServers ??= {})[SERVER] = MCP), "the board's MCP server");
